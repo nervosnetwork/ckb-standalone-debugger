@@ -1,4 +1,4 @@
-use ckb_script::TransactionScriptsVerifier;
+use ckb_script::{ScriptGroupType, TransactionScriptsVerifier};
 use ckb_sdk_types::transaction::{MockResourceLoader, MockTransaction, Resource};
 use ckb_types::{
     bytes::Bytes,
@@ -31,6 +31,8 @@ impl MockResourceLoader for DummyResourceLoader {
 
 pub fn run(
     mock_tx: &MockTransaction,
+    script_group_type: &ScriptGroupType,
+    script_hash: &Byte32,
     max_cycle: Cycle,
     debug_printer: Option<Box<dyn Fn(&Byte32, &str)>>,
 ) -> Result<Cycle, String> {
@@ -46,6 +48,6 @@ pub fn run(
         verifier.set_debug_printer(debug_printer);
     }
     verifier
-        .verify(max_cycle)
+        .verify_single(script_group_type, script_hash, max_cycle)
         .map_err(|err| format!("Verify script error: {:?}", err))
 }
