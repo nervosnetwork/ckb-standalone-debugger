@@ -1,0 +1,21 @@
+[package]
+name = "ckb-standalone-debugger"
+version = "0.1.0"
+license = "MIT"
+authors = ["Nervos Core Dev <dev@nervos.org>"]
+edition = "2018"
+
+[dependencies]
+ckb-types = { git = "https://github.com/nervosnetwork/ckb", branch = "rc/v0.21" }
+
+[dependencies.ckb-sdk-types]
+git = "https://github.com/nervosnetwork/ckb-cli"
+rev = "029a5ce"
+default-features = false
+features = []
+
+[dependencies.ckb-script]
+git = "https://github.com/nervosnetwork/ckb"
+branch = "rc/v0.21"
+default-features = false
+features = []
