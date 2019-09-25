@@ -94,5 +94,5 @@ pub fn test_bench() {
         20_000_000,
         None,
     );
-    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), 106015);
 }
