@@ -41,7 +41,7 @@ fn create_mock_cell_dep(data: Bytes, lock: Option<Script>) -> (Byte32, MockCellD
 
 #[test]
 pub fn test_bench() {
-    let data = read_file("tests/programs/bench");
+    let data = read_file("tests/programs/bench.c");
     let code = read_file("tests/programs/bench");
     let script_args: Vec<packed::Bytes> =
         vec!["100".pack(), "100".pack(), "100".pack(), "100".pack()];
