@@ -17,3 +17,7 @@ Cargo.lock
 /target
 #**/*.rs.bk
 #Cargo.lock
+
+/js/dist
+/js/node_modules
+/js/pkg
