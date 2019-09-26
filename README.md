@@ -14,7 +14,7 @@ $ git clone https://github.com/nervosnetwork/ckb-standalone-debugger
 $ cd ckb-standalone-debugger
 $ cd js
 $ npm install
-$ ./node_modules/.bin/webpack-dev-server
+$ npx webpack-dev-server
 ```
 
 Now use your browser to open <http://localhost:8081>, open developer tools, you will be able to find the script debugger's output.
