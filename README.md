@@ -17,5 +17,5 @@ $ npm install
 $ ./node_modules/.bin/webpack-dev-server
 ```
 
-Now use your browser to open <http://localhost:8081>, open developer tools, you will be able to find the script debugger's output.
+Now use your browser to open <http://localhost:8080>(or whatever address `webpack-dev-server` prompts in the terminal log), open developer tools, you will be able to find the script debugger's output.
 
