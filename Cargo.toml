@@ -27,6 +27,6 @@ features = []
 
 [dependencies.ckb-script]
 git = "https://github.com/nervosnetwork/ckb"
-branch = "rc/v0.21"
+branch = "rc/v0.22"
 default-features = false
 features = []
