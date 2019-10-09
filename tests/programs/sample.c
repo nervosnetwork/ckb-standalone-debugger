@@ -1,40 +1,31 @@
-static inline long __internal_syscall(long n, long _a0, long _a1, long _a2,
-                                      long _a3, long _a4, long _a5) {
-  register long a0 asm("a0") = _a0;
-  register long a1 asm("a1") = _a1;
-  register long a2 asm("a2") = _a2;
-  register long a3 asm("a3") = _a3;
-  register long a4 asm("a4") = _a4;
-  register long a5 asm("a5") = _a5;
+#include "ckb_syscalls.h"
+#include "protocol_reader.h"
 
-#ifdef __riscv_32e
-  register long syscall_id asm("t0") = n;
-#else
-  register long syscall_id asm("a7") = n;
-#endif
-
-  asm volatile("scall"
-               : "+r"(a0)
-               : "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(syscall_id));
-
-  return a0;
-}
-
-#define syscall(n, a, b, c, d, e, f)                                           \
-  __internal_syscall(n, (long)(a), (long)(b), (long)(c), (long)(d), (long)(e), \
-                     (long)(f))
-
-#define SYS_ckb_debug 2177
-int ckb_debug(const char* s) {
-  return syscall(SYS_ckb_debug, s, 0, 0, 0, 0, 0);
-}
-
-int main(int argc, char* argv[])
+int main()
 {
   ckb_debug("I'm in main now!");
-  if (argc == 3) {
+
+  char script[1024];
+  volatile uint64_t len = 1024;
+  uint64_t ret = ckb_load_script(script, &len, 0);
+  if (ret != 0) {
+    return ret;
+  }
+  mol_pos_t script_pos;
+  script_pos.ptr = (const uint8_t*)script;
+  script_pos.size = len;
+  mol_read_res_t args_res = mol_cut(&script_pos, MOL_Script_args());
+  if (args_res.code != 0) {
+    return -100;
+  }
+  mol_read_res_t bytes_res = mol_cut_bytes(&args_res.pos);
+  if (bytes_res.code != 0) {
+    return -101;
+  }
+
+  if (bytes_res.pos.size == 3) {
     return -2;
-  } else if (argc == 5 ) {
+  } else if (bytes_res.pos.size == 5 ) {
    return -3;
   } else {
    return 0;

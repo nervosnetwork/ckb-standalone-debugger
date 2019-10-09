@@ -1,10 +1,11 @@
+use byteorder::{ByteOrder, LittleEndian};
 use ckb_script::ScriptGroupType;
 use ckb_sdk_types::transaction::{MockCellDep, MockInfo, MockInput, MockTransaction};
 use ckb_standalone_debugger::run;
 use ckb_types::{
     bytes::Bytes,
     core::{Capacity, DepType, ScriptHashType, TransactionBuilder},
-    packed::{self, Byte32, BytesVec, CellDep, CellInput, CellOutput, OutPoint, Script, Witness},
+    packed::{self, Byte32, CellDep, CellInput, CellOutput, OutPoint, Script},
     prelude::*,
 };
 use std::fs::File;
@@ -43,15 +44,15 @@ fn create_mock_cell_dep(data: Bytes, lock: Option<Script>) -> (Byte32, MockCellD
 pub fn test_bench() {
     let data = read_file("tests/programs/bench.c");
     let code = read_file("tests/programs/bench");
-    let script_args: Vec<packed::Bytes> =
-        vec!["100".pack(), "100".pack(), "100".pack(), "100".pack()];
-
+    let mut script_args = [0u8; 32];
+    LittleEndian::write_u64(&mut script_args[0..8], 100);
+    LittleEndian::write_u64(&mut script_args[8..16], 100);
+    LittleEndian::write_u64(&mut script_args[16..24], 100);
+    LittleEndian::write_u64(&mut script_args[24..32], 100);
+    let script_args: packed::Bytes = script_args[..].pack();
     let (_, data_dep) = create_mock_cell_dep(data, None);
     let (code_hash, code_dep) = create_mock_cell_dep(code, None);
 
-    let script_args = BytesVec::new_builder()
-        .extend(script_args.into_iter())
-        .build();
     let script = Script::new_builder()
         .code_hash(code_hash.clone())
         .hash_type(ScriptHashType::Data.pack())
@@ -63,11 +64,10 @@ pub fn test_bench() {
         .previous_output(input_dep.cell_dep.out_point())
         .build();
     let cell_output = CellOutput::new_builder().build();
-    let witness = Witness::new_builder().build();
     let transaction = TransactionBuilder::default()
         .input(cell_input.clone())
         .output(cell_output)
-        .witness(witness)
+        .witness(packed::Bytes::default())
         .output_data(packed::Bytes::default())
         .cell_dep(data_dep.cell_dep.clone())
         .cell_dep(code_dep.cell_dep.clone())
@@ -94,5 +94,5 @@ pub fn test_bench() {
         20_000_000,
         None,
     );
-    assert_eq!(result.unwrap(), 106015);
+    assert_eq!(result.unwrap(), 59128);
 }
