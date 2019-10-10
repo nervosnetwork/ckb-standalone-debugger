@@ -1,0 +1,32 @@
+language: rust
+rust: 1.38.0
+dist: bionic
+
+before_script:
+  - rustup target add wasm32-unknown-unknown
+
+addons:
+  apt:
+    sources:
+      - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+        key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+    packages:
+      - clang-8
+      - libc6-dev-i386
+  homebrew:
+    packages:
+    - llvm@8
+    update: true
+
+matrix:
+  include:
+    - name: Build on Linux
+      os: linux
+      script:
+        - export PATH=/usr/lib/llvm-8/bin:$PATH
+        - cargo build --target=wasm32-unknown-unknown
+    - name: Build on macOS
+      on: osx
+      script:
+        - export PATH=/usr/local/opt/llvm/bin:$PATH
+        - cargo build --target=wasm32-unknown-unknown
