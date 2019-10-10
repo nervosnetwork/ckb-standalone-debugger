@@ -28,6 +28,6 @@ matrix:
     - name: Build on macOS
       os: osx
       script:
-        - export PATH=/usr/local/opt/llvm/bin:$PATH
+        - export PATH=/usr/local/opt/llvm@8/bin:$PATH
         - which clang
         - cargo build --target=wasm32-unknown-unknown
