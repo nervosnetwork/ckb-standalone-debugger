@@ -26,7 +26,7 @@ matrix:
         - export PATH=/usr/lib/llvm-8/bin:$PATH
         - cargo build --target=wasm32-unknown-unknown
     - name: Build on macOS
-      on: osx
+      os: osx
       script:
         - export PATH=/usr/local/opt/llvm/bin:$PATH
         - cargo build --target=wasm32-unknown-unknown
