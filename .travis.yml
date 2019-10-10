@@ -15,7 +15,7 @@ addons:
       - libc6-dev-i386
   homebrew:
     packages:
-      - llvm
+      - llvm@8
 
 matrix:
   include:
@@ -28,4 +28,5 @@ matrix:
       os: osx
       script:
         - export PATH=/usr/local/opt/llvm/bin:$PATH
+        - which clang
         - cargo build --target=wasm32-unknown-unknown
