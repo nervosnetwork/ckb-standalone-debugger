@@ -15,7 +15,7 @@ addons:
       - libc6-dev-i386
   homebrew:
     packages:
-      - llvm@8
+      - llvm
     update: true
 
 matrix:
@@ -28,7 +28,5 @@ matrix:
     - name: Build on macOS
       os: osx
       script:
-        - export PATH=/usr/local/opt/llvm@8/bin:$PATH
-        - export CPPFLAGS="-I/usr/local/opt/llvm@8/include"
-        - export LDFLAGS="-L/usr/local/opt/llvm@8/lib -Wl,-rpath,/usr/local/opt/llvm@8/lib"
+        - export PATH=/usr/local/opt/llvm/bin:$PATH
         - cargo build --target=wasm32-unknown-unknown
