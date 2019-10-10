@@ -16,7 +16,6 @@ addons:
   homebrew:
     packages:
     - llvm@8
-    update: true
 
 matrix:
   include:
