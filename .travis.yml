@@ -29,5 +29,6 @@ matrix:
       os: osx
       script:
         - export PATH=/usr/local/opt/llvm@8/bin:$PATH
-        - which clang
+        - export CPPFLAGS="-I/usr/local/opt/llvm@8/include"
+        - export LDFLAGS="-L/usr/local/opt/llvm@8/lib -Wl,-rpath,/usr/local/opt/llvm@8/lib"
         - cargo build --target=wasm32-unknown-unknown
