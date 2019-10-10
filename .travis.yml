@@ -15,7 +15,7 @@ addons:
       - libc6-dev-i386
   homebrew:
     packages:
-      - llvm@8
+      - llvm
 
 matrix:
   include:
