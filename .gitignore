@@ -20,4 +20,4 @@ Cargo.lock
 
 /js/dist
 /js/node_modules
-/js/pkg
+/pkg/
