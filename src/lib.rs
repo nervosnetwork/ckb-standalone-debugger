@@ -17,7 +17,7 @@ use serde_plain::from_str as from_plain_str;
 use std::collections::HashSet;
 use wasm_bindgen::prelude::*;
 
-struct DummyResourceLoader {}
+pub struct DummyResourceLoader {}
 
 impl MockResourceLoader for DummyResourceLoader {
     fn get_header(&mut self, _hash: H256) -> Result<Option<HeaderView>, String> {
