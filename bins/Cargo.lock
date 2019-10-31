@@ -171,7 +171,7 @@ version = "0.1.0"
 dependencies = [
  "ckb-script 0.24.0-pre (git+https://github.com/nervosnetwork/ckb?tag=v0.24.0-rc1)",
  "ckb-sdk-types 0.22.0 (git+https://github.com/nervosnetwork/ckb-cli?rev=1313398)",
- "ckb-standalone-debugger 0.1.0",
+ "ckb-standalone-debugger 0.2.0",
  "ckb-types 0.24.0-pre (git+https://github.com/nervosnetwork/ckb?tag=v0.24.0-rc1)",
  "ckb-vm 0.18.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ckb-vm-debug-utils 0.1.0 (git+https://github.com/nervosnetwork/ckb-vm-debug-utils?rev=7200f32)",
@@ -357,7 +357,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-standalone-debugger"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ckb-script 0.24.0-pre (git+https://github.com/nervosnetwork/ckb?tag=v0.24.0-rc1)",
  "ckb-sdk-types 0.22.0 (git+https://github.com/nervosnetwork/ckb-cli?rev=1313398)",
