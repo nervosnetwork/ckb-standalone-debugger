@@ -24,7 +24,7 @@ fn create_mock_cell_dep(data: Bytes, lock: Option<Script>) -> (Byte32, MockCellD
     let out_point = OutPoint::new_builder().tx_hash(hash2).build();
     let cell_dep = CellDep::new_builder()
         .out_point(out_point)
-        .dep_type(DepType::Code.pack())
+        .dep_type(DepType::Code.into())
         .build();
     let cell_output = CellOutput::new_builder()
         .capacity(Capacity::bytes(data.len() + 200).unwrap().pack())
@@ -55,7 +55,7 @@ pub fn test_bench() {
 
     let script = Script::new_builder()
         .code_hash(code_hash.clone())
-        .hash_type(ScriptHashType::Data.pack())
+        .hash_type(ScriptHashType::Data.into())
         .args(script_args)
         .build();
     let (_, input_dep) = create_mock_cell_dep(Bytes::from("abc"), Some(script));
@@ -94,5 +94,5 @@ pub fn test_bench() {
         20_000_000,
         None,
     );
-    assert_eq!(result.unwrap(), 59128);
+    assert_eq!(result.unwrap(), 58897);
 }

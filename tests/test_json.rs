@@ -7,8 +7,8 @@ pub fn test_sample_json() {
     let result = run_json(
         &mock_tx,
         "type",
-        "0x12bec80f9654173c0362fade816040de30b2a15f53c71e3f60570ca39ef8ebb0",
+        "0xee75995da2e55e6c4938533d341597bc10add3837cfe57174f2ee755da82555c",
         "4000",
     );
-    assert_eq!(result, "{\"cycle\":3527,\"error\":null}");
+    assert_eq!(result, "{\"cycle\":3217,\"error\":null}");
 }

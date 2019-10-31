@@ -12,10 +12,10 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.0"
-ckb-script = { git = "https://github.com/nervosnetwork/ckb", rev = "7e2ad2d", default-features = false }
-ckb-sdk-types = { git = "https://github.com/nervosnetwork/ckb-cli", rev = "cbef7e0", default-features = false }
+ckb-script = { git = "https://github.com/nervosnetwork/ckb", tag = "v0.24.0-rc1", default-features = false }
+ckb-sdk-types = { git = "https://github.com/nervosnetwork/ckb-cli", rev = "1313398", default-features = false }
 ckb-standalone-debugger = { path = ".." }
-ckb-types = { git = "https://github.com/nervosnetwork/ckb", rev = "7e2ad2d" }
+ckb-types = { git = "https://github.com/nervosnetwork/ckb", tag = "v0.24.0-rc1" }
 ckb-vm = { version = "0.18.0", default-features = false }
 ckb-vm-debug-utils = { git = "https://github.com/nervosnetwork/ckb-vm-debug-utils", rev = "7200f32" }
 env_logger = "0.4.3"

@@ -1,31 +1,25 @@
 #include "ckb_syscalls.h"
-#include "protocol_reader.h"
+#include "protocol.h"
 
 int main()
 {
   ckb_debug("I'm in main now!");
 
   char script[1024];
-  volatile uint64_t len = 1024;
+  uint64_t len = 1024;
   uint64_t ret = ckb_load_script(script, &len, 0);
   if (ret != 0) {
     return ret;
   }
-  mol_pos_t script_pos;
-  script_pos.ptr = (const uint8_t*)script;
-  script_pos.size = len;
-  mol_read_res_t args_res = mol_cut(&script_pos, MOL_Script_args());
-  if (args_res.code != 0) {
-    return -100;
-  }
-  mol_read_res_t bytes_res = mol_cut_bytes(&args_res.pos);
-  if (bytes_res.code != 0) {
-    return -101;
-  }
+  mol_seg_t script_seg;
+  script_seg.ptr = (uint8_t*)script;
+  script_seg.size = len;
+  mol_seg_t args_seg = MolReader_Script_get_args(&script_seg);
+  mol_seg_t args_bytes_seg = MolReader_Bytes_raw_bytes(&args_seg);
 
-  if (bytes_res.pos.size == 3) {
+  if (args_bytes_seg.size == 3) {
     return -2;
-  } else if (bytes_res.pos.size == 5 ) {
+  } else if (args_bytes_seg.size == 5 ) {
    return -3;
   } else {
    return 0;
