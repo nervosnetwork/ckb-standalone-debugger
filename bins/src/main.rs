@@ -11,7 +11,8 @@ use ckb_types::{
     packed::Byte32,
 };
 use ckb_vm::{
-    DefaultCoreMachine, DefaultMachineBuilder, SparseMemory, SupportMachine, WXorXMemory,
+    machine::asm::{AsmCoreMachine, AsmMachine},
+    DefaultMachineBuilder, SupportMachine,
 };
 use ckb_vm_debug_utils::{GdbHandler, Stdio};
 use clap::{App, Arg};
@@ -113,10 +114,7 @@ fn main() {
         for res in listener.incoming() {
             debug!("Got connection");
             if let Ok(stream) = res {
-                let core_machine =
-                    DefaultCoreMachine::<u64, WXorXMemory<u64, SparseMemory<u64>>>::new_with_max_cycles(
-                        max_cycle,
-                    );
+                let core_machine = AsmCoreMachine::new_with_max_cycles(max_cycle);
                 let builder = DefaultMachineBuilder::new(core_machine)
                     .instruction_cycle_func(verifier.cost_model())
                     .syscall(Box::new(Stdio::new(true)));
@@ -124,12 +122,13 @@ fn main() {
                     .generate_syscalls(script_group)
                     .into_iter()
                     .fold(builder, |builder, syscall| builder.syscall(syscall));
-                let mut machine = builder.build();
+                let mut machine = AsmMachine::new(builder.build(), None);
                 let bytes = machine.load_program(&program, &[]).expect("load program");
                 machine
+                    .machine
                     .add_cycles(transferred_byte_cycles(bytes))
                     .expect("load program cycles");
-                machine.set_running(true);
+                machine.machine.set_running(true);
                 let h = GdbHandler::new(machine);
                 process_packets_from(stream.try_clone().unwrap(), stream, h);
             }
@@ -137,10 +136,7 @@ fn main() {
         }
     } else {
         // Single run path
-        let core_machine =
-            DefaultCoreMachine::<u64, WXorXMemory<u64, SparseMemory<u64>>>::new_with_max_cycles(
-                max_cycle,
-            );
+        let core_machine = AsmCoreMachine::new_with_max_cycles(max_cycle);
         let builder = DefaultMachineBuilder::new(core_machine)
             .instruction_cycle_func(verifier.cost_model())
             .syscall(Box::new(Stdio::new(false)));
@@ -148,9 +144,10 @@ fn main() {
             .generate_syscalls(script_group)
             .into_iter()
             .fold(builder, |builder, syscall| builder.syscall(syscall));
-        let mut machine = builder.build();
+        let mut machine = AsmMachine::new(builder.build(), None);
         let bytes = machine.load_program(&program, &[]).expect("load program");
         machine
+            .machine
             .add_cycles(transferred_byte_cycles(bytes))
             .expect("load program cycles");
         let result = machine.run();
