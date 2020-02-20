@@ -97,7 +97,10 @@ fn main() {
         resolve_transaction(tx, &mut seen_inputs, &resource, &resource)
             .expect("resolve transaction")
     };
-    let verifier = TransactionScriptsVerifier::new(&rtx, &resource);
+    let mut verifier = TransactionScriptsVerifier::new(&rtx, &resource);
+    verifier.set_debug_printer(Box::new(|hash: &Byte32, message: &str| {
+        debug!("script group: {} DEBUG OUTPUT: {}", hash, message);
+    }));
 
     let script_group = verifier
         .find_script_group(&script_group_type, &script_hash)
