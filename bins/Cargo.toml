@@ -13,7 +13,6 @@ path = "src/main.rs"
 [dependencies]
 clap = "2.33.0"
 ckb-script = { git = "https://github.com/xxuejie/ckb", rev = "c168f38", default-features = false, features = ["detect-asm"] }
-ckb-sdk-types = { git = "https://github.com/xxuejie/ckb-cli", rev = "de3cb8c", default-features = false, features = ["detect-asm"] }
 ckb-standalone-debugger = { path = ".." }
 ckb-types = { git = "https://github.com/xxuejie/ckb", rev = "c168f38" }
 ckb-vm = { git = "https://github.com/nervosnetwork/ckb-vm", rev = "b213522", features = ["detect-asm"] }

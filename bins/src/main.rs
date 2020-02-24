@@ -4,8 +4,10 @@ extern crate log;
 use ckb_script::{
     cost_model::transferred_byte_cycles, ScriptGroupType, TransactionScriptsVerifier,
 };
-use ckb_sdk_types::transaction::{MockTransaction, ReprMockTransaction, Resource};
-use ckb_standalone_debugger::DummyResourceLoader;
+use ckb_standalone_debugger::{
+    transaction::{MockTransaction, ReprMockTransaction, Resource},
+    DummyResourceLoader,
+};
 use ckb_types::{
     core::{cell::resolve_transaction, Cycle},
     packed::Byte32,
@@ -154,6 +156,10 @@ fn main() {
             .add_cycles(transferred_byte_cycles(bytes))
             .expect("load program cycles");
         let result = machine.run();
-        println!("Run result: {:?}", result);
+        println!(
+            "Run result: {:?}\nCycles consumed: {}",
+            result,
+            machine.machine.cycles()
+        );
     }
 }

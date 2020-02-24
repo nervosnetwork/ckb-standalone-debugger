@@ -169,7 +169,6 @@ name = "ckb-debugger-binaries"
 version = "0.1.0"
 dependencies = [
  "ckb-script 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
- "ckb-sdk-types 0.26.0 (git+https://github.com/xxuejie/ckb-cli?rev=de3cb8c)",
  "ckb-standalone-debugger 0.2.0",
  "ckb-types 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
  "ckb-vm 0.18.2 (git+https://github.com/nervosnetwork/ckb-vm?rev=b213522)",
@@ -336,25 +335,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "ckb-sdk-types"
-version = "0.26.0"
-source = "git+https://github.com/xxuejie/ckb-cli?rev=de3cb8c#de3cb8c70e4c6b8157d543a1f3e43b4f206215f2"
-dependencies = [
- "ckb-error 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
- "ckb-hash 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
- "ckb-jsonrpc-types 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
- "ckb-script 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
- "ckb-types 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
- "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_derive 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "ckb-standalone-debugger"
 version = "0.2.0"
 dependencies = [
+ "ckb-error 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
+ "ckb-jsonrpc-types 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
  "ckb-script 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
- "ckb-sdk-types 0.26.0 (git+https://github.com/xxuejie/ckb-cli?rev=de3cb8c)",
  "ckb-types 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)",
  "faster-hex 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "js-sys 0.3.28 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1462,7 +1448,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum ckb-resource 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)" = "<none>"
 "checksum ckb-script 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)" = "<none>"
 "checksum ckb-script-data-loader 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)" = "<none>"
-"checksum ckb-sdk-types 0.26.0 (git+https://github.com/xxuejie/ckb-cli?rev=de3cb8c)" = "<none>"
 "checksum ckb-system-scripts 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "261dd95a93c09ea24397c85b4fbca061e1da2d6573189749aeb99fe840aaf0c9"
 "checksum ckb-types 0.26.1-pre (git+https://github.com/xxuejie/ckb?rev=c168f38)" = "<none>"
 "checksum ckb-vm 0.18.2 (git+https://github.com/nervosnetwork/ckb-vm?rev=b213522)" = "<none>"

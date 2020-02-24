@@ -1,7 +1,7 @@
+pub mod transaction;
+
+use crate::transaction::{MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, TransactionScriptsVerifier};
-use ckb_sdk_types::transaction::{
-    MockResourceLoader, MockTransaction, ReprMockTransaction, Resource,
-};
 use ckb_types::{
     bytes::Bytes,
     core::{cell::resolve_transaction, Cycle, HeaderView},
@@ -30,7 +30,7 @@ impl MockResourceLoader for DummyResourceLoader {
     fn get_live_cell(
         &mut self,
         _out_point: OutPoint,
-    ) -> Result<Option<(CellOutput, Bytes)>, String> {
+    ) -> Result<Option<(CellOutput, Bytes, Option<Byte32>)>, String> {
         return Err(
             "In standalone debugger, MockTransaction should provide all needed information!"
                 .to_string(),

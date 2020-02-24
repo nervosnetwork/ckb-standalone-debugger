@@ -9,7 +9,9 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+ckb-error = { git = "https://github.com/xxuejie/ckb", rev = "c168f38" }
 ckb-types = { git = "https://github.com/xxuejie/ckb", rev = "c168f38" }
+ckb-jsonrpc-types = { git = "https://github.com/xxuejie/ckb", rev = "c168f38" }
 faster-hex = "0.4.0"
 serde = "1.0"
 serde_derive = "1.0"
@@ -18,12 +20,6 @@ serde_plain = "0.3.0"
 
 js-sys = "0.3.27"
 wasm-bindgen = "0.2.50"
-
-[dependencies.ckb-sdk-types]
-git = "https://github.com/xxuejie/ckb-cli"
-rev = "de3cb8c"
-default-features = false
-features = ["detect-asm"]
 
 [dependencies.ckb-script]
 git = "https://github.com/xxuejie/ckb"
