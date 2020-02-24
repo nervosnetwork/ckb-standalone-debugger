@@ -1,7 +1,9 @@
 use byteorder::{ByteOrder, LittleEndian};
 use ckb_script::ScriptGroupType;
-use ckb_sdk_types::transaction::{MockCellDep, MockInfo, MockInput, MockTransaction};
-use ckb_standalone_debugger::run;
+use ckb_standalone_debugger::{
+    run,
+    transaction::{MockCellDep, MockInfo, MockInput, MockTransaction},
+};
 use ckb_types::{
     bytes::Bytes,
     core::{Capacity, DepType, ScriptHashType, TransactionBuilder},
@@ -36,6 +38,7 @@ fn create_mock_cell_dep(data: Bytes, lock: Option<Script>) -> (Byte32, MockCellD
             cell_dep,
             output: cell_output,
             data,
+            header: None,
         },
     )
 }
@@ -76,6 +79,7 @@ pub fn test_bench() {
         input: cell_input,
         output: input_dep.output,
         data: input_dep.data,
+        header: None,
     };
     let mock_info = MockInfo {
         inputs: vec![mock_input],
