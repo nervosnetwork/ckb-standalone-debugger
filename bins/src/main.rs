@@ -151,15 +151,18 @@ fn main() {
             .fold(builder, |builder, syscall| builder.syscall(syscall));
         let mut machine = AsmMachine::new(builder.build(), None);
         let bytes = machine.load_program(&program, &[]).expect("load program");
+        let transferred_cycles = transferred_byte_cycles(bytes);
         machine
             .machine
-            .add_cycles(transferred_byte_cycles(bytes))
+            .add_cycles(transferred_cycles)
             .expect("load program cycles");
         let result = machine.run();
         println!(
-            "Run result: {:?}\nCycles consumed: {}",
+            "Run result: {:?}\nTotal cycles consumed: {}\nTransfer cycles: {}, running cycles: {}\n",
             result,
-            machine.machine.cycles()
+            machine.machine.cycles(),
+            transferred_cycles,
+            machine.machine.cycles() - transferred_cycles,
         );
     }
 }
