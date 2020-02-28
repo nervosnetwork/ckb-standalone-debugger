@@ -85,7 +85,7 @@ fn main() {
                 .help("Max cycles")
                 .takes_value(true),
         )
-        .arg(Arg::with_name("step").short("s").long("step").help(
+        .arg(Arg::with_name("step").short("s").long("step").multiple(true).help(
             "Set to true to enable step mode, where we print PC address for each instruction",
         ))
         .get_matches();
@@ -214,6 +214,9 @@ fn main() {
             let mut step_result = Ok(());
             while machine.machine.running() && step_result.is_ok() {
                 println!("PC: 0x{:x}", machine.machine.pc());
+                if matches.occurrences_of("step") > 1 {
+                    println!("Machine: {}", machine.machine);
+                }
                 step_result = machine.machine.step(&decoder);
             }
             if step_result.is_err() {
