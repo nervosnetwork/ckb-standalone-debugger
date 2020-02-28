@@ -13,8 +13,9 @@ use ckb_types::{
     packed::Byte32,
 };
 use ckb_vm::{
+    decoder::build_imac_decoder,
     machine::asm::{AsmCoreMachine, AsmMachine},
-    DefaultMachineBuilder, SupportMachine,
+    CoreMachine, DefaultMachineBuilder, SupportMachine,
 };
 use ckb_vm_debug_utils::{GdbHandler, Stdio};
 use clap::{App, Arg};
@@ -84,6 +85,9 @@ fn main() {
                 .help("Max cycles")
                 .takes_value(true),
         )
+        .arg(Arg::with_name("step").short("s").long("step").help(
+            "Set to true to enable step mode, where we print PC address for each instruction",
+        ))
         .get_matches();
 
     let filename = matches.value_of("tx-file").unwrap();
@@ -204,7 +208,22 @@ fn main() {
             .machine
             .add_cycles(transferred_cycles)
             .expect("load program cycles");
-        let result = machine.run();
+        let result = if matches.occurrences_of("step") > 0 {
+            machine.machine.set_running(true);
+            let decoder = build_imac_decoder::<u64>();
+            let mut step_result = Ok(());
+            while machine.machine.running() && step_result.is_ok() {
+                println!("PC: 0x{:x}", machine.machine.pc());
+                step_result = machine.machine.step(&decoder);
+            }
+            if step_result.is_err() {
+                Err(step_result.unwrap_err())
+            } else {
+                Ok(machine.machine.exit_code())
+            }
+        } else {
+            machine.run()
+        };
         println!(
             "Run result: {:?}\nTotal cycles consumed: {}\nTransfer cycles: {}, running cycles: {}\n",
             result,
