@@ -58,8 +58,22 @@ fn main() {
             Arg::with_name("script-hash")
                 .short("h")
                 .long("script-hash")
-                .required(true)
                 .help("Script hash")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("cell-type")
+                .short("e")
+                .long("cell-type")
+                .possible_values(&["input", "output"])
+                .help("Type of cell to run")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("cell-index")
+                .short("i")
+                .long("cell-index")
+                .help("Index of cell to run")
                 .takes_value(true),
         )
         .arg(
@@ -79,13 +93,47 @@ fn main() {
     let script_group_type = matches.value_of("script-group-type").unwrap();
     let script_group_type: ScriptGroupType =
         from_plain_str(script_group_type).expect("parse script group type");
-    let hex_script_hash = matches.value_of("script-hash").unwrap();
-    if hex_script_hash.len() != 66 || (!hex_script_hash.starts_with("0x")) {
-        panic!("Invalid script hash format!");
-    }
-    let mut b = [0u8; 32];
-    hex_decode_fallback(&hex_script_hash.as_bytes()[2..], &mut b[..]);
-    let script_hash = Byte32::new(b);
+    let script_hash = if let Some(hex_script_hash) = matches.value_of("script-hash") {
+        if hex_script_hash.len() != 66 || (!hex_script_hash.starts_with("0x")) {
+            panic!("Invalid script hash format!");
+        }
+        let mut b = [0u8; 32];
+        hex_decode_fallback(&hex_script_hash.as_bytes()[2..], &mut b[..]);
+        Byte32::new(b)
+    } else {
+        let cell_type = matches.value_of("cell-type");
+        let cell_index = matches.value_of("cell-index");
+        if cell_type.is_none() || cell_index.is_none() {
+            panic!("You must provide either script hash, or cell type + cell index");
+        }
+        let cell_type = cell_type.unwrap();
+        let cell_index: usize = cell_index.unwrap().parse().expect("parse cell index");
+        match (&script_group_type, cell_type) {
+            (ScriptGroupType::Lock, "input") => {
+                mock_tx.mock_info.inputs[cell_index].output.calc_lock_hash()
+            }
+            (ScriptGroupType::Type, "input") => mock_tx.mock_info.inputs[cell_index]
+                .output
+                .type_()
+                .to_opt()
+                .expect("cell should have type script")
+                .calc_script_hash(),
+            (ScriptGroupType::Type, "output") => mock_tx
+                .tx
+                .raw()
+                .outputs()
+                .get(cell_index)
+                .expect("index out of bound")
+                .type_()
+                .to_opt()
+                .expect("cell should have type script")
+                .calc_script_hash(),
+            _ => panic!(
+                "Invalid specified script: {:?} {} {}",
+                script_group_type, cell_type, cell_index
+            ),
+        }
+    };
     let max_cycle: Cycle = matches
         .value_of("max-cycle")
         .unwrap()
