@@ -212,5 +212,8 @@ fn main() {
             transferred_cycles,
             machine.machine.cycles() - transferred_cycles,
         );
+        if result.is_err() {
+            println!("Machine status: {}", machine.machine);
+        }
     }
 }
