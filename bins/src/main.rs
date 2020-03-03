@@ -88,6 +88,20 @@ fn main() {
         .arg(Arg::with_name("step").short("s").long("step").multiple(true).help(
             "Set to true to enable step mode, where we print PC address for each instruction",
         ))
+        .arg(
+            Arg::with_name("skip-start")
+                .long("skip-start")
+                .help("Start address to skip printing debug info")
+                .required(false)
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("skip-end")
+                .long("skip-end")
+                .help("End address to skip printing debug info")
+                .required(false)
+                .takes_value(true),
+        )
         .get_matches();
 
     let filename = matches.value_of("tx-file").unwrap();
@@ -212,10 +226,29 @@ fn main() {
             machine.machine.set_running(true);
             let decoder = build_imac_decoder::<u64>();
             let mut step_result = Ok(());
+            let skip_range = if let (Some(s), Some(e)) =
+                (matches.value_of("skip-start"), matches.value_of("skip-end"))
+            {
+                let s =
+                    u64::from_str_radix(s.trim_start_matches("0x"), 16).expect("parse skip start");
+                let e =
+                    u64::from_str_radix(e.trim_start_matches("0x"), 16).expect("parse skip end");
+                Some(std::ops::Range { start: s, end: e })
+            } else {
+                None
+            };
             while machine.machine.running() && step_result.is_ok() {
-                println!("PC: 0x{:x}", machine.machine.pc());
-                if matches.occurrences_of("step") > 1 {
-                    println!("Machine: {}", machine.machine);
+                let mut print_info = true;
+                if let Some(skip_range) = &skip_range {
+                    if skip_range.contains(machine.machine.pc()) {
+                        print_info = false;
+                    }
+                }
+                if print_info {
+                    println!("PC: 0x{:x}", machine.machine.pc());
+                    if matches.occurrences_of("step") > 1 {
+                        println!("Machine: {}", machine.machine);
+                    }
                 }
                 step_result = machine.machine.step(&decoder);
             }
