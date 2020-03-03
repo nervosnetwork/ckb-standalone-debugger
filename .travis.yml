@@ -27,6 +27,7 @@ matrix:
         - cargo build
         - cargo build --target=wasm32-unknown-unknown
         - cd bins && cargo build
+        - git diff --exit-code Cargo.lock
     - name: Test
       os: linux
       script:

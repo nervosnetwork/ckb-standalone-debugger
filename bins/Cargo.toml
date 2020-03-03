@@ -12,11 +12,11 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.0"
-ckb-script = { git = "https://github.com/xxuejie/ckb", rev = "c168f38", default-features = false, features = ["detect-asm"] }
+ckb-script = { git = "https://github.com/nervosnetwork/ckb", rev = "79d0cc3", default-features = false, features = ["detect-asm"] }
 ckb-standalone-debugger = { path = ".." }
-ckb-types = { git = "https://github.com/xxuejie/ckb", rev = "c168f38" }
-ckb-vm = { git = "https://github.com/nervosnetwork/ckb-vm", rev = "b213522", features = ["detect-asm"] }
-ckb-vm-debug-utils = { git = "https://github.com/xxuejie/ckb-vm-debug-utils", rev = "555a360" }
+ckb-types = { git = "https://github.com/nervosnetwork/ckb", rev = "79d0cc3" }
+ckb-vm = { version = "0.19.0", features = ["detect-asm"] }
+ckb-vm-debug-utils = { git = "https://github.com/xxuejie/ckb-vm-debug-utils", rev = "0a9c87f" }
 env_logger = "0.4.3"
 faster-hex = "0.4.0"
 gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol", rev = "565ab0c" }
