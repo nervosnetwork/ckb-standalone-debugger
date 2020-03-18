@@ -17,7 +17,7 @@ use ckb_vm::{
     machine::asm::{AsmCoreMachine, AsmMachine},
     CoreMachine, DefaultMachineBuilder, SupportMachine,
 };
-use ckb_vm_debug_utils::{GdbHandler, Stdio};
+use ckb_vm_debug_utils::{ElfDumper, GdbHandler, Stdio};
 use clap::{App, Arg};
 use faster_hex::hex_decode_fallback;
 use gdb_remote_protocol::process_packets_from;
@@ -100,6 +100,13 @@ fn main() {
                 .long("skip-end")
                 .help("End address to skip printing debug info")
                 .required(false)
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("dump-file")
+                .short("d")
+                .long("dump-file")
+                .help("Dump file name")
                 .takes_value(true),
         )
         .get_matches();
@@ -208,9 +215,16 @@ fn main() {
     } else {
         // Single run path
         let core_machine = AsmCoreMachine::new_with_max_cycles(max_cycle);
-        let builder = DefaultMachineBuilder::new(core_machine)
+        let mut builder = DefaultMachineBuilder::new(core_machine)
             .instruction_cycle_func(verifier.cost_model())
             .syscall(Box::new(Stdio::new(false)));
+        if let Some(dump_file_name) = matches.value_of("dump-file") {
+            builder = builder.syscall(Box::new(ElfDumper::new(
+                dump_file_name.to_string(),
+                4097,
+                64,
+            )));
+        }
         let builder = verifier
             .generate_syscalls(script_group)
             .into_iter()
