@@ -33,3 +33,9 @@ matrix:
       script:
         - export PATH=/usr/lib/llvm-8/bin:$PATH
         - cargo test
+    - name: Build on osx
+      os: osx
+      script:
+        - cargo build
+        - cd bins && cargo build
+        - git diff --exit-code Cargo.lock
