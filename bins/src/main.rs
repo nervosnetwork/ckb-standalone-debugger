@@ -24,7 +24,7 @@ use gdb_remote_protocol::process_packets_from;
 use serde_json::from_str as from_json_str;
 use serde_plain::from_str as from_plain_str;
 use std::collections::HashSet;
-use std::fs::read_to_string;
+use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 
 fn main() {
@@ -109,6 +109,13 @@ fn main() {
                 .help("Dump file name")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("replace-binary")
+                .short("r")
+                .long("replace-binary")
+                .help("File used to replace the binary denoted in the script")
+                .takes_value(true),
+        )
         .get_matches();
 
     let filename = matches.value_of("tx-file").unwrap();
@@ -180,9 +187,13 @@ fn main() {
     let script_group = verifier
         .find_script_group(&script_group_type, &script_hash)
         .expect("find script group");
-    let program = verifier
+    let mut program = verifier
         .extract_script(&script_group.script)
         .expect("extract script");
+    if let Some(replace_file) = matches.value_of("replace-binary") {
+        let data = read(replace_file).expect("read binary file");
+        program = data.into();
+    }
 
     if let Some(listen_address) = matches.value_of("listen") {
         // GDB path
