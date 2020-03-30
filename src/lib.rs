@@ -20,21 +20,15 @@ use wasm_bindgen::prelude::*;
 pub struct DummyResourceLoader {}
 
 impl MockResourceLoader for DummyResourceLoader {
-    fn get_header(&mut self, _hash: H256) -> Result<Option<HeaderView>, String> {
-        return Err(
-            "In standalone debugger, MockTransaction should provide all needed information!"
-                .to_string(),
-        );
+    fn get_header(&mut self, hash: H256) -> Result<Option<HeaderView>, String> {
+        return Err(format!("Header {:x} is missing!", hash));
     }
 
     fn get_live_cell(
         &mut self,
-        _out_point: OutPoint,
+        out_point: OutPoint,
     ) -> Result<Option<(CellOutput, Bytes, Option<Byte32>)>, String> {
-        return Err(
-            "In standalone debugger, MockTransaction should provide all needed information!"
-                .to_string(),
-        );
+        return Err(format!("Cell: {:?} is missing!", out_point));
     }
 }
 
