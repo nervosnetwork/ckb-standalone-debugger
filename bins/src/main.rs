@@ -29,7 +29,7 @@ use std::net::TcpListener;
 
 fn main() {
     drop(env_logger::init());
-    let default_max_cycles = u64::max_value().to_string();
+    let default_max_cycles = format!("{}", 70_000_000u64);
     let matches = App::new("CKB standalone debugger")
         .arg(
             Arg::with_name("listen")
