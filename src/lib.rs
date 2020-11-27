@@ -51,7 +51,7 @@ pub fn run(
         verifier.set_debug_printer(debug_printer);
     }
     verifier
-        .verify_single(script_group_type, script_hash, max_cycle)
+        .verify_single(*script_group_type, script_hash, max_cycle)
         .map_err(|err| format!("Verify script error: {:?}", err))
 }
 

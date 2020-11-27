@@ -9,9 +9,10 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-ckb-error = { git = "https://github.com/nervosnetwork/ckb", rev = "79d0cc3" }
-ckb-types = { git = "https://github.com/nervosnetwork/ckb", rev = "79d0cc3" }
-ckb-jsonrpc-types = { git = "https://github.com/nervosnetwork/ckb", rev = "79d0cc3" }
+ckb-error = "0.37.0"
+ckb-traits = "0.37.0"
+ckb-types = "0.37.0"
+ckb-jsonrpc-types = "0.37.0"
 faster-hex = "0.4.0"
 serde = "1.0"
 serde_derive = "1.0"
@@ -22,8 +23,7 @@ js-sys = "0.3.27"
 wasm-bindgen = "0.2.50"
 
 [dependencies.ckb-script]
-git = "https://github.com/nervosnetwork/ckb"
-rev = "79d0cc3"
+version = "0.37.0"
 default-features = false
 features = ["detect-asm"]
 

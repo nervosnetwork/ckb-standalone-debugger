@@ -1,13 +1,12 @@
 // Modified from https://github.com/nervosnetwork/ckb-cli/blob/d6eceb3f9f108a17bcae0b1d760023e5da1e6e6a/ckb-sdk-types/src/transaction.rs
 use ckb_jsonrpc_types as json_types;
-use ckb_script::DataLoader;
+use ckb_traits::{CellDataProvider, HeaderProvider};
 use ckb_types::{
     bytes::Bytes,
     core::{
         cell::{CellMeta, CellMetaBuilder, CellProvider, CellStatus, HeaderChecker},
         error::OutPointError,
-        BlockExt, DepType, EpochExt, EpochNumberWithFraction, HeaderView, TransactionInfo,
-        TransactionView,
+        DepType, EpochNumberWithFraction, HeaderView, TransactionInfo, TransactionView,
     },
     packed::{Byte32, CellDep, CellInput, CellOutput, OutPoint, OutPointVec, Transaction},
     prelude::*,
@@ -217,23 +216,15 @@ impl CellProvider for Resource {
     }
 }
 
-impl DataLoader for Resource {
-    // load CellOutput
-    fn load_cell_data(&self, cell: &CellMeta) -> Option<(Bytes, Byte32)> {
-        cell.mem_cell_data.clone().or_else(|| {
-            self.required_cells
-                .get(&cell.out_point)
-                .and_then(|cell_meta| cell_meta.mem_cell_data.clone())
-        })
+impl CellDataProvider for Resource {
+    fn get_cell_data(&self, out_point: &OutPoint) -> Option<(Bytes, Byte32)> {
+        self.required_cells
+            .get(out_point)
+            .and_then(|cell_meta| cell_meta.mem_cell_data.clone())
     }
-    // load BlockExt
-    fn get_block_ext(&self, _block_hash: &Byte32) -> Option<BlockExt> {
-        // TODO: visit this later
-        None
-    }
-    fn get_block_epoch(&self, _block_hash: &Byte32) -> Option<EpochExt> {
-        None
-    }
+}
+
+impl HeaderProvider for Resource {
     fn get_header(&self, block_hash: &Byte32) -> Option<HeaderView> {
         self.required_headers.get(block_hash).cloned()
     }

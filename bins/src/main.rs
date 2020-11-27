@@ -185,7 +185,7 @@ fn main() {
     }));
 
     let script_group = verifier
-        .find_script_group(&script_group_type, &script_hash)
+        .find_script_group(script_group_type, &script_hash)
         .expect("find script group");
     let mut program = verifier
         .extract_script(&script_group.script)
