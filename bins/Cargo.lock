@@ -374,7 +374,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-standalone-debugger"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "ckb-error",
  "ckb-jsonrpc-types",
