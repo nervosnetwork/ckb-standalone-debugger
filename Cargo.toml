@@ -1,5 +1,6 @@
 [package]
 name = "ckb-standalone-debugger"
+description = "Standalone debugger for Nervos CKB"
 version = "0.3.0"
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
