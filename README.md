@@ -1,26 +1,36 @@
 # ckb-standalone-debugger
-A standalone debugger enabling off-chain contract development
+A standalone debugger enabling off-chain contract development. Both a separate library, and a standalone binary is available for use.
 
 # Usage
 
-For Rust usage, refer to the included tests, they are quite self-explanatory.
+For Rust library usage, refer to the included tests, they are quite self-explanatory.
 
-The interesting part here, is that by compiling this project to a WASM target, you can run CKB's script debugger either in node.js or in a modern browser. We have included a short js package showcasing how you can do that.
+See the command line help part for usage on the binary debugger:
 
-To make this easier, we have published [an npm package](https://www.npmjs.com/package/ckb-standalone-debugger) which you can use directly. The `js` folder in the repo contains a minimal example calling the debugger. Follow those steps to set it up:
+```
+$ ckb-debugger --help
+CKB standalone debugger 0.4.0
 
-```bash
-$ git clone https://github.com/nervosnetwork/ckb-standalone-debugger
-$ cd ckb-standalone-debugger
-$ cd js
-$ npm install
-$ npx webpack-dev-server
+USAGE:
+    ckb-debugger [FLAGS] [OPTIONS] --script-group-type <script-group-type> --tx-file <tx-file>
+
+FLAGS:
+        --help       Prints help information
+    -s, --step       Set to true to enable step mode, where we print PC address for each instruction
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --cell-index <cell-index>                  Index of cell to run
+    -e, --cell-type <cell-type>                    Type of cell to run [possible values: input, output]
+    -d, --dump-file <dump-file>                    Dump file name
+    -l, --listen <listen>                          Address to listen for GDB remote debugging server
+    -c, --max-cycle <max-cycle>                    Max cycles [default: 70000000]
+    -r, --replace-binary <replace-binary>          File used to replace the binary denoted in the script
+    -g, --script-group-type <script-group-type>    Script group type [possible values: lock, type]
+    -h, --script-hash <script-hash>                Script hash
+        --skip-end <skip-end>                      End address to skip printing debug info
+        --skip-start <skip-start>                  Start address to skip printing debug info
+    -t, --tx-file <tx-file>                        Filename containing JSON formatted transaction dump
 ```
 
-Note that you only need a valid `node.js` installation to play with this example, you don't need a Rust installation.
-
-Now use your browser to open <http://localhost:8080>(or whatever address `webpack-dev-server` prompts in the terminal log), open developer tools, you will be able to find the script debugger's output.
-
-# Build notes for wasm32-unknown-unknown target
-
-If you are building for `x86_64` target, everything should works ok. However, due to [certain](https://github.com/alexcrichton/cc-rs/issues/446) [bugs](https://github.com/alexcrichton/cc-rs/issues/447), it's now only possible to build for the `wasm32-unknown-unknown` target under Linux using LLVM 8. So if you do want to build the Rust package on your own, make sure you use Linux with LLVM 8 installation, have latest [wasm-pack](https://github.com/rustwasm/wasm-pack) installed, then you can build via `wasm-pack build`.
+[ckb-transaction-dumper](https://github.com/xxuejie/ckb-transaction-dumper) can be used to dump the full mocked transaction used in the debugger from CKB.
