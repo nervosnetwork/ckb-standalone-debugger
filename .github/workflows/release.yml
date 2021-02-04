@@ -101,7 +101,7 @@ jobs:
     - name: Archive files
       run: tar -cvzf ckb-debugger-macos-x64.tar.gz bins/target/release/ckb-debugger LICENSE
     - name: Generate checksum
-      run: sha256sum ckb-debugger-macos-x64.tar.gz > ckb-debugger-macos-x64-sha256.txt
+      run: sha256 -a 256 ckb-debugger-macos-x64.tar.gz > ckb-debugger-macos-x64-sha256.txt
     - name: Upload binary
       id: upload-release-binary
       uses: actions/upload-release-asset@v1
