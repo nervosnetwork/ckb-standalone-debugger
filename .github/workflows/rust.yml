@@ -1,0 +1,30 @@
+name: Rust
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Add llvm deb key
+      run: wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+    - name: Add llvm deb repository
+      run: sudo add-apt-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y libssl-dev build-essential clang-8 libc6-dev-i386
+    - name: Build and run
+      run: |
+          export PATH=/usr/lib/llvm-8/bin:$PATH
+          cargo build
+          cargo build --target=wasm32-unknown-unknown
+          cd bins && cargo build
+          git diff --exit-code Cargo.lock
