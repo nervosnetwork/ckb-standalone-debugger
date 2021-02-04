@@ -18,7 +18,7 @@ use ckb_vm::{
     CoreMachine, DefaultMachineBuilder, SupportMachine,
 };
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler, Stdio};
-use clap::{App, Arg};
+use clap::{crate_version, App, Arg};
 use faster_hex::hex_decode_fallback;
 use gdb_remote_protocol::process_packets_from;
 use serde_json::from_str as from_json_str;
@@ -31,6 +31,7 @@ fn main() {
     drop(env_logger::init());
     let default_max_cycles = format!("{}", 70_000_000u64);
     let matches = App::new("CKB standalone debugger")
+        .version(crate_version!())
         .arg(
             Arg::with_name("listen")
                 .short("l")
