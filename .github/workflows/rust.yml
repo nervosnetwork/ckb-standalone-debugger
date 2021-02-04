@@ -15,8 +15,6 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
-    - name: Add rust target
-      run: rustup target add wasm32-unknown-unknown
     - name: Add llvm deb key
       run: wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
     - name: Add llvm deb repository
@@ -27,6 +25,5 @@ jobs:
       run: |
           export PATH=/usr/lib/llvm-8/bin:$PATH
           cargo build
-          cargo build --target=wasm32-unknown-unknown
           cd bins && cargo build
           git diff --exit-code Cargo.lock
