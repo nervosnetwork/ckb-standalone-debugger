@@ -19,7 +19,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        build: [linux, macos, windows]
+        build: [linux, macos]
+        # build: [linux, macos, windows]
         include:
           - build: linux
             os: ubuntu-latest
@@ -27,9 +28,9 @@ jobs:
           - build: macos
             os: macos-latest
             rust: 1.46.0
-          - build: windows
-            os: windows-latest
-            rust: 1.46.0
+          # - build: windows
+          #   os: windows-latest
+          #   rust: 1.46.0
 
     steps:
     - uses: actions/checkout@v1
@@ -51,9 +52,9 @@ jobs:
       run: 7z a -ttar -so -an ./bins/target/release/${{ env.RELEASE_BIN }} ${{ env.RELEASE_ADDS }} | 7z a -si ./artifacts/${{ env.RELEASE_BIN }}-linux-x86_64.tar.gz
       if: matrix.os == 'ubuntu-latest'
 
-    - name: Create archive for Windows
-      run: 7z a -tzip ./artifacts/${{ env.RELEASE_BIN }}-windows-x86_64.zip ./bins/target/release/${{ env.RELEASE_BIN }}.exe ${{ env.RELEASE_ADDS }}
-      if: matrix.os == 'windows-latest'
+    # - name: Create archive for Windows
+    #   run: 7z a -tzip ./artifacts/${{ env.RELEASE_BIN }}-windows-x86_64.zip ./bins/target/release/${{ env.RELEASE_BIN }}.exe ${{ env.RELEASE_ADDS }}
+    #   if: matrix.os == 'windows-latest'
 
     - name: Install p7zip
       # 7Zip not available on MacOS, install p7zip via homebrew.
