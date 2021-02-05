@@ -188,7 +188,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-debugger-binaries"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "ckb-script",
  "ckb-standalone-debugger",
@@ -374,7 +374,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-standalone-debugger"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "ckb-error",
  "ckb-jsonrpc-types",
