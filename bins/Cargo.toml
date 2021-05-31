@@ -12,10 +12,10 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.0"
-ckb-script = "0.37.0"
+ckb-script = "0.42.0"
 ckb-standalone-debugger = { path = ".." }
-ckb-types = "0.37.0"
-ckb-vm = { version = "0.19.2", features = ["detect-asm"] }
+ckb-types = "0.42.0"
+ckb-vm = { version = "0.19.3", features = ["detect-asm"] }
 ckb-vm-debug-utils = { git = "https://github.com/xxuejie/ckb-vm-debug-utils", rev = "f6e3605" }
 env_logger = "0.4.3"
 faster-hex = "0.4.0"

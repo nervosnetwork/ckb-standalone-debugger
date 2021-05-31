@@ -11,10 +11,10 @@ exclude = ["bins", "js"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-ckb-error = "0.37.0"
-ckb-traits = "0.37.0"
-ckb-types = "0.37.0"
-ckb-jsonrpc-types = "0.37.0"
+ckb-error = "0.42.0"
+ckb-traits = "0.42.0"
+ckb-types = "0.42.0"
+ckb-jsonrpc-types = "0.42.0"
 faster-hex = "0.4.0"
 serde = "1.0"
 serde_derive = "1.0"
@@ -25,7 +25,7 @@ js-sys = "0.3.27"
 wasm-bindgen = "0.2.50"
 
 [dependencies.ckb-script]
-version = "0.37.0"
+version = "0.42.0"
 default-features = false
 features = ["detect-asm"]
 
