@@ -62,7 +62,7 @@ pub fn run(
         .build();
     let epoch = match version {
         0 => EpochNumberWithFraction::new(100, 0, 1),
-        1 => EpochNumberWithFraction::new(200, 0, 1),
+        1 => EpochNumberWithFraction::new(300, 0, 1),
         _ => unreachable!(),
     };
     let tx_env = {
