@@ -17,14 +17,6 @@ ckb-traits = { git="https://github.com/nervosnetwork/ckb", branch = "develop" }
 ckb-types = { git="https://github.com/nervosnetwork/ckb", branch = "develop" }
 ckb-jsonrpc-types = { git="https://github.com/nervosnetwork/ckb", branch = "develop" }
 ckb-script = { git="https://github.com/nervosnetwork/ckb", branch = "develop", default-features = false, features = ["detect-asm"] }
-
-# ckb-chain-spec = { path="/srcraw/ckb/spec" }
-# ckb-error = { path="/srcraw/ckb/error" }
-# ckb-traits = { path="/srcraw/ckb/traits" }
-# ckb-types = { path="/srcraw/ckb/util/types" }
-# ckb-jsonrpc-types = { path="/srcraw/ckb/util/jsonrpc-types" }
-# ckb-script = { path="/srcraw/ckb/script", default-features = false, features = ["detect-asm"] }
-
 faster-hex = "0.4.0"
 serde = "1.0"
 serde_derive = "1.0"

@@ -14,7 +14,7 @@
           "lock": {
             "args": "0x",
             "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "hash_type": "data"
+            "hash_type": "data1"
           },
           "type": null
         },
@@ -35,7 +35,7 @@
           "lock": {
             "args": "0x",
             "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "hash_type": "data"
+            "hash_type": "data1"
           },
           "type": null
         },
@@ -75,12 +75,12 @@
         "lock": {
           "args": "0x",
           "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "hash_type": "data"
+          "hash_type": "data1"
         },
         "type": {
           "args": "0x666f6f626172",
           "code_hash": "0xfa93982d582a0f3302a96ac34944d14b41d53549b9fb2ab284eafc1d021588ad",
-          "hash_type": "data"
+          "hash_type": "data1"
         }
       }
     ],
