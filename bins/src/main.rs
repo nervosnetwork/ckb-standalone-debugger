@@ -1,21 +1,23 @@
 #[macro_use]
 extern crate log;
 
+use ckb_chain_spec::consensus::ConsensusBuilder;
 use ckb_script::{
-    cost_model::transferred_byte_cycles, ScriptGroupType, TransactionScriptsVerifier,
+    cost_model::transferred_byte_cycles, ScriptGroupType, ScriptVersion,
+    TransactionScriptsVerifier, TxVerifyEnv,
 };
 use ckb_standalone_debugger::{
     transaction::{MockTransaction, ReprMockTransaction, Resource},
     DummyResourceLoader,
 };
 use ckb_types::{
-    core::{cell::resolve_transaction, Cycle},
+    core::{cell::resolve_transaction, hardfork::HardForkSwitch, Cycle, HeaderView},
     packed::Byte32,
 };
 use ckb_vm::{
-    decoder::build_imac_decoder,
+    decoder::build_decoder,
     machine::asm::{AsmCoreMachine, AsmMachine},
-    CoreMachine, DefaultMachineBuilder, SupportMachine,
+    CoreMachine, DefaultMachineBuilder, SupportMachine, ISA_B, ISA_IMC, ISA_MOP,
 };
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler, Stdio};
 use clap::{crate_version, App, Arg};
@@ -28,6 +30,7 @@ use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 
 fn main() {
+    let version = ScriptVersion::V1;
     drop(env_logger::init());
     let default_max_cycles = format!("{}", 70_000_000u64);
     let matches = App::new("ckb-debugger")
@@ -180,7 +183,15 @@ fn main() {
         resolve_transaction(tx, &mut seen_inputs, &resource, &resource)
             .expect("resolve transaction")
     };
-    let mut verifier = TransactionScriptsVerifier::new(&rtx, &resource);
+    let hardfork_switch = HardForkSwitch::new_without_any_enabled();
+    let consensus = ConsensusBuilder::default()
+        .hardfork_switch(hardfork_switch)
+        .build();
+    let tx_env = {
+        let header = HeaderView::new_advanced_builder().build();
+        TxVerifyEnv::new_commit(&header)
+    };
+    let mut verifier = TransactionScriptsVerifier::new(&rtx, &consensus, &resource, &tx_env);
     verifier.set_debug_printer(Box::new(|hash: &Byte32, message: &str| {
         debug!("script group: {} DEBUG OUTPUT: {}", hash, message);
     }));
@@ -204,12 +215,13 @@ fn main() {
         for res in listener.incoming() {
             debug!("Got connection");
             if let Ok(stream) = res {
-                let core_machine = AsmCoreMachine::new_with_max_cycles(max_cycle);
+                let core_machine =
+                    AsmCoreMachine::new(ISA_IMC | ISA_B | ISA_B, version as u32, max_cycle);
                 let builder = DefaultMachineBuilder::new(core_machine)
                     .instruction_cycle_func(verifier.cost_model())
                     .syscall(Box::new(Stdio::new(true)));
                 let builder = verifier
-                    .generate_syscalls(script_group)
+                    .generate_syscalls(version, script_group)
                     .into_iter()
                     .fold(builder, |builder, syscall| builder.syscall(syscall));
                 let mut machine = AsmMachine::new(builder.build(), None);
@@ -250,7 +262,7 @@ fn main() {
             .expect("load program cycles");
         let result = if matches.occurrences_of("step") > 0 {
             machine.machine.set_running(true);
-            let decoder = build_imac_decoder::<u64>();
+            let decoder = build_decoder::<u64>(ISA_IMC | ISA_B | ISA_MOP);
             let mut step_result = Ok(());
             let skip_range = if let (Some(s), Some(e)) =
                 (matches.value_of("skip-start"), matches.value_of("skip-end"))
