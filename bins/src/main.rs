@@ -206,8 +206,7 @@ fn main() {
     };
     let hardfork_switch = HardForkSwitch::new_without_any_enabled()
         .as_builder()
-        .rfc_pr_0234(200)
-        .rfc_pr_0237(200)
+        .rfc_0232(200)
         .build()
         .unwrap();
     let consensus = ConsensusBuilder::default()
