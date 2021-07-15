@@ -36,6 +36,7 @@ use std::net::TcpListener;
 fn main() {
     drop(env_logger::init());
     let default_max_cycles = format!("{}", 70_000_000u64);
+    let default_script_version = "1";
     let matches = App::new("ckb-debugger")
         .version(crate_version!())
         .arg(
@@ -126,6 +127,7 @@ fn main() {
         .arg(
             Arg::with_name("script-version")
                 .long("script-version")
+                .default_value(&default_script_version)
                 .help("Script version")
                 .takes_value(true),
         )
@@ -190,12 +192,11 @@ fn main() {
         .unwrap()
         .parse()
         .expect("parse vm version");
-    let script_version = if script_version_u32 == 0u32 {
-        ScriptVersion::V0
-    } else {
-        ScriptVersion::V1
+    let script_version = match script_version_u32 {
+        0 => ScriptVersion::V0,
+        1 => ScriptVersion::V1,
+        _ => panic!("wrong script version"),
     };
-
     let resource = Resource::from_both(&mock_tx, DummyResourceLoader {}).expect("load resource");
     let tx = mock_tx.core_transaction();
     let rtx = {
