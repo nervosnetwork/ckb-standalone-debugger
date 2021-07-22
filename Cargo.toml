@@ -11,12 +11,12 @@ exclude = ["bins", "js"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-ckb-chain-spec = { git="https://github.com/nervosnetwork/ckb", branch = "develop" }
-ckb-error = { git="https://github.com/nervosnetwork/ckb", branch = "develop" }
-ckb-traits = { git="https://github.com/nervosnetwork/ckb", branch = "develop" }
-ckb-types = { git="https://github.com/nervosnetwork/ckb", branch = "develop" }
-ckb-jsonrpc-types = { git="https://github.com/nervosnetwork/ckb", branch = "develop" }
-ckb-script = { git="https://github.com/nervosnetwork/ckb", branch = "develop", default-features = false, features = ["detect-asm"] }
+ckb-chain-spec = "0.100.0-rc2"
+ckb-error = "0.100.0-rc2"
+ckb-traits = "0.100.0-rc2"
+ckb-types = "0.100.0-rc2"
+ckb-jsonrpc-types = "0.100.0-rc2"
+ckb-script = { version="0.100.0-rc2", default-features = false, features = ["detect-asm"] }
 faster-hex = "0.4.0"
 serde = "1.0"
 serde_derive = "1.0"
