@@ -1,0 +1,3 @@
+[submodule "deps/ckb-vm-pprof"]
+	path = deps/ckb-vm-pprof
+	url = https://github.com/nervosnetwork/ckb-vm-pprof.git

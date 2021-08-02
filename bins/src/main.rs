@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate log;
+use std::io::Write;
 
 use ckb_chain_spec::consensus::ConsensusBuilder;
 use ckb_script::{
@@ -24,6 +25,7 @@ use ckb_vm::{
     CoreMachine, DefaultMachineBuilder, SupportMachine,
 };
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler, Stdio};
+use ckb_vm_pprof;
 use clap::{crate_version, App, Arg};
 use faster_hex::hex_decode_fallback;
 use gdb_remote_protocol::process_packets_from;
@@ -131,6 +133,12 @@ fn main() {
                 .help("Script version")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("pprof")
+                .long("pprof")
+                .help("performance profiling")
+                .takes_value(false),
+        )
         .get_matches();
 
     let filename = matches.value_of("tx-file").unwrap();
@@ -140,6 +148,15 @@ fn main() {
     let script_group_type = matches.value_of("script-group-type").unwrap();
     let script_group_type: ScriptGroupType =
         from_plain_str(script_group_type).expect("parse script group type");
+    let enable_pprof = matches.is_present("pprof");
+    if enable_pprof {
+        let replace_bin = matches.value_of("replace-binary");
+        if replace_bin.is_none() {
+            println!("Error: --pprof should work with --replace-binary");
+            return;
+        }
+    }
+
     let script_hash = if let Some(hex_script_hash) = matches.value_of("script-hash") {
         if hex_script_hash.len() != 66 || (!hex_script_hash.starts_with("0x")) {
             panic!("Invalid script hash format!");
@@ -300,7 +317,7 @@ fn main() {
             .expect("load program cycles");
         let result = if matches.occurrences_of("step") > 0 {
             machine.machine.set_running(true);
-            let decoder = build_decoder::<u64>(script_version.vm_isa());
+            let mut decoder = build_decoder::<u64>(script_version.vm_isa());
             let mut step_result = Ok(());
             let skip_range = if let (Some(s), Some(e)) =
                 (matches.value_of("skip-start"), matches.value_of("skip-end"))
@@ -326,25 +343,48 @@ fn main() {
                         println!("Machine: {}", machine.machine);
                     }
                 }
-                step_result = machine.machine.step(&decoder);
+                step_result = machine.machine.step(&mut decoder);
             }
             if step_result.is_err() {
                 Err(step_result.unwrap_err())
             } else {
                 Ok(machine.machine.exit_code())
             }
+        } else if enable_pprof {
+            let replace_file = matches.value_of("replace-binary").unwrap();
+            let result = ckb_vm_pprof::quick_start(replace_file, Default::default());
+            let mut stderr = std::io::stderr();
+            if let Ok((code, cycles)) = result {
+                let ret = Ok(code);
+                writeln!(&mut stderr,
+                         "Run result: {:?}\nTotal cycles consumed: {}\nTransfer cycles: {}, running cycles: {}\n",
+                         ret,
+                         cycles,
+                         transferred_cycles,
+                        cycles - transferred_cycles,
+                ).expect("write to stderr failed.");
+                ret
+            } else {
+                let err = result.err().unwrap();
+                writeln!(&mut stderr, "Machine returned error code: {:?}", err)
+                    .expect("write to stderr failed.");
+                Err(err)
+            }
         } else {
             machine.run()
         };
-        println!(
-            "Run result: {:?}\nTotal cycles consumed: {}\nTransfer cycles: {}, running cycles: {}\n",
-            result,
-            machine.machine.cycles(),
-            transferred_cycles,
-            machine.machine.cycles() - transferred_cycles,
-        );
-        if result.is_err() {
-            println!("Machine status: {}", machine.machine);
+
+        if !enable_pprof {
+            println!(
+                "Run result: {:?}\nTotal cycles consumed: {}\nTransfer cycles: {}, running cycles: {}\n",
+                result,
+                machine.machine.cycles(),
+                transferred_cycles,
+                machine.machine.cycles() - transferred_cycles,
+            );
+            if result.is_err() {
+                println!("Machine status: {}", machine.machine);
+            }
         }
     }
 }
