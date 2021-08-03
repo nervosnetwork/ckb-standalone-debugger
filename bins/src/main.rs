@@ -136,8 +136,8 @@ fn main() {
         .arg(
             Arg::with_name("pprof")
                 .long("pprof")
-                .help("performance profiling")
-                .takes_value(false),
+                .help("performance profiling, specify output file for further use")
+                .takes_value(true),
         )
         .get_matches();
 
@@ -351,8 +351,9 @@ fn main() {
                 Ok(machine.machine.exit_code())
             }
         } else if enable_pprof {
-            let replace_file = matches.value_of("replace-binary").unwrap();
-            let result = ckb_vm_pprof::quick_start(replace_file, Default::default());
+            let replace_file = matches.value_of("replace-binary").expect("replace binary file");
+            let output_filename = matches.value_of("pprof").expect("pprof output file");
+            let result = ckb_vm_pprof::quick_start(replace_file, Default::default(), output_filename);
             let mut stderr = std::io::stderr();
             if let Ok((code, cycles)) = result {
                 let ret = Ok(code);

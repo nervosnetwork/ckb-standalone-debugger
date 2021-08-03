@@ -23,3 +23,6 @@
 /pkg/
 
 /bins/target/
+bins/tests/fib
+bins/tests/fib.svg
+bins/tests/output.txt
