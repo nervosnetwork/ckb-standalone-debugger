@@ -152,7 +152,11 @@ fn main() {
     if enable_pprof {
         let replace_bin = matches.value_of("replace-binary");
         if replace_bin.is_none() {
-            println!("Error: --pprof should work with --replace-binary");
+            println!("Error: --pprof should work with --replace-binary\n");
+            println!("Normally the size of contracts with debugging information is very large.");
+            println!("The developers only deploy them on cells without debugging information.");
+            println!("However, the performance profiling(--pprof) requires debugging information to collect data.");
+            println!("--replace-binary provides a method to replace it with new binary with debugging information. ");
             return;
         }
     }
