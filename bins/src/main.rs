@@ -357,7 +357,9 @@ fn main() {
         } else if enable_pprof {
             let replace_file = matches.value_of("replace-binary").expect("replace binary file");
             let output_filename = matches.value_of("pprof").expect("pprof output file");
-            let result = ckb_vm_pprof::quick_start(replace_file, Default::default(), output_filename);
+
+            let syscalls = verifier.generate_syscalls(script_version, script_group);
+            let result = ckb_vm_pprof::quick_start(syscalls, replace_file, Default::default(), output_filename);
             let mut stderr = std::io::stderr();
             if let Ok((code, cycles)) = result {
                 let ret = Ok(code);
