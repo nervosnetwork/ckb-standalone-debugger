@@ -489,12 +489,11 @@ checksum = "85d7d3edb9e8d3fd763e4cdf9bb1910b9addf3511e4c167566d6d119906f03c2"
 [[package]]
 name = "ckb-vm-pprof"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/ckb-vm-pprof.git?rev=b40b74d#b40b74dd8435c692519b0f18bb2a056dfd72a111"
 dependencies = [
  "addr2line",
  "ckb-vm",
  "clap",
- "memmap",
+ "goblin 0.4.0",
  "object",
 ]
 
@@ -792,16 +791,6 @@ name = "memchr"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b16bd47d9e329435e309c58469fe0791c2d0d1ba96ec0954152a5ae2b04387dc"
-
-[[package]]
-name = "memmap"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6585fd95e7bb50d6cc31e20d4cf9afb4e2ba16c5846fc76793f11218da9c475b"
-dependencies = [
- "libc",
- "winapi",
-]
 
 [[package]]
 name = "merkle-cbt"
