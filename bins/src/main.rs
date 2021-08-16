@@ -52,7 +52,6 @@ fn main() {
             Arg::with_name("tx-file")
                 .short("t")
                 .long("tx-file")
-                .required(true)
                 .help("Filename containing JSON formatted transaction dump")
                 .takes_value(true),
         )
@@ -60,7 +59,6 @@ fn main() {
             Arg::with_name("script-group-type")
                 .short("g")
                 .long("script-group-type")
-                .required(true)
                 .possible_values(&["lock", "type"])
                 .help("Script group type")
                 .takes_value(true),
@@ -139,7 +137,36 @@ fn main() {
                 .help("performance profiling, specify output file for further use")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("simple-binary")
+                .long("simple-binary")
+                .help("Run a simple program that without any system calls")
+                .takes_value(true),
+        )
         .get_matches();
+
+    if let Some(binary_path) = matches.value_of("simple-binary") {
+        let result = if let Some(output_path) = matches.value_of("pprof") {
+            ckb_vm_pprof::quick_start(vec![], binary_path, Default::default(), output_path)
+        } else {
+            ckb_vm_pprof::quick_start(vec![], binary_path, Default::default(), "/dev/null")
+        };
+        let mut stderr = std::io::stderr();
+        if let Ok((code, cycles)) = result {
+            writeln!(
+                &mut stderr,
+                "Run result: {:?}\nTotal cycles consumed: {}\n",
+                code, cycles,
+            )
+            .expect("write to stderr failed.");
+            return;
+        } else {
+            let err = result.err().unwrap();
+            writeln!(&mut stderr, "Machine returned error code: {:?}", err)
+                .expect("write to stderr failed.");
+            return;
+        }
+    }
 
     let filename = matches.value_of("tx-file").unwrap();
     let mock_tx = read_to_string(&filename).expect("open tx file");

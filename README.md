@@ -29,6 +29,7 @@ OPTIONS:
     -g, --script-group-type <script-group-type>    Script group type [possible values: lock, type]
     -h, --script-hash <script-hash>                Script hash
         --script-version <script-version>          Script version [default: 1]
+        --simple-binary <simple-binary>            Run a simple program that without any system calls
         --skip-end <skip-end>                      End address to skip printing debug info
         --skip-start <skip-start>                  Start address to skip printing debug info
     -t, --tx-file <tx-file>                        Filename containing JSON formatted transaction dump
