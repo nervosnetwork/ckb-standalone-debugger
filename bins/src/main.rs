@@ -145,39 +145,28 @@ fn main() {
         )
         .get_matches();
 
-    if let Some(binary_path) = matches.value_of("simple-binary") {
-        let result = if let Some(output_path) = matches.value_of("pprof") {
-            ckb_vm_pprof::quick_start(vec![], binary_path, Default::default(), output_path)
-        } else {
-            ckb_vm_pprof::quick_start(vec![], binary_path, Default::default(), "/dev/null")
-        };
-        let mut stderr = std::io::stderr();
-        if let Ok((code, cycles)) = result {
-            writeln!(
-                &mut stderr,
-                "Run result: {:?}\nTotal cycles consumed: {}\n",
-                code, cycles,
-            )
-            .expect("write to stderr failed.");
-            return;
-        } else {
-            let err = result.err().unwrap();
-            writeln!(&mut stderr, "Machine returned error code: {:?}", err)
-                .expect("write to stderr failed.");
-            return;
-        }
-    }
-
-    let filename = matches.value_of("tx-file").unwrap();
-    let mock_tx = read_to_string(&filename).expect("open tx file");
+    let mock_tx = if matches.value_of("simple-binary").is_some() {
+        String::from_utf8_lossy(include_bytes!("./dummy_tx.json")).to_string()
+    } else {
+        let filename = matches.value_of("tx-file").unwrap();
+        read_to_string(&filename).expect("open tx file")
+    };
     let repr_mock_tx: ReprMockTransaction = from_json_str(&mock_tx).expect("parse tx file");
     let mock_tx: MockTransaction = repr_mock_tx.into();
-    let script_group_type = matches.value_of("script-group-type").unwrap();
+    let script_group_type = if matches.value_of("simple-binary").is_some() {
+        "type"
+    } else {
+        matches.value_of("script-group-type").unwrap()
+    };
     let script_group_type: ScriptGroupType =
         from_plain_str(script_group_type).expect("parse script group type");
     let enable_pprof = matches.is_present("pprof");
+    let replace_bin = if let Some(x) = matches.value_of("simple-binary") {
+        Some(x)
+    } else {
+        matches.value_of("replace-binary")
+    };
     if enable_pprof {
-        let replace_bin = matches.value_of("replace-binary");
         if replace_bin.is_none() {
             println!("Error: --pprof should work with --replace-binary\n");
             println!("Normally the size of contracts with debugging information is very large.");
@@ -187,8 +176,14 @@ fn main() {
             return;
         }
     }
-
-    let script_hash = if let Some(hex_script_hash) = matches.value_of("script-hash") {
+    let script_hash = if matches.value_of("simple-binary").is_some() {
+        let mut b = [0u8; 32];
+        hex_decode_fallback(
+            b"8f59e340cfbea088720265cef0fd9afa4e420bf27c7b3dc8aebf6c6eda453e57",
+            &mut b[..],
+        );
+        Byte32::new(b)
+    } else if let Some(hex_script_hash) = matches.value_of("script-hash") {
         if hex_script_hash.len() != 66 || (!hex_script_hash.starts_with("0x")) {
             panic!("Invalid script hash format!");
         }
@@ -281,7 +276,7 @@ fn main() {
     let mut program = verifier
         .extract_script(&script_group.script)
         .expect("extract script");
-    if let Some(replace_file) = matches.value_of("replace-binary") {
+    if let Some(replace_file) = replace_bin {
         let data = read(replace_file).expect("read binary file");
         program = data.into();
     }
@@ -382,11 +377,16 @@ fn main() {
                 Ok(machine.machine.exit_code())
             }
         } else if enable_pprof {
-            let replace_file = matches.value_of("replace-binary").expect("replace binary file");
+            let replace_file = replace_bin.expect("replace binary file");
             let output_filename = matches.value_of("pprof").expect("pprof output file");
 
             let syscalls = verifier.generate_syscalls(script_version, script_group);
-            let result = ckb_vm_pprof::quick_start(syscalls, replace_file, Default::default(), output_filename);
+            let result = ckb_vm_pprof::quick_start(
+                syscalls,
+                replace_file,
+                Default::default(),
+                output_filename,
+            );
             let mut stderr = std::io::stderr();
             if let Ok((code, cycles)) = result {
                 let ret = Ok(code);
