@@ -145,6 +145,16 @@ fn main() {
         )
         .get_matches();
 
+    if matches.value_of("simple-binary").is_none()
+        && (matches.value_of("tx-file").is_none()
+            || matches.value_of("script-group-type").is_none())
+    {
+        println!("{}", matches.usage());
+        println!("");
+        println!("See 'ckb-debugger --help' to read about more");
+        return;
+    }
+
     let mock_tx = if matches.value_of("simple-binary").is_some() {
         String::from_utf8_lossy(include_bytes!("./dummy_tx.json")).to_string()
     } else {
