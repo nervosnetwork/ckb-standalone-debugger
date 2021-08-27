@@ -393,9 +393,9 @@ fn main() {
                 writeln!(&mut stderr,
                          "Run result: {:?}\nTotal cycles consumed: {}\nTransfer cycles: {}, running cycles: {}\n",
                          ret,
-                         cycles,
+                         cycles + transferred_cycles,
                          transferred_cycles,
-                        cycles - transferred_cycles,
+                        cycles,
                 ).expect("write to stderr failed.");
                 ret
             } else {
