@@ -9,6 +9,7 @@ LDFLAGS := -Wl,-static
 # docker pull nervos/ckb-riscv-gnu-toolchain:gnu-bionic-20191012
 BUILDER_DOCKER := nervos/ckb-riscv-gnu-toolchain@sha256:aae8a3f79705f67d505d1f1d5ddc694a4fd537ed1c7e9622420a470d59ba2ec3
 
+CKB-DEBUGGER := ../target/debug/ckb-debugger
 all: build/fib
 
 all-via-docker:
@@ -24,10 +25,12 @@ clean:
 	rm build/fib.svg
 
 run:
-	../target/debug/ckb-debugger --tx-file=../../tests/programs/sample.json --script-group-type=type --script-hash=0xee75995da2e55e6c4938533d341597bc10add3837cfe57174f2ee755da82555c --script-version=0
-	../target/debug/ckb-debugger --tx-file=../../tests/programs/sample_data1.json --script-group-type=type --script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
+	$(CKB-DEBUGGER) --tx-file=../../tests/programs/sample.json --script-group-type=type --script-hash=0xee75995da2e55e6c4938533d341597bc10add3837cfe57174f2ee755da82555c --script-version=0
+	$(CKB-DEBUGGER) --tx-file=../../tests/programs/sample_data1.json --script-group-type=type --script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
 # test with pprof
-	RUST_LOG=trace ../target/debug/ckb-debugger  --replace-binary=build/fib --pprof=build/output.txt \
+	RUST_LOG=trace $(CKB-DEBUGGER)  --replace-binary=build/fib --pprof=build/output.txt \
 	--tx-file=../../tests/programs/sample_data1.json --script-group-type=type \
 	--script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
 	inferno-flamegraph build/output.txt > build/fib.svg
+	$(CKB-DEBUGGER) --simple-binary build/fib arg1 arg2 arg3
+
