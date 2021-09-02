@@ -19,11 +19,7 @@ use ckb_types::{
     packed::Byte32,
     prelude::Pack,
 };
-use ckb_vm::{
-    decoder::build_decoder,
-    machine::asm::{AsmCoreMachine, AsmMachine},
-    CoreMachine, DefaultMachineBuilder, SupportMachine,
-};
+use ckb_vm::{decoder::build_decoder, machine::asm::{AsmCoreMachine, AsmMachine}, CoreMachine, DefaultMachineBuilder, SupportMachine, Bytes};
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler, Stdio};
 use ckb_vm_pprof;
 use clap::{crate_version, App, Arg};
@@ -143,7 +139,16 @@ fn main() {
                 .help("Run a simple program that without any system calls")
                 .takes_value(true),
         )
+        .arg(Arg::with_name("args").multiple(true))
         .get_matches();
+
+    let args0: Vec<String> = matches
+        .values_of("args")
+        .unwrap_or_default()
+        .into_iter()
+        .map(|s| s.clone().into())
+        .collect();
+    let args: Vec<Bytes> = args0.clone().into_iter().map(|s| s.into()).collect();
 
     if matches.value_of("simple-binary").is_none()
         && (matches.value_of("tx-file").is_none()
@@ -312,7 +317,7 @@ fn main() {
                     .into_iter()
                     .fold(builder, |builder, syscall| builder.syscall(syscall));
                 let mut machine = AsmMachine::new(builder.build(), None);
-                let bytes = machine.load_program(&program, &[]).expect("load program");
+                let bytes = machine.load_program(&program, &args).expect("load program");
                 machine
                     .machine
                     .add_cycles(transferred_byte_cycles(bytes))
@@ -345,7 +350,7 @@ fn main() {
             .into_iter()
             .fold(builder, |builder, syscall| builder.syscall(syscall));
         let mut machine = AsmMachine::new(builder.build(), None);
-        let bytes = machine.load_program(&program, &[]).expect("load program");
+        let bytes = machine.load_program(&program, &args).expect("load program");
         let transferred_cycles = transferred_byte_cycles(bytes);
         machine
             .machine
@@ -394,7 +399,7 @@ fn main() {
             let result = ckb_vm_pprof::quick_start(
                 syscalls,
                 replace_file,
-                Default::default(),
+                args0.iter().map(|s| s as &str).collect(),
                 output_filename,
             );
             let mut stderr = std::io::stderr();
