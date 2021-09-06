@@ -23,7 +23,7 @@ use ckb_vm::{
     Bytes, CoreMachine, DefaultMachineBuilder, SupportMachine,
 };
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler, Stdio};
-use ckb_vm_pprof;
+use ckb_vm_pprof::{PProfMachine, Profile};
 use clap::{crate_version, App, Arg};
 use faster_hex::hex_decode_fallback;
 use gdb_remote_protocol::process_packets_from;
@@ -38,21 +38,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let default_max_cycles = format!("{}", 70_000_000u64);
     let default_script_version = "1";
-    let default_mode = "dog";
+    let default_mode = "full";
 
     let matches = App::new("ckb-debugger")
         .version(crate_version!())
         .arg(
-            Arg::with_name("asm-step")
-                .long("asm-step")
-                .multiple(true)
-                .help(
-                "Set to true to enable step mode, where we print PC address for each instruction",
-            ),
-        )
-        .arg(
             Arg::with_name("bin")
-                .short("b")
                 .long("bin")
                 .help("File used to replace the binary denoted in the script")
                 .takes_value(true),
@@ -68,12 +59,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("cell-type")
                 .possible_values(&["input", "output"])
                 .help("Type of cell to run")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("dog-pprof")
-                .long("dog-pprof")
-                .help("Performance profiling, specify output file for further use")
                 .takes_value(true),
         )
         .arg(
@@ -99,9 +84,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Arg::with_name("mode")
                 .long("mode")
                 .help("Execution mode of debugger")
-                .possible_values(&["dog", "asm", "gdb", "single"])
+                .possible_values(&["full", "fast", "single", "gdb"])
                 .default_value(&default_mode)
                 .required(true)
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("pprof")
+                .long("pprof")
+                .help("Performance profiling, specify output file for further use")
                 .takes_value(true),
         )
         .arg(
@@ -136,6 +127,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Start address to skip printing debug info")
                 .takes_value(true),
         )
+        .arg(Arg::with_name("step").long("step").multiple(true).help(
+            "Set to true to enable step mode, where we print PC address for each instruction",
+        ))
         .arg(
             Arg::with_name("tx-file")
                 .long("tx-file")
@@ -145,11 +139,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .arg(Arg::with_name("args").multiple(true))
         .get_matches();
 
-    let matches_asm_step = matches.occurrences_of("asm-step");
     let matches_bin = matches.value_of("bin");
     let matches_cell_index = matches.value_of("cell-index");
     let matches_cell_type = matches.value_of("cell-type");
-    let matches_dog_pprof = matches.value_of("dog-pprof");
+    let matches_pprof = matches.value_of("pprof");
     let matches_dump_file = matches.value_of("dump-file");
     let matches_gdb_listen = matches.value_of("gdb-listen");
     let matches_max_cycles = matches.value_of("max-cycles").unwrap();
@@ -159,11 +152,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_script_version = matches.value_of("script-version").unwrap();
     let matches_skip_end = matches.value_of("skip-end");
     let matches_skip_start = matches.value_of("skip-start");
+    let matches_step = matches.occurrences_of("step");
     let matches_tx_file = matches.value_of("tx-file");
     let matches_args = matches.values_of("args").unwrap_or_default();
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
-    let mut verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
+    let mut verifier_args_byte: Vec<Bytes> = vec!["main".into()];
+    verifier_args_byte.append(&mut verifier_args.into_iter().map(|s| s.into()).collect());
     let verifier_max_cycles: u64 = matches_max_cycles.parse()?;
     let verifier_mock_tx: MockTransaction = {
         let mock_tx = if matches_mode == "single" {
@@ -281,76 +276,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => verifier.extract_script(&verifier_script_group.script)?,
     };
 
-    if matches_mode == "dog" || matches_mode == "single" {
-        let program = Bytes::from(verifier_program);
-        let syscalls = verifier.generate_syscalls(verifier_script_version, verifier_script_group);
-        let default_core_machine = ckb_vm_pprof::CoreMachineType::new(
+    let machine_init = || {
+        let machine_core = AsmCoreMachine::new(
             verifier_script_version.vm_isa(),
             verifier_script_version.vm_version(),
             verifier_max_cycles,
         );
-        let mut builder = DefaultMachineBuilder::new(default_core_machine)
-            .instruction_cycle_func(verifier.cost_model());
-        builder = syscalls
-            .into_iter()
-            .fold(builder, |builder, syscall| builder.syscall(syscall));
-        let default_machine = builder.build();
-        let profile = ckb_vm_pprof::Profile::new(&program)?;
-        let mut machine = ckb_vm_pprof::PProfMachine::new(default_machine, profile);
-        let mut args = vec!["main".to_string().into()];
-        args.append(&mut verifier_args_byte);
-        let bytes = machine.load_program(&program, &args)?;
-        let transferred_cycles = transferred_byte_cycles(bytes);
-        machine.machine.add_cycles(transferred_cycles)?;
-        match machine.run() {
-            Ok(data) => {
-                println!("Run result: {:?}", data);
-                println!("Total cycles consumed: {}", machine.machine.cycles());
-                println!(
-                    "Transfer cycles: {}, running cycles: {}",
-                    transferred_cycles,
-                    machine.machine.cycles() - transferred_cycles
-                );
-                if let Some(fp) = matches_dog_pprof {
-                    let mut output = std::fs::File::create(&fp)?;
-                    machine.profile.display_flamegraph(&mut output);
-                }
-            }
-            Err(err) => {
-                machine.profile.display_stacktrace(&mut std::io::stdout());
-                println!("Error:");
-                println!("  {:?}", err);
-            }
-        }
-        return Ok(());
-    }
-
-    if matches_mode == "asm" {
-        let core_machine = AsmCoreMachine::new(
-            verifier_script_version.vm_isa(),
-            verifier_script_version.vm_version(),
-            verifier_max_cycles,
-        );
-        let mut builder = DefaultMachineBuilder::new(core_machine)
+        let mut machine_builder = DefaultMachineBuilder::new(machine_core)
             .instruction_cycle_func(verifier.cost_model())
             .syscall(Box::new(Stdio::new(false)));
-        if let Some(dump_file_name) = matches_dump_file {
-            builder = builder.syscall(Box::new(ElfDumper::new(
-                dump_file_name.to_string(),
-                4097,
-                64,
-            )));
+        if let Some(data) = matches_dump_file {
+            machine_builder =
+                machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
         }
-        let builder = verifier
-            .generate_syscalls(verifier_script_version, verifier_script_group)
+        let machine_syscalls =
+            verifier.generate_syscalls(verifier_script_version, verifier_script_group);
+        machine_builder = machine_syscalls
             .into_iter()
-            .fold(builder, |builder, syscall| builder.syscall(syscall));
-        let mut machine = AsmMachine::new(builder.build(), None);
-        let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
-        let transferred_cycles = transferred_byte_cycles(bytes);
-        machine.machine.add_cycles(transferred_cycles)?;
+            .fold(machine_builder, |builder, syscall| builder.syscall(syscall));
+        let machine = machine_builder.build();
+        machine
+    };
 
-        let result = if matches_asm_step > 0 {
+    let machine_step =
+        |machine: &mut PProfMachine<Box<AsmCoreMachine>>| -> Result<i8, ckb_vm::Error> {
             machine.machine.set_running(true);
             let mut decoder = build_decoder::<u64>(verifier_script_version.vm_isa());
             let mut step_result = Ok(());
@@ -372,7 +321,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 if print_info {
                     println!("PC: 0x{:x}", machine.machine.pc());
-                    if matches_asm_step > 1 {
+                    if matches_step > 1 {
                         println!("Machine: {}", machine.machine);
                     }
                 }
@@ -383,10 +332,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 Ok(machine.machine.exit_code())
             }
+        };
+
+    if matches_mode == "full" || matches_mode == "single" {
+        let mut machine = PProfMachine::new(machine_init(), Profile::new(&verifier_program)?);
+        let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
+        let transferred_cycles = transferred_byte_cycles(bytes);
+        machine.machine.add_cycles(transferred_cycles)?;
+        let result = if matches_step > 0 {
+            machine_step(&mut machine)
         } else {
             machine.run()
         };
-
         match result {
             Ok(data) => {
                 println!("Run result: {:?}", data);
@@ -396,42 +353,50 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     transferred_cycles,
                     machine.machine.cycles() - transferred_cycles
                 );
+                if let Some(fp) = matches_pprof {
+                    let mut output = std::fs::File::create(&fp)?;
+                    machine.profile.display_flamegraph(&mut output);
+                }
             }
             Err(err) => {
+                println!("Trace:");
+                machine
+                    .profile
+                    .display_stacktrace("  ", &mut std::io::stdout());
                 println!("Error:");
                 println!("  {:?}", err);
             }
         }
+        return Ok(());
+    }
+
+    if matches_mode == "fast" {
+        let mut machine = AsmMachine::new(machine_init(), None);
+        let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
+        let transferred_cycles = transferred_byte_cycles(bytes);
+        machine.machine.add_cycles(transferred_cycles)?;
+        println!("Run result: {:?}", machine.run());
+        println!("Total cycles consumed: {}", machine.machine.cycles());
+        println!(
+            "Transfer cycles: {}, running cycles: {}",
+            transferred_cycles,
+            machine.machine.cycles() - transferred_cycles
+        );
     }
 
     if matches_mode == "gdb" {
         let listen_address = matches_gdb_listen.unwrap();
         let listener = TcpListener::bind(listen_address)?;
-        debug!("Listening on {}", listen_address);
-
         for res in listener.incoming() {
-            debug!("Got connection");
             if let Ok(stream) = res {
-                let core_machine = AsmCoreMachine::new(
-                    verifier_script_version.vm_isa(),
-                    verifier_script_version.vm_version(),
-                    verifier_max_cycles,
-                );
-                let builder = DefaultMachineBuilder::new(core_machine)
-                    .instruction_cycle_func(verifier.cost_model())
-                    .syscall(Box::new(Stdio::new(true)));
-                let builder = verifier
-                    .generate_syscalls(verifier_script_version, verifier_script_group)
-                    .into_iter()
-                    .fold(builder, |builder, syscall| builder.syscall(syscall));
-                let mut machine = AsmMachine::new(builder.build(), None);
+                let mut machine = AsmMachine::new(machine_init(), None);
                 let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
-                machine.machine.add_cycles(transferred_byte_cycles(bytes))?;
+                let transferred_cycles = transferred_byte_cycles(bytes);
+                machine.machine.add_cycles(transferred_cycles)?;
                 machine.machine.set_running(true);
                 let h = GdbHandler::new(machine);
                 process_packets_from(stream.try_clone().unwrap(), stream, h);
             }
-            debug!("Connection closed");
         }
         return Ok(());
     }
