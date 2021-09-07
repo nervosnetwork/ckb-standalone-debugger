@@ -84,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Arg::with_name("mode")
                 .long("mode")
                 .help("Execution mode of debugger")
-                .possible_values(&["full", "fast", "single", "gdb"])
+                .possible_values(&["full", "fast", "gdb"])
                 .default_value(&default_mode)
                 .required(true)
                 .takes_value(true),
@@ -146,7 +146,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_dump_file = matches.value_of("dump-file");
     let matches_gdb_listen = matches.value_of("gdb-listen");
     let matches_max_cycles = matches.value_of("max-cycles").unwrap();
-    let matches_mode = matches.value_of("mode").unwrap();
+    let mut matches_mode = matches.value_of("mode").unwrap();
     let matches_script_hash = matches.value_of("script-hash");
     let matches_script_group_type = matches.value_of("script-group-type");
     let matches_script_version = matches.value_of("script-version").unwrap();
@@ -155,6 +155,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_step = matches.occurrences_of("step");
     let matches_tx_file = matches.value_of("tx-file");
     let matches_args = matches.values_of("args").unwrap_or_default();
+    if matches_mode == "full" && matches_tx_file.is_none() {
+        matches_mode = "single"
+    }
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
     let mut verifier_args_byte: Vec<Bytes> = vec!["main".into()];

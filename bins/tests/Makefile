@@ -29,19 +29,19 @@ clean:
 	rm build/fib.svg
 
 run:
-# mode=dog
-	$(CKB-DEBUGGER) --mode full --tx-file=../../tests/programs/sample.json --script-group-type=type --script-hash=0xee75995da2e55e6c4938533d341597bc10add3837cfe57174f2ee755da82555c --script-version=0
-	$(CKB-DEBUGGER) --mode full --tx-file=../../tests/programs/sample_data1.json --script-group-type=type --script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
-# mode=dog dog-pprof=build/flamegraph.txt
-	$(CKB-DEBUGGER) --mode full --pprof build/flamegraph.txt --tx-file=../../tests/programs/sample.json --script-group-type=type --script-hash=0xee75995da2e55e6c4938533d341597bc10add3837cfe57174f2ee755da82555c --script-version=0
-	$(CKB-DEBUGGER) --mode full --pprof build/flamegraph.txt --tx-file=../../tests/programs/sample_data1.json --script-group-type=type --script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
-# mode=asm
+# mode=full
+	$(CKB-DEBUGGER) --tx-file=../../tests/programs/sample.json --script-group-type=type --script-hash=0xee75995da2e55e6c4938533d341597bc10add3837cfe57174f2ee755da82555c --script-version=0
+	$(CKB-DEBUGGER) --tx-file=../../tests/programs/sample_data1.json --script-group-type=type --script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
+# mode=full pprof=build/flamegraph.txt
+	$(CKB-DEBUGGER) --pprof build/flamegraph.txt --tx-file=../../tests/programs/sample.json --script-group-type=type --script-hash=0xee75995da2e55e6c4938533d341597bc10add3837cfe57174f2ee755da82555c --script-version=0
+	$(CKB-DEBUGGER) --pprof build/flamegraph.txt --tx-file=../../tests/programs/sample_data1.json --script-group-type=type --script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
+# mode=fast
 	$(CKB-DEBUGGER) --mode fast --tx-file=../../tests/programs/sample.json --script-group-type=type --script-hash=0xee75995da2e55e6c4938533d341597bc10add3837cfe57174f2ee755da82555c --script-version=0
 	$(CKB-DEBUGGER) --mode fast --tx-file=../../tests/programs/sample_data1.json --script-group-type=type --script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
-# mode=dog dog-pprof=build/flamegraph.txt
-	RUST_LOG=trace $(CKB-DEBUGGER) --mode full --bin=build/fib --pprof=build/flamegraph.txt \
+# mode=full pprof=build/flamegraph.txt
+	RUST_LOG=trace $(CKB-DEBUGGER) --bin=build/fib --pprof=build/flamegraph.txt \
 		--tx-file=../../tests/programs/sample_data1.json --script-group-type=type \
 		--script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
 	inferno-flamegraph build/output.txt > build/fib.svg
 # mode=single
-	$(CKB-DEBUGGER) --mode single --bin build/fib arg1 arg2 arg3
+	$(CKB-DEBUGGER) --bin build/fib arg1 arg2 arg3
