@@ -158,8 +158,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_args = matches.values_of("args").unwrap_or_default();
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
-    let mut verifier_args_byte: Vec<Bytes> = vec!["main".into()];
-    verifier_args_byte.append(&mut verifier_args.into_iter().map(|s| s.into()).collect());
+    let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
     let verifier_max_cycles: u64 = matches_max_cycles.parse()?;
     let verifier_mock_tx: MockTransaction = {
         let mock_tx = if matches_tx_file.is_none() {
