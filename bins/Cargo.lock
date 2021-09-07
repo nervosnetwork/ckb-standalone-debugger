@@ -490,7 +490,7 @@ checksum = "bb60346ea1de433fe2d467e50a9b8235b139dd9322ac4f1874490b531cab80bc"
 [[package]]
 name = "ckb-vm-pprof"
 version = "0.2.1"
-source = "git+https://github.com/nervosnetwork/ckb-vm-pprof.git?rev=bcf0d1a#bcf0d1a4b0f09fb992dc19923c0ef810ec4ff45b"
+source = "git+https://github.com/nervosnetwork/ckb-vm-pprof.git?rev=8e55117#8e551175df52415ea083670e072e85295b3f5e31"
 dependencies = [
  "addr2line",
  "ckb-vm",

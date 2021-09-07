@@ -8,31 +8,36 @@ For Rust library usage, refer to the included tests, they are quite self-explana
 See the command line help part for usage on the binary debugger:
 
 ```
-ckb-debugger 0.20.0-rc2
+ckb-debugger 0.20.0-rc3
 
 USAGE:
-    ckb-debugger [FLAGS] [OPTIONS] --script-group-type <script-group-type> --tx-file <tx-file>
+    ckb-debugger [FLAGS] [OPTIONS] --mode <mode> [args]...
 
 FLAGS:
-        --help       Prints help information
-    -s, --step       Set to true to enable step mode, where we print PC address for each instruction
+    -h, --help       Prints help information
+        --step       Set to true to enable step mode, where we print PC address for each instruction
     -V, --version    Prints version information
 
 OPTIONS:
-    -i, --cell-index <cell-index>                  Index of cell to run
-    -e, --cell-type <cell-type>                    Type of cell to run [possible values: input, output]
-    -d, --dump-file <dump-file>                    Dump file name
-    -l, --listen <listen>                          Address to listen for GDB remote debugging server
-    -c, --max-cycle <max-cycle>                    Max cycles [default: 70000000]
-        --pprof <pprof>                            performance profiling, specify output file for further use
-    -r, --replace-binary <replace-binary>          File used to replace the binary denoted in the script
-    -g, --script-group-type <script-group-type>    Script group type [possible values: lock, type]
-    -h, --script-hash <script-hash>                Script hash
+        --bin <bin>                                File used to replace the binary denoted in the script
+        --cell-index <cell-index>                  Index of cell to run
+        --cell-type <cell-type>                    Type of cell to run [possible values: input, output]
+        --dump-file <dump-file>                    Dump file name
+        --gdb-listen <gdb-listen>                  Address to listen for GDB remote debugging server
+        --max-cycles <max-cycles>                  Max cycles [default: 70000000]
+        --mode <mode>
+            Execution mode of debugger [default: full]  [possible values: full, fast, gdb]
+
+        --pprof <pprof>                            Performance profiling, specify output file for further use
+        --script-group-type <script-group-type>    Script group type [possible values: lock, type]
+        --script-hash <script-hash>                Script hash
         --script-version <script-version>          Script version [default: 1]
-        --simple-binary <simple-binary>            Run a simple program that without any system calls
         --skip-end <skip-end>                      End address to skip printing debug info
         --skip-start <skip-start>                  Start address to skip printing debug info
-    -t, --tx-file <tx-file>                        Filename containing JSON formatted transaction dump
+        --tx-file <tx-file>                        Filename containing JSON formatted transaction dump
+
+ARGS:
+    <args>...
 ```
 
 [ckb-transaction-dumper](https://github.com/xxuejie/ckb-transaction-dumper) can be used to dump the full mocked transaction used in the debugger from CKB.
