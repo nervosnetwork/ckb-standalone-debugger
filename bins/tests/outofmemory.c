@@ -1,3 +1,7 @@
+#include "stdio.h"
+#include "stdlib.h"
+#include "ckb_syscalls.h"
+
 const int n = 2;
 
 int a() {

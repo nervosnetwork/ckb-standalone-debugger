@@ -133,6 +133,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .arg(
             Arg::with_name("tx-file")
                 .long("tx-file")
+                .required_unless("bin")
                 .help("Filename containing JSON formatted transaction dump")
                 .takes_value(true),
         )
