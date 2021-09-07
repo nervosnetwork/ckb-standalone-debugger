@@ -48,6 +48,6 @@ run:
 	RUST_LOG=trace $(CKB-DEBUGGER) --bin=build/fib --pprof=build/flamegraph.txt \
 		--tx-file=../../tests/programs/sample_data1.json --script-group-type=type \
 		--script-hash=0xca505bee92c34ac4522d15da2c91f0e4060e4540f90a28d7202df8fe8ce930ba
-	cat build/output.txt | inferno-flamegraph > build/fib.svg
+	cat build/flamegraph.txt | inferno-flamegraph > build/fib.svg
 # mode=full tx-file=none
 	$(CKB-DEBUGGER) --bin build/fib arg1 arg2 arg3
