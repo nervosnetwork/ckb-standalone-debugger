@@ -146,7 +146,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_dump_file = matches.value_of("dump-file");
     let matches_gdb_listen = matches.value_of("gdb-listen");
     let matches_max_cycles = matches.value_of("max-cycles").unwrap();
-    let mut matches_mode = matches.value_of("mode").unwrap();
+    let matches_mode = matches.value_of("mode").unwrap();
     let matches_script_hash = matches.value_of("script-hash");
     let matches_script_group_type = matches.value_of("script-group-type");
     let matches_script_version = matches.value_of("script-version").unwrap();
@@ -155,16 +155,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_step = matches.occurrences_of("step");
     let matches_tx_file = matches.value_of("tx-file");
     let matches_args = matches.values_of("args").unwrap_or_default();
-    if matches_mode == "full" && matches_tx_file.is_none() {
-        matches_mode = "single"
-    }
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
     let mut verifier_args_byte: Vec<Bytes> = vec!["main".into()];
     verifier_args_byte.append(&mut verifier_args.into_iter().map(|s| s.into()).collect());
     let verifier_max_cycles: u64 = matches_max_cycles.parse()?;
     let verifier_mock_tx: MockTransaction = {
-        let mock_tx = if matches_mode == "single" {
+        let mock_tx = if matches_tx_file.is_none() {
             String::from_utf8_lossy(include_bytes!("./dummy_tx.json")).to_string()
         } else {
             read_to_string(matches_tx_file.unwrap())?
@@ -173,14 +170,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         repr_mock_tx.into()
     };
     let verifier_script_group_type = {
-        let script_group_type = if matches_mode == "single" {
+        let script_group_type = if matches_tx_file.is_none() {
             "type"
         } else {
             matches_script_group_type.unwrap()
         };
         from_plain_str(script_group_type)?
     };
-    let verifier_script_hash = if matches_mode == "single" {
+    let verifier_script_hash = if matches_tx_file.is_none() {
         let mut b = [0u8; 32];
         hex_decode_fallback(
             b"8f59e340cfbea088720265cef0fd9afa4e420bf27c7b3dc8aebf6c6eda453e57",
@@ -337,7 +334,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         };
 
-    if matches_mode == "full" || matches_mode == "single" {
+    if matches_mode == "full" {
         let mut machine = PProfMachine::new(machine_init(), Profile::new(&verifier_program)?);
         let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
         let transferred_cycles = transferred_byte_cycles(bytes);
@@ -385,6 +382,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             transferred_cycles,
             machine.machine.cycles() - transferred_cycles
         );
+        return Ok(());
     }
 
     if matches_mode == "gdb" {
