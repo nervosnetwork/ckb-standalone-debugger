@@ -196,7 +196,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-debugger-binaries"
-version = "0.20.0-rc3"
+version = "0.20.0-rc4"
 dependencies = [
  "ckb-chain-spec",
  "ckb-script",
@@ -384,7 +384,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-standalone-debugger"
-version = "0.20.0-rc3"
+version = "0.20.0-rc4"
 dependencies = [
  "ckb-chain-spec",
  "ckb-error",

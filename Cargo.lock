@@ -309,7 +309,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-standalone-debugger"
-version = "0.20.0-rc3"
+version = "0.20.0-rc4"
 dependencies = [
  "byteorder",
  "ckb-chain-spec",
