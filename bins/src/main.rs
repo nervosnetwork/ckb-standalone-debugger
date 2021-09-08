@@ -233,7 +233,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let verifier_consensus = {
         let hardfork_switch = HardForkSwitch::new_without_any_enabled()
             .as_builder()
-            .rfc_0232(200)
+            .rfc_0032(200)
             .build()?;
         ConsensusBuilder::default()
             .hardfork_switch(hardfork_switch)
@@ -301,7 +301,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let machine_step =
         |machine: &mut PProfMachine<Box<AsmCoreMachine>>| -> Result<i8, ckb_vm::Error> {
             machine.machine.set_running(true);
-            let mut decoder = build_decoder::<u64>(verifier_script_version.vm_isa());
+            let mut decoder = build_decoder::<u64>(
+                verifier_script_version.vm_isa(),
+                verifier_script_version.vm_version(),
+            );
             let mut step_result = Ok(());
             let skip_range = if let (Some(s), Some(e)) = (matches_skip_start, matches_skip_end) {
                 let s =
