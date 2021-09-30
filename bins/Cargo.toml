@@ -12,6 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.0"
+ckb-mock-tx-types = "0.1.0"
 ckb-chain-spec = "0.100.0"
 ckb-script = "0.100.0"
 ckb-standalone-debugger = { path = ".." }

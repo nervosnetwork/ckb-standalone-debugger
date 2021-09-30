@@ -1,7 +1,5 @@
-pub mod transaction;
-
-use crate::transaction::{MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
 use ckb_chain_spec::consensus::ConsensusBuilder;
+use ckb_mock_tx_types::{MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::{
     bytes::Bytes,

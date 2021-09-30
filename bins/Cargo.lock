@@ -193,6 +193,7 @@ name = "ckb-debugger-binaries"
 version = "0.20.0-rc5"
 dependencies = [
  "ckb-chain-spec",
+ "ckb-mock-tx-types",
  "ckb-script",
  "ckb-standalone-debugger",
  "ckb-types",
@@ -284,6 +285,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48a25f45be3d1ab1018df5d2c80227110eea80fc95cd1e8a5803d9bfb5a2a1e9"
 dependencies = [
  "log 0.4.14",
+]
+
+[[package]]
+name = "ckb-mock-tx-types"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b100570a5351ca719bb2dd3eebb455f9b378d1bf4942b633a8a632b77e75bc6"
+dependencies = [
+ "ckb-jsonrpc-types",
+ "ckb-traits",
+ "ckb-types",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]
@@ -381,9 +395,8 @@ version = "0.20.0-rc5"
 dependencies = [
  "ckb-chain-spec",
  "ckb-error",
- "ckb-jsonrpc-types",
+ "ckb-mock-tx-types",
  "ckb-script",
- "ckb-traits",
  "ckb-types",
  "faster-hex 0.4.1",
  "js-sys",
