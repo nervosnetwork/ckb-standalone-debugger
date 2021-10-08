@@ -18,7 +18,7 @@ ckb-script = "0.100.0"
 ckb-standalone-debugger = { path = ".." }
 ckb-types = "0.100.0"
 ckb-vm = { version = "0.20.0-rc5", features = ["detect-asm"] }
-ckb-vm-debug-utils = { git = "https://github.com/nervosnetwork/ckb-vm-debug-utils.git", rev = "a4c8c19" }
+ckb-vm-debug-utils = { git = "https://github.com/nervosnetwork/ckb-vm-debug-utils.git", rev = "659e65f" }
 env_logger = "0.4.3"
 faster-hex = "0.4.0"
 gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol", rev = "565ab0c" }

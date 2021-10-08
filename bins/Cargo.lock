@@ -474,7 +474,7 @@ dependencies = [
 [[package]]
 name = "ckb-vm-debug-utils"
 version = "0.1.0"
-source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?rev=a4c8c19#a4c8c19e7ffc796503d6a0cb59f003ee97954d56"
+source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?rev=659e65f#659e65fd4a207fb38612fc5cefc75c634b968c5f"
 dependencies = [
  "byteorder",
  "bytes",
