@@ -11,11 +11,10 @@ exclude = ["bins", "js"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+ckb-mock-tx-types = "0.1.0"
 ckb-chain-spec = "0.100.0"
 ckb-error = "0.100.0"
-ckb-traits = "0.100.0"
 ckb-types = "0.100.0"
-ckb-jsonrpc-types = "0.100.0"
 ckb-script = { version="0.100.0", default-features = false, features = ["detect-asm"] }
 faster-hex = "0.4.0"
 serde = "1.0"

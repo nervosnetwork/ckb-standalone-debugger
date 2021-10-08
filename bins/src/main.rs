@@ -2,14 +2,12 @@
 extern crate log;
 
 use ckb_chain_spec::consensus::ConsensusBuilder;
+use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{
     cost_model::transferred_byte_cycles, ScriptGroupType, ScriptVersion,
     TransactionScriptsVerifier, TxVerifyEnv,
 };
-use ckb_standalone_debugger::{
-    transaction::{MockTransaction, ReprMockTransaction, Resource},
-    DummyResourceLoader,
-};
+use ckb_standalone_debugger::DummyResourceLoader;
 use ckb_types::{
     core::{
         cell::resolve_transaction, hardfork::HardForkSwitch, EpochNumberWithFraction, HeaderView,

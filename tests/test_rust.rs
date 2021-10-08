@@ -1,9 +1,7 @@
 use byteorder::{ByteOrder, LittleEndian};
+use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction};
 use ckb_script::ScriptGroupType;
-use ckb_standalone_debugger::{
-    run,
-    transaction::{MockCellDep, MockInfo, MockInput, MockTransaction},
-};
+use ckb_standalone_debugger::run;
 use ckb_types::{
     bytes::Bytes,
     core::{Capacity, DepType, ScriptHashType, TransactionBuilder},
