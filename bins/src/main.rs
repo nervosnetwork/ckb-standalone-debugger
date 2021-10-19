@@ -16,9 +16,8 @@ use ckb_types::{
     prelude::Pack,
 };
 use ckb_vm::{
-    decoder::build_decoder,
-    machine::asm::{AsmCoreMachine, AsmMachine},
-    Bytes, CoreMachine, DefaultMachineBuilder, SupportMachine,
+    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder,
+    SparseMemory, SupportMachine, WXorXMemory,
 };
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler, Stdio};
 use ckb_vm_pprof::{PProfMachine, Profile};
@@ -275,7 +274,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let machine_init = || {
-        let machine_core = AsmCoreMachine::new(
+        let machine_core = DefaultCoreMachine::<u64, WXorXMemory<SparseMemory<u64>>>::new(
             verifier_script_version.vm_isa(),
             verifier_script_version.vm_version(),
             verifier_max_cycles,
@@ -296,44 +295,44 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         machine
     };
 
-    let machine_step =
-        |machine: &mut PProfMachine<Box<AsmCoreMachine>>| -> Result<i8, ckb_vm::Error> {
-            machine.machine.set_running(true);
-            let mut decoder = build_decoder::<u64>(
-                verifier_script_version.vm_isa(),
-                verifier_script_version.vm_version(),
-            );
-            let mut step_result = Ok(());
-            let skip_range = if let (Some(s), Some(e)) = (matches_skip_start, matches_skip_end) {
-                let s =
-                    u64::from_str_radix(s.trim_start_matches("0x"), 16).expect("parse skip start");
-                let e =
-                    u64::from_str_radix(e.trim_start_matches("0x"), 16).expect("parse skip end");
-                Some(std::ops::Range { start: s, end: e })
-            } else {
-                None
-            };
-            while machine.machine.running() && step_result.is_ok() {
-                let mut print_info = true;
-                if let Some(skip_range) = &skip_range {
-                    if skip_range.contains(machine.machine.pc()) {
-                        print_info = false;
-                    }
-                }
-                if print_info {
-                    println!("PC: 0x{:x}", machine.machine.pc());
-                    if matches_step > 1 {
-                        println!("Machine: {}", machine.machine);
-                    }
-                }
-                step_result = machine.machine.step(&mut decoder);
-            }
-            if step_result.is_err() {
-                Err(step_result.unwrap_err())
-            } else {
-                Ok(machine.machine.exit_code())
-            }
+    let machine_step = |machine: &mut PProfMachine<
+        DefaultCoreMachine<u64, WXorXMemory<SparseMemory<u64>>>,
+    >|
+     -> Result<i8, ckb_vm::Error> {
+        machine.machine.set_running(true);
+        let mut decoder = build_decoder::<u64>(
+            verifier_script_version.vm_isa(),
+            verifier_script_version.vm_version(),
+        );
+        let mut step_result = Ok(());
+        let skip_range = if let (Some(s), Some(e)) = (matches_skip_start, matches_skip_end) {
+            let s = u64::from_str_radix(s.trim_start_matches("0x"), 16).expect("parse skip start");
+            let e = u64::from_str_radix(e.trim_start_matches("0x"), 16).expect("parse skip end");
+            Some(std::ops::Range { start: s, end: e })
+        } else {
+            None
         };
+        while machine.machine.running() && step_result.is_ok() {
+            let mut print_info = true;
+            if let Some(skip_range) = &skip_range {
+                if skip_range.contains(machine.machine.pc()) {
+                    print_info = false;
+                }
+            }
+            if print_info {
+                println!("PC: 0x{:x}", machine.machine.pc());
+                if matches_step > 1 {
+                    println!("Machine: {}", machine.machine);
+                }
+            }
+            step_result = machine.machine.step(&mut decoder);
+        }
+        if step_result.is_err() {
+            Err(step_result.unwrap_err())
+        } else {
+            Ok(machine.machine.exit_code())
+        }
+    };
 
     if matches_mode == "full" {
         let mut machine = PProfMachine::new(machine_init(), Profile::new(&verifier_program)?);
@@ -372,16 +371,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     if matches_mode == "fast" {
-        let mut machine = AsmMachine::new(machine_init(), None);
+        let mut machine = machine_init();
         let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
         let transferred_cycles = transferred_byte_cycles(bytes);
-        machine.machine.add_cycles(transferred_cycles)?;
+        machine.add_cycles(transferred_cycles)?;
         println!("Run result: {:?}", machine.run());
-        println!("Total cycles consumed: {}", machine.machine.cycles());
+        println!("Total cycles consumed: {}", machine.cycles());
         println!(
             "Transfer cycles: {}, running cycles: {}",
             transferred_cycles,
-            machine.machine.cycles() - transferred_cycles
+            machine.cycles() - transferred_cycles
         );
         return Ok(());
     }
@@ -391,11 +390,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let listener = TcpListener::bind(listen_address)?;
         for res in listener.incoming() {
             if let Ok(stream) = res {
-                let mut machine = AsmMachine::new(machine_init(), None);
+                let mut machine = machine_init();
                 let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
                 let transferred_cycles = transferred_byte_cycles(bytes);
-                machine.machine.add_cycles(transferred_cycles)?;
-                machine.machine.set_running(true);
+                machine.add_cycles(transferred_cycles)?;
+                machine.set_running(true);
                 let h = GdbHandler::new(machine);
                 process_packets_from(stream.try_clone().unwrap(), stream, h);
             }
