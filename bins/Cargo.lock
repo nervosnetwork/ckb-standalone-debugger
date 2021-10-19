@@ -464,7 +464,7 @@ dependencies = [
 [[package]]
 name = "ckb-vm-debug-utils"
 version = "0.1.0"
-source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?branch=interpreter_only#27c16bf13d940737534a4cd1ebdccf6226ca147e"
+source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?rev=27045a3#27045a36a6e10ae9bd5c63d7bcb664d4f180fc69"
 dependencies = [
  "byteorder",
  "bytes",
@@ -485,7 +485,7 @@ checksum = "158a0d1040eb06fc9803f5fa3fd71eff349624dd14a73266972a599ac008900e"
 [[package]]
 name = "ckb-vm-pprof"
 version = "0.2.1"
-source = "git+https://github.com/nervosnetwork/ckb-vm-pprof.git?branch=interpreter_only#ed4a1fb5db81893ae92c4175ade8179cd0322f54"
+source = "git+https://github.com/nervosnetwork/ckb-vm-pprof.git?rev=5d99b2f#5d99b2f2ebdc3aee936f09821342b6f0da376dab"
 dependencies = [
  "addr2line",
  "ckb-vm",
