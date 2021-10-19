@@ -15,7 +15,7 @@ ckb-mock-tx-types = "0.1.0"
 ckb-chain-spec = "0.100.0"
 ckb-error = "0.100.0"
 ckb-types = "0.100.0"
-ckb-script = { version="0.100.0", default-features = false, features = ["detect-asm"] }
+ckb-script = { version="0.100.0", default-features = false }
 faster-hex = "0.4.0"
 serde = "1.0"
 serde_derive = "1.0"

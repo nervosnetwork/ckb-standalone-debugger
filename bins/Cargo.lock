@@ -279,15 +279,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ckb-logger"
-version = "0.100.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48a25f45be3d1ab1018df5d2c80227110eea80fc95cd1e8a5803d9bfb5a2a1e9"
-dependencies = [
- "log 0.4.14",
-]
-
-[[package]]
 name = "ckb-mock-tx-types"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -379,7 +370,6 @@ dependencies = [
  "ckb-chain-spec",
  "ckb-error",
  "ckb-hash",
- "ckb-logger",
  "ckb-traits",
  "ckb-types",
  "ckb-vm",
@@ -453,9 +443,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm"
-version = "0.20.0-rc5"
+version = "0.20.0-rc6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60dcf786d3e6424be300a84b65a35bafc8344de5350fa96500ed9f6cc370865f"
+checksum = "bc9d87a2e09eca559249afd46c4dfd0ad5c5aba6362d4c4fe7a1cf2c62b6a85e"
 dependencies = [
  "byteorder",
  "bytes",
@@ -474,7 +464,7 @@ dependencies = [
 [[package]]
 name = "ckb-vm-debug-utils"
 version = "0.1.0"
-source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?rev=a4c8c19#a4c8c19e7ffc796503d6a0cb59f003ee97954d56"
+source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?branch=interpreter_only#27c16bf13d940737534a4cd1ebdccf6226ca147e"
 dependencies = [
  "byteorder",
  "bytes",
@@ -488,14 +478,14 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-definitions"
-version = "0.20.0-rc5"
+version = "0.20.0-rc6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "deb44cd2753aaeb2dc8a3df7b293ddfc3cbaaf8232d819650c0fc365cacda34f"
+checksum = "158a0d1040eb06fc9803f5fa3fd71eff349624dd14a73266972a599ac008900e"
 
 [[package]]
 name = "ckb-vm-pprof"
 version = "0.2.1"
-source = "git+https://github.com/nervosnetwork/ckb-vm-pprof.git?rev=7a2811f#7a2811ff9dd99242047f37c9965c8c58b890c84d"
+source = "git+https://github.com/nervosnetwork/ckb-vm-pprof.git?branch=interpreter_only#ed4a1fb5db81893ae92c4175ade8179cd0322f54"
 dependencies = [
  "addr2line",
  "ckb-vm",
