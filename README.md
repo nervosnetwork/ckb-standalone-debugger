@@ -8,7 +8,7 @@ For Rust library usage, refer to the included tests, they are quite self-explana
 See the command line help part for usage on the binary debugger:
 
 ```
-ckb-debugger 0.20.0-rc4
+ckb-debugger 0.20.1
 
 USAGE:
     ckb-debugger [FLAGS] [OPTIONS] --mode <mode> [args]...
