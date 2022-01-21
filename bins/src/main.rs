@@ -29,6 +29,8 @@ use serde_plain::from_str as from_plain_str;
 use std::collections::HashSet;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
+mod misc;
+use misc::HumanReadableCycles;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
@@ -347,11 +349,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         match result {
             Ok(data) => {
                 println!("Run result: {:?}", data);
-                println!("Total cycles consumed: {}", machine.machine.cycles());
+                println!("Total cycles consumed: {}", HumanReadableCycles(machine.machine.cycles()));
                 println!(
                     "Transfer cycles: {}, running cycles: {}",
-                    transferred_cycles,
-                    machine.machine.cycles() - transferred_cycles
+                    HumanReadableCycles(transferred_cycles),
+                    HumanReadableCycles(machine.machine.cycles() - transferred_cycles)
                 );
                 if let Some(fp) = matches_pprof {
                     let mut output = std::fs::File::create(&fp)?;
@@ -376,11 +378,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let transferred_cycles = transferred_byte_cycles(bytes);
         machine.add_cycles(transferred_cycles)?;
         println!("Run result: {:?}", machine.run());
-        println!("Total cycles consumed: {}", machine.cycles());
+        println!("Total cycles consumed: {}", HumanReadableCycles(machine.cycles()));
         println!(
             "Transfer cycles: {}, running cycles: {}",
-            transferred_cycles,
-            machine.cycles() - transferred_cycles
+            HumanReadableCycles(transferred_cycles),
+            HumanReadableCycles(machine.cycles() - transferred_cycles)
         );
         return Ok(());
     }
