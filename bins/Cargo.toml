@@ -22,7 +22,7 @@ ckb-script = { version = "0.101.4", default-features = false }
 ckb-standalone-debugger = { path = ".." }
 ckb-types = "0.101.4"
 ckb-vm = { version = "0.21.1" }
-ckb-vm-debug-utils = { git = "https://github.com/mohanson/ckb-vm-debug-utils.git", branch = "add_skip_stdio_feature" }
+ckb-vm-debug-utils = { git = "https://github.com/nervosnetwork/ckb-vm-debug-utils.git", rev = "dc9847d" }
 env_logger = "0.4.3"
 faster-hex = "0.4.0"
 gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol", rev = "565ab0c" }

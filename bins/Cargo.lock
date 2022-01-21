@@ -284,7 +284,8 @@ dependencies = [
 [[package]]
 name = "ckb-mock-tx-types"
 version = "0.2.0"
-source = "git+https://github.com/mohanson/ckb-mock-tx-types?branch=update_deps#258edef4198589f6a7f5267b995b0079cf6fd97c"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d849f7d0e89a0664b3dcd2d18c1489912acbcc6608a8ac1eae7e58adceb63d08"
 dependencies = [
  "ckb-jsonrpc-types",
  "ckb-traits",
@@ -466,7 +467,7 @@ dependencies = [
 [[package]]
 name = "ckb-vm-debug-utils"
 version = "0.1.0"
-source = "git+https://github.com/mohanson/ckb-vm-debug-utils.git?branch=add_skip_stdio_feature#829e95c84b66504fec14dda7d852c05f49aec258"
+source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?rev=dc9847d#dc9847dbb8914696ea81d56e965bf6cfcf8528ff"
 dependencies = [
  "byteorder",
  "bytes",

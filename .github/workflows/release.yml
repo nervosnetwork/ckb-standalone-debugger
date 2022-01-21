@@ -52,7 +52,7 @@ jobs:
         REPOSITORY_NAME: ${{ github.repository }}
     - uses: actions/checkout@v2
     - name: Build
-      run: cd bins && cargo build --release
+      run: cd bins && cargo build --release --features=stdio
     - name: Archive files
       run: cp bins/target/release/ckb-debugger ./ && tar -cvzf ckb-debugger-linux-x64.tar.gz ckb-debugger LICENSE
     - name: Generate checksum
@@ -97,7 +97,7 @@ jobs:
         REPOSITORY_NAME: ${{ github.repository }}
     - uses: actions/checkout@v2
     - name: Build
-      run: cd bins && cargo build --release
+      run: cd bins && cargo build --release --features=stdio
     - name: Archive files
       run: cp bins/target/release/ckb-debugger ./ && tar -cvzf ckb-debugger-macos-x64.tar.gz ckb-debugger LICENSE
     - name: Generate checksum
@@ -121,4 +121,48 @@ jobs:
         upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
         asset_path: ckb-debugger-macos-x64-sha256.txt
         asset_name: ckb-debugger-macos-x64-sha256.txt
+        asset_content_type: text/plain
+
+  publish-windoes:
+    name: Publish binary on Windows
+    needs: [release]
+    runs-on: windows-latest
+    steps:
+    - name: Load upload URL file
+      uses: actions/download-artifact@v1
+      with:
+        name: upload_url
+    - name: Get upload URL
+      id: get_upload_url
+      run: |
+        echo "::set-output name=upload_url::$(type upload_url/upload_url.txt)"
+      env:
+        TAG_REF_NAME: ${{ github.ref }}
+        REPOSITORY_NAME: ${{ github.repository }}
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cd bins && cargo build --release
+    - name: Archive files
+      run: copy bins/target/release/ckb-debugger.exe ./ && tar -cvzf ckb-debugger-windows-x64.tar.gz ckb-debugger.exe LICENSE
+    - name: Generate checksum
+      run: Get-FileHash ckb-debugger-windows-x64.tar.gz > ckb-debugger-windows-x64-sha256.txt
+    - name: Upload binary
+      id: upload-release-binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+        asset_path: ckb-debugger-windows-x64.tar.gz
+        asset_name: ckb-debugger-windows-x64.tar.gz
+        asset_content_type: application/tar+gzip
+    - name: Upload checksum
+      id: upload-release-checksum
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_upload_url.outputs.upload_url }}
+        asset_path: ckb-debugger-windows-x64-sha256.txt
+        asset_name: ckb-debugger-windows-x64-sha256.txt
         asset_content_type: text/plain
