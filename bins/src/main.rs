@@ -19,7 +19,9 @@ use ckb_vm::{
     decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder,
     SparseMemory, SupportMachine, WXorXMemory,
 };
-use ckb_vm_debug_utils::{ElfDumper, GdbHandler, Stdio};
+#[cfg(feature = "stdio")]
+use ckb_vm_debug_utils::Stdio;
+use ckb_vm_debug_utils::{ElfDumper, GdbHandler};
 use ckb_vm_pprof::{PProfMachine, Profile};
 use clap::{crate_version, App, Arg};
 use faster_hex::hex_decode_fallback;
@@ -281,9 +283,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             verifier_script_version.vm_version(),
             verifier_max_cycles,
         );
+        #[cfg(feature = "stdio")]
         let mut machine_builder = DefaultMachineBuilder::new(machine_core)
             .instruction_cycle_func(verifier.cost_model())
             .syscall(Box::new(Stdio::new(false)));
+        #[cfg(not(feature = "stdio"))]
+        let mut machine_builder =
+            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(verifier.cost_model());
         if let Some(data) = matches_dump_file {
             machine_builder =
                 machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
