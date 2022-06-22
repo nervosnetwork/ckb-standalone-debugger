@@ -41,3 +41,10 @@ ARGS:
 ```
 
 [ckb-transaction-dumper](https://github.com/xxuejie/ckb-transaction-dumper) can be used to dump the full mocked transaction used in the debugger from CKB.
+
+### FAQ
+
+#### How to Print Debug Message
+
+1. [compile the contract via `-fno-builtin-printf` and replace with `CKB_C_STDLIB_PRINTF`](https://github.com/nervosnetwork/ckb-vm/discussions/193) 
+2. set `RUST_LOG=debug` to [enable](https://docs.rs/env_logger/latest/env_logger/) output [debug message](https://github.com/nervosnetwork/ckb-standalone-debugger/blob/eaeb6128837cc3103dbaa5eb61a1f49304935e5a/bins/src/main.rs#L266-L268)
