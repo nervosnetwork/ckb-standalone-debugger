@@ -10,7 +10,6 @@ impl fmt::Display for HumanReadableCycles {
         } else if self.0 >= 1024 {
             write!(f, "({:.1}K)", self.0 as f64 / 1024.)?;
         } else {
-
         }
         Ok(())
     }
