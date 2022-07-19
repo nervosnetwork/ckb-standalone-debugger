@@ -1,20 +1,12 @@
 #[macro_use]
 extern crate log;
 
-use ckb_chain_spec::consensus::ConsensusBuilder;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{
-    cost_model::transferred_byte_cycles, ScriptGroupType, ScriptVersion,
-    TransactionScriptsVerifier, TxVerifyEnv,
+    cost_model::transferred_byte_cycles, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier,
 };
 use ckb_standalone_debugger::DummyResourceLoader;
-use ckb_types::{
-    core::{
-        cell::resolve_transaction, hardfork::HardForkSwitch, EpochNumberWithFraction, HeaderView,
-    },
-    packed::Byte32,
-    prelude::Pack,
-};
+use ckb_types::{core::cell::resolve_transaction, packed::Byte32};
 use ckb_vm::{
     decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder,
     SparseMemory, SupportMachine, WXorXMemory,
@@ -231,25 +223,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "1" => ScriptVersion::V1,
         _ => panic!("wrong script version"),
     };
-    let verifier_consensus = {
-        let hardfork_switch = HardForkSwitch::new_without_any_enabled()
-            .as_builder()
-            .rfc_0032(200)
-            .build()?;
-        ConsensusBuilder::default()
-            .hardfork_switch(hardfork_switch)
-            .build()
-    };
-    let verifier_env = {
-        let epoch = match verifier_script_version {
-            ScriptVersion::V0 => EpochNumberWithFraction::new(100, 0, 1),
-            ScriptVersion::V1 => EpochNumberWithFraction::new(300, 0, 1),
-        };
-        let header = HeaderView::new_advanced_builder()
-            .epoch(epoch.pack())
-            .build();
-        TxVerifyEnv::new_commit(&header)
-    };
     let verifier_resource = Resource::from_both(&verifier_mock_tx, DummyResourceLoader {})?;
     let verifier_resolve_transaction = resolve_transaction(
         verifier_mock_tx.core_transaction(),
@@ -257,12 +230,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &verifier_resource,
         &verifier_resource,
     )?;
-    let mut verifier = TransactionScriptsVerifier::new(
-        &verifier_resolve_transaction,
-        &verifier_consensus,
-        &verifier_resource,
-        &verifier_env,
-    );
+    let mut verifier =
+        TransactionScriptsVerifier::new(&verifier_resolve_transaction, &verifier_resource);
     verifier.set_debug_printer(Box::new(|hash: &Byte32, message: &str| {
         debug!("script group: {} DEBUG OUTPUT: {}", hash, message);
     }));
@@ -355,7 +324,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         match result {
             Ok(data) => {
                 println!("Run result: {:?}", data);
-                println!("Total cycles consumed: {}", HumanReadableCycles(machine.machine.cycles()));
+                println!(
+                    "Total cycles consumed: {}",
+                    HumanReadableCycles(machine.machine.cycles())
+                );
                 println!(
                     "Transfer cycles: {}, running cycles: {}",
                     HumanReadableCycles(transferred_cycles),
@@ -384,7 +356,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let transferred_cycles = transferred_byte_cycles(bytes);
         machine.add_cycles(transferred_cycles)?;
         println!("Run result: {:?}", machine.run());
-        println!("Total cycles consumed: {}", HumanReadableCycles(machine.cycles()));
+        println!(
+            "Total cycles consumed: {}",
+            HumanReadableCycles(machine.cycles())
+        );
         println!(
             "Transfer cycles: {}, running cycles: {}",
             HumanReadableCycles(transferred_cycles),

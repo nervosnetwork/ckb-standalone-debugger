@@ -1,12 +1,8 @@
-use ckb_chain_spec::consensus::ConsensusBuilder;
 use ckb_mock_tx_types::{MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
-use ckb_script::{ScriptGroupType, TransactionScriptsVerifier, TxVerifyEnv};
+use ckb_script::{ScriptGroupType, TransactionScriptsVerifier};
 use ckb_types::{
     bytes::Bytes,
-    core::{
-        cell::resolve_transaction, hardfork::HardForkSwitch, Cycle, EpochNumberWithFraction,
-        HeaderView,
-    },
+    core::{cell::resolve_transaction, Cycle, HeaderView},
     packed::{Byte32, CellOutput, OutPoint},
     prelude::*,
     H256,
@@ -40,7 +36,6 @@ pub fn run(
     script_hash: &Byte32,
     max_cycle: Cycle,
     debug_printer: Option<Box<dyn Fn(&Byte32, &str)>>,
-    version: u32,
 ) -> Result<Cycle, String> {
     let resource = Resource::from_both(mock_tx, DummyResourceLoader {})?;
     let tx = mock_tx.core_transaction();
@@ -49,26 +44,7 @@ pub fn run(
         resolve_transaction(tx, &mut seen_inputs, &resource, &resource)
             .map_err(|err| format!("Resolve transaction error: {:?}", err))?
     };
-    let hardfork_switch = HardForkSwitch::new_without_any_enabled()
-        .as_builder()
-        .rfc_0032(200)
-        .build()
-        .unwrap();
-    let consensus = ConsensusBuilder::default()
-        .hardfork_switch(hardfork_switch)
-        .build();
-    let epoch = match version {
-        0 => EpochNumberWithFraction::new(100, 0, 1),
-        1 => EpochNumberWithFraction::new(300, 0, 1),
-        _ => unreachable!(),
-    };
-    let tx_env = {
-        let header = HeaderView::new_advanced_builder()
-            .epoch(epoch.pack())
-            .build();
-        TxVerifyEnv::new_commit(&header)
-    };
-    let mut verifier = TransactionScriptsVerifier::new(&rtx, &consensus, &resource, &tx_env);
+    let mut verifier = TransactionScriptsVerifier::new(&rtx, &resource);
     if let Some(debug_printer) = debug_printer {
         verifier.set_debug_printer(debug_printer);
     }
@@ -104,7 +80,6 @@ fn internal_run_json(
     hex_script_hash: &str,
     max_cycle: &str,
     debug_printer: Option<Box<dyn Fn(&Byte32, &str)>>,
-    version: u32,
 ) -> Result<Cycle, String> {
     let repr_mock_tx: ReprMockTransaction = from_json_str(mock_tx).map_err(|e| e.to_string())?;
     let mock_tx: MockTransaction = repr_mock_tx.into();
@@ -125,7 +100,6 @@ fn internal_run_json(
         &script_hash,
         max_cycle,
         debug_printer,
-        version,
     )
 }
 
@@ -135,17 +109,9 @@ pub fn run_json(
     script_group_type: &str,
     hex_script_hash: &str,
     max_cycle: &str,
-    version: u32,
 ) -> String {
-    let json_result: JsonResult = internal_run_json(
-        mock_tx,
-        script_group_type,
-        hex_script_hash,
-        max_cycle,
-        None,
-        version,
-    )
-    .into();
+    let json_result: JsonResult =
+        internal_run_json(mock_tx, script_group_type, hex_script_hash, max_cycle, None).into();
     to_json_string(&json_result).expect("JSON serialization should not fail!")
 }
 
@@ -160,7 +126,6 @@ pub fn run_json_with_printer(
     // requires static lifetime, and that wasm_bindgen doesn't support
     // functions with lifetime parameters now.
     debug_printer: JsFunction,
-    version: u32,
 ) -> String {
     let rust_printer = move |hash: &Byte32, message: &str| {
         let mut hex_bytes = [0u8; 64];
@@ -181,7 +146,6 @@ pub fn run_json_with_printer(
         hex_script_hash,
         max_cycle,
         Some(Box::new(rust_printer)),
-        version,
     )
     .into();
     to_json_string(&json_result).expect("JSON serialization should not fail!")
