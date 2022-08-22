@@ -24,7 +24,7 @@ use std::collections::HashSet;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 mod misc;
-use misc::{FileStream, HumanReadableCycles};
+use misc::{FileStream, HumanReadableCycles, Random, TimeNow};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
@@ -287,6 +287,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             machine_builder
         };
+        let machine_builder = machine_builder.syscall(Box::new(TimeNow::new()));
+        let machine_builder = machine_builder.syscall(Box::new(Random::new()));
         let machine = machine_builder.build();
         machine
     };

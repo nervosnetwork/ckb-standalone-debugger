@@ -1,5 +1,7 @@
 use lazy_static::lazy_static;
+use rand::prelude::*;
 use std::io::Read;
+use std::time::{SystemTime};
 use std::{cmp::min, fmt, fs, io};
 
 use ckb_vm::{
@@ -8,6 +10,8 @@ use ckb_vm::{
 };
 
 pub const READ_SYSCALL_NUMBER: u64 = 9000;
+pub const NOW_SYSCALL_NUMBER: u64 = 9001;
+pub const RANDOM_SYSCALL_NUMBER: u64 = 9002;
 
 #[derive(Clone)]
 pub struct FileStream {
@@ -97,5 +101,60 @@ impl fmt::Display for HumanReadableCycles {
         } else {
         }
         Ok(())
+    }
+}
+
+pub struct TimeNow {}
+
+impl TimeNow {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl<Mac: SupportMachine> Syscalls<Mac> for TimeNow {
+    fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
+        Ok(())
+    }
+
+    fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
+        let id = machine.registers()[A7].to_u64();
+        if id != NOW_SYSCALL_NUMBER {
+            return Ok(false);
+        }
+        let duration = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap();
+        let now = duration.as_nanos();
+        let buf = now.to_le_bytes();
+        let arg_buf = machine.registers()[A0].to_u64();
+        machine.memory_mut().store_bytes(arg_buf, &buf[..])?;
+        return Ok(true);
+    }
+}
+
+pub struct Random {}
+
+impl Random {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl<Mac: SupportMachine> Syscalls<Mac> for Random {
+    fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
+        Ok(())
+    }
+
+    fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
+        let id = machine.registers()[A7].to_u64();
+        if id != RANDOM_SYSCALL_NUMBER {
+            return Ok(false);
+        }
+        let r: u64 = random();
+        let buf = r.to_le_bytes();
+        let arg_buf = machine.registers()[A0].to_u64();
+        machine.memory_mut().store_bytes(arg_buf, &buf[..])?;
+        return Ok(true);
     }
 }
