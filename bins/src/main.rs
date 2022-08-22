@@ -24,7 +24,7 @@ use std::collections::HashSet;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 mod misc;
-use misc::HumanReadableCycles;
+use misc::{FileStream, HumanReadableCycles, Random, TimeNow};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
@@ -130,6 +130,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Filename containing JSON formatted transaction dump")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("read-file")
+                .long("read-file")
+                .help("Read content from local file or stdin. Then feed the content to syscall in scripts")
+                .takes_value(true),
+        )
         .arg(Arg::with_name("args").multiple(true))
         .get_matches();
 
@@ -149,9 +155,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_step = matches.occurrences_of("step");
     let matches_tx_file = matches.value_of("tx-file");
     let matches_args = matches.values_of("args").unwrap_or_default();
+    let read_file_name = matches.value_of("read-file");
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
     let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
+
+    let fs_syscall = if let Some(file_name) = read_file_name {
+        Some(FileStream::new(file_name))
+    } else {
+        None
+    };
+
     let verifier_max_cycles: u64 = matches_max_cycles.parse()?;
     let verifier_mock_tx: MockTransaction = {
         let mock_tx = if matches_tx_file.is_none() {
@@ -268,6 +282,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         machine_builder = machine_syscalls
             .into_iter()
             .fold(machine_builder, |builder, syscall| builder.syscall(syscall));
+        let machine_builder = if let Some(fs) = fs_syscall.clone() {
+            machine_builder.syscall(Box::new(fs))
+        } else {
+            machine_builder
+        };
+        let machine_builder = machine_builder.syscall(Box::new(TimeNow::new()));
+        let machine_builder = machine_builder.syscall(Box::new(Random::new()));
         let machine = machine_builder.build();
         machine
     };

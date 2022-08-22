@@ -10,7 +10,7 @@ LDFLAGS := -Wl,-static
 BUILDER_DOCKER := nervos/ckb-riscv-gnu-toolchain@sha256:aae8a3f79705f67d505d1f1d5ddc694a4fd537ed1c7e9622420a470d59ba2ec3
 
 CKB-DEBUGGER := ../target/debug/ckb-debugger
-all: build/fib build/outofmemory
+all: build/fib build/outofmemory build/read_file
 
 all-via-docker:
 	docker run --rm -v `pwd`:/code ${BUILDER_DOCKER} bash -c "cd /code && make"
@@ -23,10 +23,18 @@ build/outofmemory: outofmemory.c
 	mkdir -p build
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+build/read_file: read_file.c
+	mkdir -p build
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 clean:
 	rm build/fib
 	rm build/output.txt
 	rm build/fib.svg
+	rm build/read_file
+
+run-read-file: build/read_file
+	RUST_LOG=debug $(CKB-DEBUGGER) --bin build/read_file --read-file read_file.c
 
 run:
 # mode=full
