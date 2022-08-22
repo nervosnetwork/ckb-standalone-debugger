@@ -207,6 +207,7 @@ dependencies = [
  "env_logger",
  "faster-hex 0.4.1",
  "gdb-remote-protocol",
+ "lazy_static",
  "log 0.4.14",
  "serde",
  "serde_derive",
