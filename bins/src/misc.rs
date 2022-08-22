@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use rand::prelude::*;
 use std::io::Read;
-use std::time::{SystemTime};
+use std::time::SystemTime;
 use std::{cmp::min, fmt, fs, io};
 
 use ckb_vm::{
@@ -126,9 +126,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for TimeNow {
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap();
         let now = duration.as_nanos();
-        let buf = now.to_le_bytes();
-        let arg_buf = machine.registers()[A0].to_u64();
-        machine.memory_mut().store_bytes(arg_buf, &buf[..])?;
+        machine.set_register(A0, Mac::REG::from_u64(now as u64));
         return Ok(true);
     }
 }
@@ -152,9 +150,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for Random {
             return Ok(false);
         }
         let r: u64 = random();
-        let buf = r.to_le_bytes();
-        let arg_buf = machine.registers()[A0].to_u64();
-        machine.memory_mut().store_bytes(arg_buf, &buf[..])?;
+        machine.set_register(A0, Mac::REG::from_u64(r));
         return Ok(true);
     }
 }

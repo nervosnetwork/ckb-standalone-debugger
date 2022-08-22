@@ -6,12 +6,8 @@
 #include <stdint.h>
 #include "ckb_syscalls.h"
 
-typedef unsigned __int128 uint128_t;
-
-uint128_t now() {
-    uint128_t now = 0;
-    syscall(9001, &now, 0, 0, 0, 0, 0);
-    return now;
+uint64_t now() {
+    return syscall(9001, 0, 0, 0, 0, 0, 0);
 }
 
 int read_file(char* buf, int size) {
@@ -20,15 +16,12 @@ int read_file(char* buf, int size) {
 }
 
 uint64_t random() {
-    uint64_t r = 0;
-    syscall(9002, &r, 0, 0, 0, 0, 0);
-    return r;
+    return syscall(9002, 0, 0, 0, 0, 0, 0);
 }
 
 int main() {
     char buf[1024*16] = {0};
-    uint128_t start = now();
-
+    uint64_t start = now();
     int read_size = read_file(buf, sizeof(buf));
     printf("read size = %d", read_size);
     printf("------ content --------");
