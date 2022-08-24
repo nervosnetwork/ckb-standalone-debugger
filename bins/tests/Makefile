@@ -10,31 +10,37 @@ LDFLAGS := -Wl,-static
 BUILDER_DOCKER := nervos/ckb-riscv-gnu-toolchain@sha256:aae8a3f79705f67d505d1f1d5ddc694a4fd537ed1c7e9622420a470d59ba2ec3
 
 CKB-DEBUGGER := ../target/debug/ckb-debugger
-all: build/fib build/outofmemory build/read_file
+all: build/fib build/outofmemory build/read_file build/file_operations
 
 all-via-docker:
 	docker run --rm -v `pwd`:/code ${BUILDER_DOCKER} bash -c "cd /code && make"
 
 build/fib: fib.c
-	mkdir -p build
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 build/outofmemory: outofmemory.c
-	mkdir -p build
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 build/read_file: read_file.c
-	mkdir -p build
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+build/file_operations: file_operations.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+fmt:
+	clang-format -style="{BasedOnStyle: google, IndentWidth: 4, SortIncludes: false}" -i *.c
+
 clean:
-	rm build/fib
-	rm build/output.txt
-	rm build/fib.svg
-	rm build/read_file
+	rm -f build/fib
+	rm -f build/output.txt
+	rm -f build/fib.svg
+	rm -f build/read_file
 
 run-read-file: build/read_file
 	RUST_LOG=debug $(CKB-DEBUGGER) --bin build/read_file --read-file read_file.c
+
+run-file-operations: build/file_operations
+	RUST_LOG=debug $(CKB-DEBUGGER) --bin build/file_operations
 
 run:
 # mode=full

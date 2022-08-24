@@ -24,7 +24,7 @@ use std::collections::HashSet;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 mod misc;
-use misc::{FileStream, HumanReadableCycles, Random, TimeNow};
+use misc::{FileOperation, FileStream, HumanReadableCycles, Random, TimeNow};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
@@ -136,6 +136,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Read content from local file or stdin. Then feed the content to syscall in scripts")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("long-log")
+                .long("long-log")
+                .required(false)
+                .takes_value(false)
+                .help("long log message with script group")
+        )
         .arg(Arg::with_name("args").multiple(true))
         .get_matches();
 
@@ -156,6 +163,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_tx_file = matches.value_of("tx-file");
     let matches_args = matches.values_of("args").unwrap_or_default();
     let read_file_name = matches.value_of("read-file");
+    let long_log = matches.is_present("long-log");
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
     let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
@@ -246,8 +254,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let mut verifier =
         TransactionScriptsVerifier::new(&verifier_resolve_transaction, &verifier_resource);
-    verifier.set_debug_printer(Box::new(|hash: &Byte32, message: &str| {
-        debug!("script group: {} DEBUG OUTPUT: {}", hash, message);
+    verifier.set_debug_printer(Box::new(move |hash: &Byte32, message: &str| {
+        if long_log {
+            debug!("script group: {} DEBUG OUTPUT: {}", hash, message);
+        } else {
+            debug!("SCRIPT>{}", message);
+        }
     }));
     let verifier_script_group = verifier
         .find_script_group(verifier_script_group_type, &verifier_script_hash)
@@ -289,6 +301,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
         let machine_builder = machine_builder.syscall(Box::new(TimeNow::new()));
         let machine_builder = machine_builder.syscall(Box::new(Random::new()));
+        let machine_builder = machine_builder.syscall(Box::new(FileOperation::new()));
         let machine = machine_builder.build();
         machine
     };

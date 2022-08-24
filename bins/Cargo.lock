@@ -208,6 +208,7 @@ dependencies = [
  "faster-hex 0.4.1",
  "gdb-remote-protocol",
  "lazy_static",
+ "libc",
  "log 0.4.14",
  "rand 0.8.5",
  "serde",
@@ -466,7 +467,7 @@ dependencies = [
 [[package]]
 name = "ckb-vm-debug-utils"
 version = "0.1.0"
-source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?rev=0b93dc4#0b93dc4c7b66acab71d5f41a7e796b9442773307"
+source = "git+https://github.com/nervosnetwork/ckb-vm-debug-utils.git?rev=9219fa5#9219fa5094437c1be47b1057fb3b82d3d7066a00"
 dependencies = [
  "byteorder",
  "bytes",
