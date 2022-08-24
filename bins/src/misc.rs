@@ -50,20 +50,15 @@ impl Default for FileStream {
 
 impl FileStream {
     pub fn new(file_name: &str) -> Self {
-        let s = if file_name == "-" {
-            let mut s = String::new();
+        let content = if file_name == "-" {
+            let mut v = Vec::<u8>::new();
             let mut stdin = io::stdin();
-            stdin
-                .read_to_string(&mut s)
-                .expect("should read from stdin");
-            s
+            stdin.read_to_end(&mut v).expect("should read from stdin");
+            v
         } else {
-            fs::read_to_string(file_name).expect("should read the file")
+            fs::read(file_name).expect("should read the file")
         };
-        FileStream {
-            content: s.into_bytes(),
-            offset: 0,
-        }
+        FileStream { content, offset: 0 }
     }
     // mimic:  ssize_t read(int fd, void *buf, size_t count);
     fn read(&mut self, buf: &mut [u8]) -> isize {
