@@ -1,6 +1,6 @@
 [package]
 name = "ckb-debugger-binaries"
-version = "0.21.3"
+version = "0.21.6"
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2018"
@@ -17,11 +17,11 @@ stdio = ["ckb-vm-debug-utils/stdio"]
 [dependencies]
 clap = "2.33.0"
 ckb-mock-tx-types = "0.4.0"
-ckb-chain-spec = "0.104.0"
-ckb-script = { version = "0.104.0", default-features = false }
+ckb-chain-spec = "0.104.1"
+ckb-script = { version = "0.104.1", default-features = false }
 ckb-standalone-debugger = { path = ".." }
-ckb-types = "0.104.0"
-ckb-vm = { version = "0.21.3" }
+ckb-types = "0.104.1"
+ckb-vm = { version = "0.21.4" }
 ckb-vm-debug-utils = { git = "https://github.com/nervosnetwork/ckb-vm-debug-utils.git", rev = "9219fa5" }
 env_logger = "0.4.3"
 faster-hex = "0.4.0"
@@ -35,3 +35,5 @@ ckb-vm-pprof = { git = "https://github.com/nervosnetwork/ckb-vm-pprof.git", rev 
 lazy_static = "1.4.0"
 rand = "0.8.5"
 libc = "0.2.132"
+# interim patch, must remove at v0.21.6
+ckb-vm-definitions = "=0.21.4"
