@@ -3,7 +3,8 @@ extern crate log;
 
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{
-    cost_model::transferred_byte_cycles, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier,
+    cost_model::{instruction_cycles, transferred_byte_cycles},
+    ScriptGroupType, ScriptVersion, TransactionScriptsVerifier,
 };
 use ckb_standalone_debugger::DummyResourceLoader;
 use ckb_types::{core::cell::resolve_transaction, packed::Byte32};
@@ -280,11 +281,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         #[cfg(feature = "stdio")]
         let mut machine_builder = DefaultMachineBuilder::new(machine_core)
-            .instruction_cycle_func(verifier.cost_model())
+            .instruction_cycle_func(&instruction_cycles)
             .syscall(Box::new(Stdio::new(false)));
         #[cfg(not(feature = "stdio"))]
         let mut machine_builder =
-            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(verifier.cost_model());
+            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(&instruction_cycles);
         if let Some(data) = matches_dump_file {
             machine_builder =
                 machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
