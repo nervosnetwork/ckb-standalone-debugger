@@ -203,7 +203,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-debugger-binaries"
-version = "0.21.6"
+version = "0.105.0"
 dependencies = [
  "ckb-chain-spec",
  "ckb-mock-tx-types",
