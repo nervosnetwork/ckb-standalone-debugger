@@ -277,7 +277,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
             }
             FTELL_SYSCALL_NUMBER => {
                 let pos = unsafe { ftell(arg0 as *mut FILE) };
-                machine.set_register(A0, Mac::REG::from_i64(pos));
+                machine.set_register(A0, Mac::REG::from_i64(pos.into()));
             }
             FSEEK_SYSCALL_NUMBER => {
                 let ret = unsafe { fseek(arg0 as *mut FILE, arg1 as c_long, arg2 as c_int) };
