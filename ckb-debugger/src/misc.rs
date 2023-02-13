@@ -4,8 +4,7 @@ use std::{cmp::min, fmt, fs, io};
 
 use lazy_static::lazy_static;
 use libc::{
-    c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek,
-    ftell, size_t, FILE,
+    c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell, size_t, FILE,
 };
 use rand::prelude::*;
 
@@ -89,9 +88,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileStream {
         let mut buf = vec![0u8; arg_count as usize];
         let read_size = self.read(&mut buf);
         if read_size > 0 {
-            machine
-                .memory_mut()
-                .store_bytes(arg_buf, &buf[0..read_size as usize])?;
+            machine.memory_mut().store_bytes(arg_buf, &buf[0..read_size as usize])?;
             machine.set_register(A0, Mac::REG::from_u64(read_size as u64));
         } else {
             machine.set_register(A0, Mac::REG::from_i64(-1));
@@ -133,9 +130,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for TimeNow {
         if id != NOW_SYSCALL_NUMBER {
             return Ok(false);
         }
-        let duration = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap();
+        let duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
         let now = duration.as_nanos();
         machine.set_register(A0, Mac::REG::from_u64(now as u64));
         return Ok(true);
@@ -254,9 +249,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
                         stream as *mut FILE,
                     )
                 };
-                machine
-                    .memory_mut()
-                    .store_bytes(ptr, &buf[0..read_count * size as usize])?;
+                machine.memory_mut().store_bytes(ptr, &buf[0..read_count * size as usize])?;
                 machine.set_register(A0, Mac::REG::from_u64(read_count as u64));
             }
             FEOF_SYSCALL_NUMBER => {

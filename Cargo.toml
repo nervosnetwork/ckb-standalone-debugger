@@ -1,28 +1,8 @@
-[package]
-name = "ckb-standalone-debugger"
-description = "Standalone debugger for Nervos CKB"
-version = "0.105.1"
-license = "MIT"
-authors = ["Nervos Core Dev <dev@nervos.org>"]
-edition = "2018"
-exclude = ["bins", "js"]
-
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-ckb-mock-tx-types = "=0.105.1"
-ckb-chain-spec = "=0.105.1"
-ckb-error = "=0.105.1"
-ckb-types = "=0.105.1"
-ckb-script = { version="=0.105.1", default-features = false }
-faster-hex = "0.4.0"
-serde = "1.0"
-serde_derive = "1.0"
-serde_json = "1.0"
-serde_plain = "0.3.0"
-js-sys = "0.3.27"
-wasm-bindgen = "0.2.50"
-
-[dev-dependencies]
-byteorder = "1.3.2"
+[workspace]
+members = [
+    "ckb-debugger",
+    "ckb-debugger-api",
+    "ckb-mock-tx-types",
+    "ckb-vm-debug-utils",
+    "ckb-vm-pprof"
+]

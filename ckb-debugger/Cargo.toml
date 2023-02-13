@@ -1,0 +1,30 @@
+[package]
+name = "ckb-debugger"
+description = "Standalone debugger for Nervos CKB"
+version = "0.107.0"
+license = "MIT"
+authors = ["Nervos Core Dev <dev@nervos.org>"]
+edition = "2021"
+
+[features]
+default = []
+stdio = ["ckb-vm-debug-utils/stdio"]
+
+[dependencies]
+clap = "2.33.0"
+ckb-debugger-api = { path = "../ckb-debugger-api" }
+ckb-mock-tx-types = { path = "../ckb-mock-tx-types" }
+ckb-script = { version="=0.107.0", default-features = false }
+ckb-types = "=0.107.0"
+ckb-vm = { version = "=0.22.1" }
+ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils" }
+ckb-vm-pprof = { path = "../ckb-vm-pprof" }
+env_logger = "0.4.3"
+faster-hex = "0.4.0"
+gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol", rev = "565ab0c" }
+lazy_static = "1.4.0"
+libc = "0.2.132"
+log = "0.4.0"
+rand = "0.8.5"
+serde_json = "1.0"
+serde_plain = "1.0"

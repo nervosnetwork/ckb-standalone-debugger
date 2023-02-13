@@ -1,4 +1,4 @@
-use ckb_standalone_debugger::run_json;
+use ckb_debugger_api::run_json;
 use std::fs::read_to_string;
 
 #[test]
