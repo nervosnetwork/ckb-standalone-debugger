@@ -25,5 +25,3 @@ jobs:
       run: |
           export PATH=/usr/lib/llvm-8/bin:$PATH
           cargo build
-          cd ckb-debugger && cargo build
-          git diff --exit-code Cargo.lock
