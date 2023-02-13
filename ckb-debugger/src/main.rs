@@ -1,16 +1,16 @@
 #[macro_use]
 extern crate log;
 
+use ckb_debugger_api::DummyResourceLoader;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{
     cost_model::{instruction_cycles, transferred_byte_cycles},
     ScriptGroupType, ScriptVersion, TransactionScriptsVerifier,
 };
-use ckb_standalone_debugger::DummyResourceLoader;
 use ckb_types::{core::cell::resolve_transaction, packed::Byte32};
 use ckb_vm::{
-    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder,
-    SparseMemory, SupportMachine, WXorXMemory,
+    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, SparseMemory,
+    SupportMachine, WXorXMemory,
 };
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
@@ -42,12 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("File used to replace the binary denoted in the script")
                 .takes_value(true),
         )
-        .arg(
-            Arg::with_name("cell-index")
-                .long("cell-index")
-                .help("Index of cell to run")
-                .takes_value(true),
-        )
+        .arg(Arg::with_name("cell-index").long("cell-index").help("Index of cell to run").takes_value(true))
         .arg(
             Arg::with_name("cell-type")
                 .long("cell-type")
@@ -55,12 +50,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Type of cell to run")
                 .takes_value(true),
         )
-        .arg(
-            Arg::with_name("dump-file")
-                .long("dump-file")
-                .help("Dump file name")
-                .takes_value(true),
-        )
+        .arg(Arg::with_name("dump-file").long("dump-file").help("Dump file name").takes_value(true))
         .arg(
             Arg::with_name("gdb-listen")
                 .long("gdb-listen")
@@ -89,12 +79,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Performance profiling, specify output file for further use")
                 .takes_value(true),
         )
-        .arg(
-            Arg::with_name("script-hash")
-                .long("script-hash")
-                .help("Script hash")
-                .takes_value(true),
-        )
+        .arg(Arg::with_name("script-hash").long("script-hash").help("Script hash").takes_value(true))
         .arg(
             Arg::with_name("script-group-type")
                 .long("script-group-type")
@@ -121,9 +106,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Start address to skip printing debug info")
                 .takes_value(true),
         )
-        .arg(Arg::with_name("step").long("step").multiple(true).help(
-            "Set to true to enable step mode, where we print PC address for each instruction",
-        ))
+        .arg(
+            Arg::with_name("step")
+                .long("step")
+                .multiple(true)
+                .help("Set to true to enable step mode, where we print PC address for each instruction"),
+        )
         .arg(
             Arg::with_name("tx-file")
                 .long("tx-file")
@@ -142,7 +130,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("long-log")
                 .required(false)
                 .takes_value(false)
-                .help("long log message with script group")
+                .help("long log message with script group"),
         )
         .arg(Arg::with_name("args").multiple(true))
         .get_matches();
@@ -216,9 +204,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let cell_type = cell_type.unwrap();
         let cell_index: usize = cell_index.unwrap().parse()?;
         match (&verifier_script_group_type, cell_type) {
-            (ScriptGroupType::Lock, "input") => verifier_mock_tx.mock_info.inputs[cell_index]
-                .output
-                .calc_lock_hash(),
+            (ScriptGroupType::Lock, "input") => verifier_mock_tx.mock_info.inputs[cell_index].output.calc_lock_hash(),
             (ScriptGroupType::Type, "input") => verifier_mock_tx.mock_info.inputs[cell_index]
                 .output
                 .type_()
@@ -253,8 +239,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &verifier_resource,
         &verifier_resource,
     )?;
-    let mut verifier =
-        TransactionScriptsVerifier::new(&verifier_resolve_transaction, &verifier_resource);
+    let mut verifier = TransactionScriptsVerifier::new(&verifier_resolve_transaction, &verifier_resource);
     verifier.set_debug_printer(Box::new(move |hash: &Byte32, message: &str| {
         if long_log {
             debug!("script group: {} DEBUG OUTPUT: {}", hash, message);
@@ -262,9 +247,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             debug!("SCRIPT>{}", message);
         }
     }));
-    let verifier_script_group = verifier
-        .find_script_group(verifier_script_group_type, &verifier_script_hash)
-        .unwrap();
+    let verifier_script_group = verifier.find_script_group(verifier_script_group_type, &verifier_script_hash).unwrap();
     let verifier_program = match matches_bin {
         Some(path) => {
             let data = read(path)?;
@@ -284,17 +267,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .instruction_cycle_func(&instruction_cycles)
             .syscall(Box::new(Stdio::new(false)));
         #[cfg(not(feature = "stdio"))]
-        let mut machine_builder =
-            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(&instruction_cycles);
+        let mut machine_builder = DefaultMachineBuilder::new(machine_core).instruction_cycle_func(&instruction_cycles);
         if let Some(data) = matches_dump_file {
-            machine_builder =
-                machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
+            machine_builder = machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
         }
-        let machine_syscalls =
-            verifier.generate_syscalls(verifier_script_version, verifier_script_group);
-        machine_builder = machine_syscalls
-            .into_iter()
-            .fold(machine_builder, |builder, syscall| builder.syscall(syscall));
+        let machine_syscalls = verifier.generate_syscalls(verifier_script_version, verifier_script_group);
+        machine_builder =
+            machine_syscalls.into_iter().fold(machine_builder, |builder, syscall| builder.syscall(syscall));
         let machine_builder = if let Some(fs) = fs_syscall.clone() {
             machine_builder.syscall(Box::new(fs))
         } else {
@@ -375,9 +354,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             Err(err) => {
                 println!("Trace:");
-                machine
-                    .profile
-                    .display_stacktrace("  ", &mut std::io::stdout());
+                machine.profile.display_stacktrace("  ", &mut std::io::stdout());
                 println!("Error:");
                 println!("  {:?}", err);
             }
@@ -391,10 +368,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let transferred_cycles = transferred_byte_cycles(bytes);
         machine.add_cycles(transferred_cycles)?;
         println!("Run result: {:?}", machine.run());
-        println!(
-            "Total cycles consumed: {}",
-            HumanReadableCycles(machine.cycles())
-        );
+        println!("Total cycles consumed: {}", HumanReadableCycles(machine.cycles()));
         println!(
             "Transfer cycles: {}, running cycles: {}",
             HumanReadableCycles(transferred_cycles),

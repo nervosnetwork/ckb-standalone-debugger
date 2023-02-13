@@ -1,7 +1,7 @@
 use byteorder::{ByteOrder, LittleEndian};
+use ckb_debugger_api::run;
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction};
 use ckb_script::ScriptGroupType;
-use ckb_standalone_debugger::run;
 use ckb_types::{
     bytes::Bytes,
     core::{Capacity, DepType, ScriptHashType, TransactionBuilder},
@@ -22,10 +22,7 @@ fn create_mock_cell_dep(data: Bytes, lock: Option<Script>) -> (Byte32, MockCellD
     let hash = CellOutput::calc_data_hash(&data);
     let hash2 = CellOutput::calc_data_hash(hash.as_slice());
     let out_point = OutPoint::new_builder().tx_hash(hash2).build();
-    let cell_dep = CellDep::new_builder()
-        .out_point(out_point)
-        .dep_type(DepType::Code.into())
-        .build();
+    let cell_dep = CellDep::new_builder().out_point(out_point).dep_type(DepType::Code.into()).build();
     let cell_output = CellOutput::new_builder()
         .capacity(Capacity::bytes(data.len() + 200).unwrap().pack())
         .lock(lock.unwrap_or_else(Script::default))
@@ -61,9 +58,7 @@ pub fn test_bench() {
         .build();
     let (_, input_dep) = create_mock_cell_dep(Bytes::from("abc"), Some(script));
     let script_hash = input_dep.output.calc_lock_hash();
-    let cell_input = CellInput::new_builder()
-        .previous_output(input_dep.cell_dep.out_point())
-        .build();
+    let cell_input = CellInput::new_builder().previous_output(input_dep.cell_dep.out_point()).build();
     let cell_output = CellOutput::new_builder().build();
     let transaction = TransactionBuilder::default()
         .input(cell_input.clone())
