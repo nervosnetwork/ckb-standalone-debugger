@@ -107,7 +107,7 @@ jobs:
         mkdir dist
         cp target/release/ckb-debugger dist
         cp LICENSE dist
-        cd dist && tar -cvzf ckb-debugger-linux-x64.tar.gz ckb-debugger LICENSE
+        cd dist && tar -cvzf ckb-debugger-macos-x64.tar.gz ckb-debugger LICENSE
     - name: Generate checksum
       run: cd dist && shasum -a 256 ckb-debugger-macos-x64.tar.gz > ckb-debugger-macos-x64-sha256.txt
     - name: Upload binary
