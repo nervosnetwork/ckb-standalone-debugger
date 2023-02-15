@@ -35,7 +35,7 @@ int fseek(void* stream, long offset, int whence) {
 
 int main() {
     printf("Entering main");
-    void* stream = fopen(".gitignore", "r");
+    void* stream = fopen("fib.c", "r");
     if (!stream) {
         printf("Testing fopen failed");
         return -1;
@@ -57,7 +57,7 @@ int main() {
         printf("Testing feof failed");
         return -1;
     }
-    stream = freopen(".gitignore", "r", stream);
+    stream = freopen("fib.c", "r", stream);
     if (!stream) {
         printf("Testing freopen failed");
         return -1;
