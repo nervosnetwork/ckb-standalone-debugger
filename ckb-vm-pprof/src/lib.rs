@@ -86,24 +86,32 @@ impl TrieNode {
 
 #[derive(Clone, Debug)]
 pub struct Tags {
+    addr: u64,
     file: String,
     line: u32,
     func: String,
 }
 
-impl Default for Tags {
-    fn default() -> Self {
+impl Tags {
+    fn new(addr: u64) -> Self {
         Tags {
+            addr,
             file: String::from("??"),
             line: 0xffffffff,
             func: String::from("??"),
         }
     }
-}
 
-impl Tags {
+    pub fn func(&self) -> String {
+        if self.func != "??" {
+            self.func.clone()
+        } else {
+            format!("func_0x{:x}", self.addr)
+        }
+    }
+
     pub fn simple(&self) -> String {
-        format!("{}:{}", self.file, self.func)
+        format!("{}:{}", self.file, self.func())
     }
 
     pub fn detail(&self) -> String {
@@ -147,7 +155,7 @@ impl Profile {
         if let Some(data) = self.cache_tag.get(&addr) {
             return data.clone();
         }
-        let mut tag = Tags::default();
+        let mut tag = Tags::new(addr);
         let loc = self.addrctx.find_location(addr).unwrap();
         if let Some(loc) = loc {
             tag.file = loc.file.as_ref().unwrap().to_string();
