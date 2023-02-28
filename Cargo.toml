@@ -4,5 +4,6 @@ members = [
     "ckb-debugger-api",
     "ckb-mock-tx-types",
     "ckb-vm-debug-utils",
-    "ckb-vm-pprof"
+    "ckb-vm-pprof",
+    "ckb-vm-pprof-converter",
 ]
