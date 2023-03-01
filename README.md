@@ -15,7 +15,7 @@ $ cargo build --release
 $ export PATH=$PATH:$(pwd)/target/release
 ```
 
-And then refer to the sample program we provide at [examples](./ckb-debugger/examples/)
+And then refer to the sample programs we provided [examples](./ckb-debugger/examples/)
 
 # Licences
 
