@@ -1,7 +1,7 @@
 [package]
 name = "ckb-debugger-api"
 description = "Standalone debugger for Nervos CKB"
-version = "0.107.0"
+version = "0.108.0"
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2021"
@@ -11,8 +11,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 ckb-mock-tx-types = { path = "../ckb-mock-tx-types" }
-ckb-script = { version="=0.107.0", default-features = false }
-ckb-types = "=0.107.0"
+ckb-script = { version="=0.108.0", default-features = false }
+ckb-types = "=0.108.0"
 faster-hex = "0.4.0"
 js-sys = "0.3.27"
 serde = { version="1.0", features = ["derive"] }
