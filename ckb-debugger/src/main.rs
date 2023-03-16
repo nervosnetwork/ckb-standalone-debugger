@@ -2,6 +2,7 @@
 extern crate log;
 
 use ckb_debugger_api::DummyResourceLoader;
+use ckb_hash::blake2b_256;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{
     cost_model::{instruction_cycles, transferred_byte_cycles},
@@ -19,11 +20,13 @@ use ckb_vm_pprof::{PProfMachine, Profile};
 use clap::{crate_version, App, Arg};
 use faster_hex::hex_decode_fallback;
 use gdb_remote_protocol::process_packets_from;
+use regex::Regex;
 use serde_json::from_str as from_json_str;
 use serde_plain::from_str as from_plain_str;
 use std::collections::HashSet;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
+use std::path::Path;
 mod misc;
 use misc::{FileOperation, FileStream, HumanReadableCycles, Random, TimeNow};
 
@@ -170,6 +173,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             read_to_string(matches_tx_file.unwrap())?
         };
+        let mock_re = Regex::new(r"\{\{ ?([a-z]+) (.+?) ?\}\}").unwrap();
+        let mock_tx = mock_re.replace_all(&mock_tx, |caps: &regex::Captures| -> String {
+            let cap1 = &caps[1];
+            let cap2 = &caps[2];
+            let path = if !Path::new(cap2).is_absolute() {
+                let root = Path::new(matches_tx_file.unwrap()).parent().unwrap();
+                root.join(cap2)
+            } else {
+                Path::new(cap2).to_path_buf()
+            };
+            let data = std::fs::read(path).unwrap();
+            if cap1 == "data" {
+                return format!("0x{}", hex::encode(data));
+            }
+            if cap1 == "hash" {
+                return format!("0x{}", hex::encode(&blake2b_256(data)));
+            }
+            unreachable!()
+        });
         let repr_mock_tx: ReprMockTransaction = from_json_str(&mock_tx)?;
         repr_mock_tx.into()
     };
