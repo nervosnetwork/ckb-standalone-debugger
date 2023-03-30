@@ -446,7 +446,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         #[cfg(feature = "probes")]
         {
-            use ckb_vm::{instructions::execute, Register};
+            use ckb_vm::{
+                instructions::{execute_instruction, extract_opcode, instruction_length, insts},
+                Machine, Register,
+            };
             use probe::probe;
             use std::io::BufRead;
 
@@ -480,8 +483,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let memory = (&mut machine.memory_mut().inner_mut()).as_ptr();
                         let cycles = machine.cycles();
                         probe!(ckb_vm, execute_inst, pc, cycles, inst, regs, memory);
-                        let r = execute(inst, &mut machine);
+
+                        let instruction_size = instruction_length(inst);
+                        let next_pc = machine.pc().overflowing_add(&u64::from_u8(instruction_size));
+                        machine.update_pc(next_pc);
+                        let op = extract_opcode(inst);
+                        let r = match op {
+                            insts::OP_ECALL => machine.ecall(),
+                            _ => execute_instruction(inst, &mut machine),
+                        };
+                        machine.commit_pc();
                         let cycles = machine.cycles();
+
                         probe!(
                             ckb_vm,
                             execute_inst_end,
