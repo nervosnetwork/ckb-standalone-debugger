@@ -1,6 +1,4 @@
-mod protos;
-
-use crate::protos::profile;
+use ckb_vm_pprof_protos::profile;
 use clap::{arg, command, value_parser};
 use protobuf::Message;
 use std::collections::{HashMap, HashSet};

@@ -1,6 +1,7 @@
 // Note this is largely inspired from
 // https://github.com/tikv/pprof-rs/blob/e6b48867b8cc8881ce0b3c0750e409b4c5af91d1/src/frames.rs
-use crate::{protos::profile as protos, timer::ReportTiming};
+use crate::timer::ReportTiming;
+use ckb_vm_pprof_protos::profile as protos;
 use std::collections::{HashMap, HashSet};
 use std::time::SystemTime;
 

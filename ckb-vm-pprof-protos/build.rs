@@ -7,5 +7,5 @@ fn main() {
     if target_os == "linux" {
         codegen.protoc_path(protoc_bin_vendored::protoc_bin_path().unwrap());
     }
-    codegen.out_dir("src/protos").inputs(&["../protos/profile.proto"]).include("../protos").run().expect("protoc");
+    codegen.out_dir("src").inputs(&["protos/profile.proto"]).include("protos").run().expect("protoc");
 }

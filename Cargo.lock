@@ -558,7 +558,15 @@ dependencies = [
 name = "ckb-vm-pprof-converter"
 version = "0.108.0"
 dependencies = [
+ "ckb-vm-pprof-protos",
  "clap 4.1.7",
+ "protobuf",
+]
+
+[[package]]
+name = "ckb-vm-pprof-protos"
+version = "0.1.0"
+dependencies = [
  "protobuf",
  "protoc-bin-vendored",
  "protoc-rust",
@@ -570,13 +578,12 @@ version = "0.1.0"
 dependencies = [
  "addr2line 0.17.0",
  "ckb-vm 0.21.7",
+ "ckb-vm-pprof-protos",
  "env_logger 0.9.3",
  "lazy_static",
  "log 0.4.17",
  "nix 0.23.2",
  "protobuf",
- "protoc-bin-vendored",
- "protoc-rust",
 ]
 
 [[package]]
