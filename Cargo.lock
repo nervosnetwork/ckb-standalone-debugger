@@ -218,7 +218,7 @@ dependencies = [
  "ckb-mock-tx-types",
  "ckb-script",
  "ckb-types",
- "ckb-vm 0.22.2",
+ "ckb-vm",
  "ckb-vm-debug-utils",
  "ckb-vm-pprof",
  "clap 2.34.0",
@@ -418,7 +418,7 @@ dependencies = [
  "ckb-hash",
  "ckb-traits",
  "ckb-types",
- "ckb-vm 0.22.2",
+ "ckb-vm",
  "faster-hex 0.6.1",
  "serde",
 ]
@@ -481,26 +481,6 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm"
-version = "0.21.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d357472f6a3759b86f4a63ef78ca2f6d80f9e470ae4f1482fee1c6a12375f37"
-dependencies = [
- "byteorder",
- "bytes",
- "cc",
- "ckb-vm-definitions 0.21.7",
- "derive_more",
- "goblin 0.2.3",
- "goblin 0.4.0",
- "libc",
- "mapr",
- "rand 0.7.3",
- "scroll",
- "serde",
-]
-
-[[package]]
-name = "ckb-vm"
 version = "0.22.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1223acc8054ce96f91c5d99d4942898d0bdadd618c3b14f1acd3e67212991d8e"
@@ -508,7 +488,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cc",
- "ckb-vm-definitions 0.22.2",
+ "ckb-vm-definitions",
  "derive_more",
  "goblin 0.2.3",
  "goblin 0.4.0",
@@ -523,19 +503,13 @@ version = "0.108.0"
 dependencies = [
  "byteorder",
  "bytes",
- "ckb-vm 0.22.2",
+ "ckb-vm",
  "env_logger 0.4.3",
  "gdb-remote-protocol",
  "libc",
  "log 0.4.17",
  "nix 0.26.2",
 ]
-
-[[package]]
-name = "ckb-vm-definitions"
-version = "0.21.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f7a838aab5ce5999add288511f719fa7af13e6790a5746f74d2538bbc47bb59"
 
 [[package]]
 name = "ckb-vm-definitions"
@@ -548,7 +522,7 @@ name = "ckb-vm-pprof"
 version = "0.108.0"
 dependencies = [
  "addr2line 0.13.0",
- "ckb-vm 0.22.2",
+ "ckb-vm",
  "clap 2.34.0",
  "goblin 0.4.0",
  "object 0.20.0",
@@ -565,7 +539,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof-protos"
-version = "0.1.0"
+version = "0.108.0"
 dependencies = [
  "protobuf",
  "protoc-bin-vendored",
@@ -574,10 +548,10 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-signal-profiler"
-version = "0.1.0"
+version = "0.108.0"
 dependencies = [
  "addr2line 0.17.0",
- "ckb-vm 0.21.7",
+ "ckb-vm",
  "ckb-vm-pprof-protos",
  "env_logger 0.9.3",
  "lazy_static",
@@ -1010,16 +984,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "abb12e687cfb44aa40f41fc3978ef76448f9b6038cad6aef4259d3c095a2382e"
 dependencies = [
  "cfg-if",
-]
-
-[[package]]
-name = "mapr"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46a28a55dbc005b2f6f123c4058933d57add373d362f6fd3a76aab4fe6973500"
-dependencies = [
- "libc",
- "winapi",
 ]
 
 [[package]]
