@@ -10,8 +10,22 @@ checksum = "1b6a2d3371669ab3ca9797670853d61402b03d0b4b9ebf33d677dfa720203072"
 dependencies = [
  "cpp_demangle",
  "fallible-iterator",
- "gimli",
- "object",
+ "gimli 0.22.0",
+ "object 0.20.0",
+ "rustc-demangle",
+ "smallvec",
+]
+
+[[package]]
+name = "addr2line"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9ecd88a8c8378ca913a680cd98f0f13ac67383d35993f86c90a70e3f137816b"
+dependencies = [
+ "cpp_demangle",
+ "fallible-iterator",
+ "gimli 0.26.2",
+ "object 0.27.1",
  "rustc-demangle",
  "smallvec",
 ]
@@ -204,11 +218,11 @@ dependencies = [
  "ckb-mock-tx-types",
  "ckb-script",
  "ckb-types",
- "ckb-vm",
+ "ckb-vm 0.22.2",
  "ckb-vm-debug-utils",
  "ckb-vm-pprof",
  "clap 2.34.0",
- "env_logger",
+ "env_logger 0.4.3",
  "faster-hex 0.4.1",
  "gdb-remote-protocol",
  "hex",
@@ -404,7 +418,7 @@ dependencies = [
  "ckb-hash",
  "ckb-traits",
  "ckb-types",
- "ckb-vm",
+ "ckb-vm 0.22.2",
  "faster-hex 0.6.1",
  "serde",
 ]
@@ -467,6 +481,26 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm"
+version = "0.21.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d357472f6a3759b86f4a63ef78ca2f6d80f9e470ae4f1482fee1c6a12375f37"
+dependencies = [
+ "byteorder",
+ "bytes",
+ "cc",
+ "ckb-vm-definitions 0.21.7",
+ "derive_more",
+ "goblin 0.2.3",
+ "goblin 0.4.0",
+ "libc",
+ "mapr",
+ "rand 0.7.3",
+ "scroll",
+ "serde",
+]
+
+[[package]]
+name = "ckb-vm"
 version = "0.22.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1223acc8054ce96f91c5d99d4942898d0bdadd618c3b14f1acd3e67212991d8e"
@@ -474,7 +508,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cc",
- "ckb-vm-definitions",
+ "ckb-vm-definitions 0.22.2",
  "derive_more",
  "goblin 0.2.3",
  "goblin 0.4.0",
@@ -489,13 +523,19 @@ version = "0.108.0"
 dependencies = [
  "byteorder",
  "bytes",
- "ckb-vm",
- "env_logger",
+ "ckb-vm 0.22.2",
+ "env_logger 0.4.3",
  "gdb-remote-protocol",
  "libc",
  "log 0.4.17",
- "nix",
+ "nix 0.26.2",
 ]
+
+[[package]]
+name = "ckb-vm-definitions"
+version = "0.21.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f7a838aab5ce5999add288511f719fa7af13e6790a5746f74d2538bbc47bb59"
 
 [[package]]
 name = "ckb-vm-definitions"
@@ -507,11 +547,11 @@ checksum = "4af800ae2b6c54b70efa398dab015a09a52eeac2dd1ac3ad32c9bbe224974225"
 name = "ckb-vm-pprof"
 version = "0.108.0"
 dependencies = [
- "addr2line",
- "ckb-vm",
+ "addr2line 0.13.0",
+ "ckb-vm 0.22.2",
  "clap 2.34.0",
  "goblin 0.4.0",
- "object",
+ "object 0.20.0",
 ]
 
 [[package]]
@@ -519,6 +559,21 @@ name = "ckb-vm-pprof-converter"
 version = "0.108.0"
 dependencies = [
  "clap 4.1.7",
+ "protobuf",
+ "protoc-bin-vendored",
+ "protoc-rust",
+]
+
+[[package]]
+name = "ckb-vm-signal-profiler"
+version = "0.1.0"
+dependencies = [
+ "addr2line 0.17.0",
+ "ckb-vm 0.21.7",
+ "env_logger 0.9.3",
+ "lazy_static",
+ "log 0.4.17",
+ "nix 0.23.2",
  "protobuf",
  "protoc-bin-vendored",
  "protoc-rust",
@@ -647,6 +702,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_logger"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
+dependencies = [
+ "atty",
+ "humantime",
+ "log 0.4.17",
+ "regex 1.7.1",
+ "termcolor",
+]
+
+[[package]]
 name = "errno"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -748,6 +816,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "gimli"
+version = "0.26.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22030e2c5a68ec659fde1e949a745124b48e6fa8b045b7ed5bd1fe4ccc5c4e5d"
+dependencies = [
+ "fallible-iterator",
+ "stable_deref_trait",
+]
+
+[[package]]
 name = "goblin"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -798,6 +876,12 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "humantime"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "includedir"
@@ -922,6 +1006,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "mapr"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46a28a55dbc005b2f6f123c4058933d57add373d362f6fd3a76aab4fe6973500"
+dependencies = [
+ "libc",
+ "winapi",
+]
+
+[[package]]
 name = "memchr"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -935,6 +1029,15 @@ name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
+
+[[package]]
+name = "memoffset"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5aa361d4faea93603064a027415f07bd8e1d5c88c9fbf68bf56a285428fd79ce"
+dependencies = [
+ "autocfg",
+]
 
 [[package]]
 name = "memoffset"
@@ -976,6 +1079,19 @@ dependencies = [
 
 [[package]]
 name = "nix"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f3790c00a0150112de0f4cd161e3d7fc4b2d8a5542ffc35f099a2562aecb35c"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if",
+ "libc",
+ "memoffset 0.6.5",
+]
+
+[[package]]
+name = "nix"
 version = "0.26.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfdda3d196821d6af13126e40375cdf7da646a96114af134d5f417a9a1dc8e1a"
@@ -983,7 +1099,7 @@ dependencies = [
  "bitflags",
  "cfg-if",
  "libc",
- "memoffset",
+ "memoffset 0.7.1",
  "pin-utils",
  "static_assertions",
 ]
@@ -1051,6 +1167,16 @@ checksum = "1ab52be62400ca80aa00285d25253d7f7c437b7375c4de678f5405d3afe82ca5"
 dependencies = [
  "flate2",
  "wasmparser",
+]
+
+[[package]]
+name = "object"
+version = "0.27.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "67ac1d3f9a1d3616fd9a60c8d74296f22406a238b6a72f5cc1e6f314df4ffbf9"
+dependencies = [
+ "flate2",
+ "memchr 2.5.0",
 ]
 
 [[package]]

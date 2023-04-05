@@ -6,4 +6,5 @@ members = [
     "ckb-vm-debug-utils",
     "ckb-vm-pprof",
     "ckb-vm-pprof-converter",
+    "ckb-vm-signal-profiler"
 ]
