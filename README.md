@@ -16,6 +16,16 @@ cargo install --git https://github.com/nervosnetwork/ckb-standalone-debugger ckb
 
 And then refer to the sample programs we provided [examples](./ckb-debugger/examples/)
 
+# Notes
+
+## macOS
+
+On macOS, the `protoc` binary must be available to compile `ckb-vm-pprof-converter`. This can be installed via [homebrew](https://brew.sh/):
+
+```bash
+$ brew install protobuf
+```
+
 # Licences
 
 MIT
