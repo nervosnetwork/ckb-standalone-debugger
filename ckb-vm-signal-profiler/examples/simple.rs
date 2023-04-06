@@ -58,7 +58,7 @@ fn main() {
 
     let asm_core = AsmCoreMachine::new(ISA_IMC, VERSION1, u64::max_value());
     let core = DefaultMachineBuilder::new(asm_core).syscall(Box::new(Debugger::new())).build();
-    let mut machine = Box::pin(AsmMachine::new(core, None));
+    let mut machine = Box::pin(AsmMachine::new(core));
 
     ckb_vm_signal_profiler::start_profiler("simple.profile", &machine, &code, 99).expect("profiler start failure");
 
