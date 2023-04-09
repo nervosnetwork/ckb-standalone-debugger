@@ -204,10 +204,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 std::fs::read(path).unwrap()
             };
             if cap1 == "data" {
-                return format!("0x{}", hex::encode(read_file(cap2)));
+                return hex::encode(read_file(cap2));
             }
             if cap1 == "hash" {
-                return format!("0x{}", hex::encode(&blake2b_256(read_file(cap2))));
+                return hex::encode(&blake2b_256(read_file(cap2)));
             }
             if cap1 == "def_type" {
                 let type_id_script_json = ckb_jsonrpc_types::Script {
