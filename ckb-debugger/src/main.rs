@@ -182,6 +182,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut mock_type_id_dict: HashMap<String, String> = HashMap::new();
         for caps in mock_re_def_type.captures_iter(&mock_tx) {
             let type_id_name = &caps[1];
+            if mock_type_id_dict.contains_key(type_id_name) {
+                panic!("Type ID name \"{}\" already exists", type_id_name);
+            }
             let type_id_script = Script::new_builder()
                 .args(Bytes::from(type_id_name.to_string()).pack())
                 .code_hash(TYPE_ID_CODE_HASH.pack())
