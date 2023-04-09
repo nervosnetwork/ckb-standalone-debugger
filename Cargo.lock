@@ -213,8 +213,10 @@ dependencies = [
 name = "ckb-debugger"
 version = "0.108.0"
 dependencies = [
+ "ckb-chain-spec",
  "ckb-debugger-api",
  "ckb-hash",
+ "ckb-jsonrpc-types",
  "ckb-mock-tx-types",
  "ckb-script",
  "ckb-types",

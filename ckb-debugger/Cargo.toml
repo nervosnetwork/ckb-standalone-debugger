@@ -12,6 +12,8 @@ stdio = ["ckb-vm-debug-utils/stdio"]
 
 [dependencies]
 clap = "2.33.0"
+ckb-chain-spec = "=0.108.0"
+ckb-jsonrpc-types = "=0.108.0"
 ckb-debugger-api = { path = "../ckb-debugger-api" }
 ckb-hash = "=0.108.0"
 ckb-mock-tx-types = { path = "../ckb-mock-tx-types" }

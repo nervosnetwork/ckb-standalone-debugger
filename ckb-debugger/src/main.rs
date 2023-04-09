@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate log;
 
+use ckb_chain_spec::consensus::TYPE_ID_CODE_HASH;
 use ckb_debugger_api::DummyResourceLoader;
 use ckb_hash::blake2b_256;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
@@ -8,7 +9,10 @@ use ckb_script::{
     cost_model::{instruction_cycles, transferred_byte_cycles},
     ScriptGroupType, ScriptVersion, TransactionScriptsVerifier,
 };
-use ckb_types::{core::cell::resolve_transaction, packed::Byte32};
+use ckb_types::core::cell::resolve_transaction;
+use ckb_types::core::ScriptHashType;
+use ckb_types::packed::{Byte32, Script};
+use ckb_types::prelude::{Builder, Entity, Pack};
 use ckb_vm::{
     decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, SparseMemory,
     SupportMachine, WXorXMemory,
@@ -23,7 +27,7 @@ use gdb_remote_protocol::process_packets_from;
 use regex::Regex;
 use serde_json::from_str as from_json_str;
 use serde_plain::from_str as from_plain_str;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 use std::path::Path;
@@ -173,24 +177,50 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             read_to_string(matches_tx_file.unwrap())?
         };
-        let mock_re = Regex::new(r"\{\{ ?([a-z]+) (.+?) ?\}\}").unwrap();
+        let mock_re_def_type = Regex::new(r"\{\{ ?def_type (.+?) ?\}\}").unwrap();
+        let mock_re = Regex::new(r"\{\{ ?([_a-z]+) (.+?) ?\}\}").unwrap();
+        let mut mock_type_id_dict: HashMap<String, String> = HashMap::new();
+        for caps in mock_re_def_type.captures_iter(&mock_tx) {
+            let type_id_name = &caps[1];
+            let type_id_script = Script::new_builder()
+                .args(Bytes::from(type_id_name.to_string()).pack())
+                .code_hash(TYPE_ID_CODE_HASH.pack())
+                .hash_type(ScriptHashType::Type.into())
+                .build();
+            let type_id_script_hash = type_id_script.calc_script_hash();
+            let type_id_script_hash = format!("{:x}", type_id_script_hash);
+            mock_type_id_dict.insert(type_id_name.to_string(), type_id_script_hash);
+        }
         let mock_tx = mock_re.replace_all(&mock_tx, |caps: &regex::Captures| -> String {
             let cap1 = &caps[1];
             let cap2 = &caps[2];
-            let path = if !Path::new(cap2).is_absolute() {
-                let root = Path::new(matches_tx_file.unwrap()).parent().unwrap();
-                root.join(cap2)
-            } else {
-                Path::new(cap2).to_path_buf()
+            let read_file = |cap2: &str| {
+                let path = if !Path::new(cap2).is_absolute() {
+                    let root = Path::new(matches_tx_file.unwrap()).parent().unwrap();
+                    root.join(cap2)
+                } else {
+                    Path::new(cap2).to_path_buf()
+                };
+                std::fs::read(path).unwrap()
             };
-            let data = std::fs::read(path).unwrap();
             if cap1 == "data" {
-                return format!("0x{}", hex::encode(data));
+                return format!("0x{}", hex::encode(read_file(cap2)));
             }
             if cap1 == "hash" {
-                return format!("0x{}", hex::encode(&blake2b_256(data)));
+                return format!("0x{}", hex::encode(&blake2b_256(read_file(cap2))));
             }
-            unreachable!()
+            if cap1 == "def_type" {
+                let type_id_script_json = ckb_jsonrpc_types::Script {
+                    code_hash: TYPE_ID_CODE_HASH,
+                    hash_type: ckb_jsonrpc_types::ScriptHashType::Type,
+                    args: ckb_jsonrpc_types::JsonBytes::from_vec(cap2.as_bytes().to_vec()),
+                };
+                return serde_json::to_string_pretty(&type_id_script_json).unwrap();
+            }
+            if cap1 == "ref_type" {
+                return mock_type_id_dict[&cap2.to_string()].clone();
+            }
+            panic!("The embedded statement could not be parsed: {} {}", cap1, cap2);
         });
         let repr_mock_tx: ReprMockTransaction = from_json_str(&mock_tx)?;
         repr_mock_tx.into()
