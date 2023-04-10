@@ -1,18 +1,14 @@
 #[macro_use]
 extern crate log;
 
-use ckb_chain_spec::consensus::TYPE_ID_CODE_HASH;
 use ckb_debugger_api::DummyResourceLoader;
-use ckb_hash::blake2b_256;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{
     cost_model::{instruction_cycles, transferred_byte_cycles},
     ScriptGroupType, ScriptVersion, TransactionScriptsVerifier,
 };
 use ckb_types::core::cell::resolve_transaction;
-use ckb_types::core::ScriptHashType;
-use ckb_types::packed::{Byte32, Script};
-use ckb_types::prelude::{Builder, Entity, Pack};
+use ckb_types::packed::Byte32;
 use ckb_vm::{
     decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, SparseMemory,
     SupportMachine, WXorXMemory,
@@ -22,15 +18,16 @@ use ckb_vm_debug_utils::Stdio;
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler};
 use ckb_vm_pprof::{PProfMachine, Profile};
 use clap::{crate_version, App, Arg};
+mod embed;
+use embed::Embed;
 use faster_hex::hex_decode_fallback;
 use gdb_remote_protocol::process_packets_from;
-use regex::Regex;
 use serde_json::from_str as from_json_str;
 use serde_plain::from_str as from_plain_str;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
-use std::path::Path;
+use std::path::PathBuf;
 mod misc;
 use misc::{FileOperation, FileStream, HumanReadableCycles, Random, TimeNow};
 
@@ -175,56 +172,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mock_tx = if matches_tx_file.is_none() {
             String::from_utf8_lossy(include_bytes!("./dummy_tx.json")).to_string()
         } else {
-            read_to_string(matches_tx_file.unwrap())?
+            let mock_tx = read_to_string(matches_tx_file.unwrap())?;
+            let mut mock_tx_embed = Embed::new(PathBuf::from(matches_tx_file.unwrap().to_string()), mock_tx.clone());
+            mock_tx_embed
+                .replace_data()
+                .replace_hash()
+                .prelude_type_id()
+                .replace_def_type()
+                .replace_ref_type()
+                .data
+                .clone()
         };
-        let mock_re_def_type = Regex::new(r"\{\{ ?def_type (.+?) ?\}\}").unwrap();
-        let mock_re = Regex::new(r"\{\{ ?([_a-z]+) (.+?) ?\}\}").unwrap();
-        let mut mock_type_id_dict: HashMap<String, String> = HashMap::new();
-        for caps in mock_re_def_type.captures_iter(&mock_tx) {
-            let type_id_name = &caps[1];
-            if mock_type_id_dict.contains_key(type_id_name) {
-                panic!("Type ID name \"{}\" already exists", type_id_name);
-            }
-            let type_id_script = Script::new_builder()
-                .args(Bytes::from(type_id_name.to_string()).pack())
-                .code_hash(TYPE_ID_CODE_HASH.pack())
-                .hash_type(ScriptHashType::Type.into())
-                .build();
-            let type_id_script_hash = type_id_script.calc_script_hash();
-            let type_id_script_hash = format!("{:x}", type_id_script_hash);
-            mock_type_id_dict.insert(type_id_name.to_string(), type_id_script_hash);
-        }
-        let mock_tx = mock_re.replace_all(&mock_tx, |caps: &regex::Captures| -> String {
-            let cap1 = &caps[1];
-            let cap2 = &caps[2];
-            let read_file = |cap2: &str| {
-                let path = if !Path::new(cap2).is_absolute() {
-                    let root = Path::new(matches_tx_file.unwrap()).parent().unwrap();
-                    root.join(cap2)
-                } else {
-                    Path::new(cap2).to_path_buf()
-                };
-                std::fs::read(path).unwrap()
-            };
-            if cap1 == "data" {
-                return hex::encode(read_file(cap2));
-            }
-            if cap1 == "hash" {
-                return hex::encode(&blake2b_256(read_file(cap2)));
-            }
-            if cap1 == "def_type" {
-                let type_id_script_json = ckb_jsonrpc_types::Script {
-                    code_hash: TYPE_ID_CODE_HASH,
-                    hash_type: ckb_jsonrpc_types::ScriptHashType::Type,
-                    args: ckb_jsonrpc_types::JsonBytes::from_vec(cap2.as_bytes().to_vec()),
-                };
-                return serde_json::to_string_pretty(&type_id_script_json).unwrap();
-            }
-            if cap1 == "ref_type" {
-                return mock_type_id_dict[&cap2.to_string()].clone();
-            }
-            panic!("The embedded statement could not be parsed: {} {}", cap1, cap2);
-        });
         let repr_mock_tx: ReprMockTransaction = from_json_str(&mock_tx)?;
         repr_mock_tx.into()
     };
