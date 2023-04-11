@@ -23,10 +23,10 @@ use faster_hex::hex_decode_fallback;
 use gdb_remote_protocol::process_packets_from;
 use serde_json::from_str as from_json_str;
 use serde_plain::from_str as from_plain_str;
-use std::collections::HashSet;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 use std::path::PathBuf;
+use std::{collections::HashSet, io::Read};
 mod misc;
 use misc::{FileOperation, FileStream, HumanReadableCycles, Random, TimeNow};
 
@@ -171,9 +171,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mock_tx = if matches_tx_file.is_none() {
             String::from_utf8_lossy(include_bytes!("./dummy_tx.json")).to_string()
         } else {
-            let mock_tx = read_to_string(matches_tx_file.unwrap())?;
-            let mut mock_tx_embed = Embed::new(PathBuf::from(matches_tx_file.unwrap().to_string()), mock_tx.clone());
-            mock_tx_embed.replace_all()
+            let matches_tx_file = matches_tx_file.unwrap();
+            if matches_tx_file == "-" {
+                let mut buf = String::new();
+                std::io::stdin().read_to_string(&mut buf)?;
+                buf
+            } else {
+                let mock_tx = read_to_string(matches_tx_file)?;
+                let mut mock_tx_embed = Embed::new(PathBuf::from(matches_tx_file.to_string()), mock_tx.clone());
+                mock_tx_embed.replace_all()
+            }
         };
         let repr_mock_tx: ReprMockTransaction = from_json_str(&mock_tx)?;
         repr_mock_tx.into()
