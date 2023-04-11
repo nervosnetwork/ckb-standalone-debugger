@@ -448,6 +448,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         {
             use ckb_vm::{
                 instructions::{execute_instruction, extract_opcode, instruction_length, insts},
+                registers::{A0, A1, A2, A3, A4, A5, A7},
                 Machine, Register,
             };
             use probe::probe;
@@ -489,10 +490,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         machine.update_pc(next_pc);
                         let op = extract_opcode(inst);
                         let r = match op {
-                            insts::OP_ECALL => machine.ecall(),
+                            insts::OP_ECALL => {
+                                let code = machine.registers()[A7].to_u64();
+                                let arg0 = machine.registers()[A0].to_u64();
+                                let arg1 = machine.registers()[A1].to_u64();
+                                let arg2 = machine.registers()[A2].to_u64();
+                                let arg3 = machine.registers()[A3].to_u64();
+                                let arg4 = machine.registers()[A4].to_u64();
+                                let arg5 = machine.registers()[A5].to_u64();
+                                probe::probe!(ckb_vm, syscall, code, arg0, arg1, arg2, arg3, arg4, arg5);
+                                let r = machine.ecall();
+                                let ret_code = machine.registers()[A0].to_u64();
+                                let ret_code2 = machine.registers()[A1].to_u64();
+                                probe::probe!(ckb_vm, syscall_ret, code, ret_code, ret_code2);
+                                r
+                            }
                             _ => execute_instruction(inst, &mut machine),
                         };
                         machine.commit_pc();
+
                         let cycles = machine.cycles();
 
                         probe!(
