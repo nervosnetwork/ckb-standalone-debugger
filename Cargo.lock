@@ -216,7 +216,6 @@ dependencies = [
  "ckb-chain-spec",
  "ckb-debugger-api",
  "ckb-hash",
- "ckb-jsonrpc-types",
  "ckb-mock-tx-types",
  "ckb-script",
  "ckb-types",
@@ -232,7 +231,6 @@ dependencies = [
  "libc",
  "log 0.4.17",
  "rand 0.8.5",
- "regex 1.7.1",
  "serde_json",
  "serde_plain",
 ]
@@ -242,11 +240,17 @@ name = "ckb-debugger-api"
 version = "0.108.0"
 dependencies = [
  "byteorder",
+ "ckb-chain-spec",
+ "ckb-hash",
+ "ckb-jsonrpc-types",
  "ckb-mock-tx-types",
  "ckb-script",
  "ckb-types",
+ "ckb-vm",
  "faster-hex 0.4.1",
+ "hex",
  "js-sys",
+ "regex 1.7.1",
  "serde",
  "serde_json",
  "serde_plain",

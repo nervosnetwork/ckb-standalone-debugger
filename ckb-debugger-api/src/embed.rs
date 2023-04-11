@@ -102,4 +102,9 @@ impl Embed {
             .to_string();
         self
     }
+
+    pub fn replace_all(&mut self) -> String {
+        self.replace_data().replace_hash().prelude_type_id().replace_def_type().replace_ref_type();
+        self.data.clone()
+    }
 }

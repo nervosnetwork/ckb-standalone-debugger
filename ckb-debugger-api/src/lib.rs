@@ -14,6 +14,7 @@ use serde_json::{from_str as from_json_str, to_string as to_json_string};
 use serde_plain::from_str as from_plain_str;
 use std::collections::HashSet;
 use wasm_bindgen::prelude::*;
+pub mod embed;
 
 pub struct DummyResourceLoader {}
 

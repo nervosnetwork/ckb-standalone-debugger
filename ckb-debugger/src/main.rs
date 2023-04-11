@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate log;
 
+use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{
@@ -18,8 +19,6 @@ use ckb_vm_debug_utils::Stdio;
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler};
 use ckb_vm_pprof::{PProfMachine, Profile};
 use clap::{crate_version, App, Arg};
-mod embed;
-use embed::Embed;
 use faster_hex::hex_decode_fallback;
 use gdb_remote_protocol::process_packets_from;
 use serde_json::from_str as from_json_str;
@@ -174,14 +173,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             let mock_tx = read_to_string(matches_tx_file.unwrap())?;
             let mut mock_tx_embed = Embed::new(PathBuf::from(matches_tx_file.unwrap().to_string()), mock_tx.clone());
-            mock_tx_embed
-                .replace_data()
-                .replace_hash()
-                .prelude_type_id()
-                .replace_def_type()
-                .replace_ref_type()
-                .data
-                .clone()
+            mock_tx_embed.replace_all()
         };
         let repr_mock_tx: ReprMockTransaction = from_json_str(&mock_tx)?;
         repr_mock_tx.into()
