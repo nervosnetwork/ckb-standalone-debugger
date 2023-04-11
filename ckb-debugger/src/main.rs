@@ -356,6 +356,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let mut output = std::fs::File::create(&fp)?;
                     machine.profile.display_flamegraph(&mut output);
                 }
+                if data != 0 {
+                    std::process::exit(254);
+                }
             }
             Err(err) => {
                 println!("Trace:");
@@ -372,13 +375,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
         let transferred_cycles = transferred_byte_cycles(bytes);
         machine.add_cycles(transferred_cycles)?;
-        println!("Run result: {:?}", machine.run());
+        let result = machine.run();
+        println!("Run result: {:?}", result);
         println!("Total cycles consumed: {}", HumanReadableCycles(machine.cycles()));
         println!(
             "Transfer cycles: {}, running cycles: {}",
             HumanReadableCycles(transferred_cycles),
             HumanReadableCycles(machine.cycles() - transferred_cycles)
         );
+        if let Ok(data) = result {
+            if data != 0 {
+                std::process::exit(254);
+            }
+        }
         return Ok(());
     }
 
