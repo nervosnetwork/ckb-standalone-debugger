@@ -1,6 +1,6 @@
 [package]
 name = "ckb-vm-debug-utils"
-version = "0.108.0"
+version = "0.108.1"
 authors = ["Xuejie Xiao <xxuejie@gmail.com>"]
 edition = "2021"
 
