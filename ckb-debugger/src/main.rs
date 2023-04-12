@@ -45,10 +45,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("File used to replace the binary denoted in the script")
                 .takes_value(true),
         )
-        .arg(Arg::with_name("cell-index").long("cell-index").help("Index of cell to run").takes_value(true))
+        .arg(Arg::with_name("cell-index").long("cell-index").short("i").help("Index of cell to run").takes_value(true))
         .arg(
             Arg::with_name("cell-type")
                 .long("cell-type")
+                .short("t")
                 .possible_values(&["input", "output"])
                 .help("Type of cell to run")
                 .takes_value(true),
@@ -86,6 +87,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .arg(
             Arg::with_name("script-group-type")
                 .long("script-group-type")
+                .short("s")
                 .possible_values(&["lock", "type"])
                 .help("Script group type")
                 .takes_value(true),
@@ -118,6 +120,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .arg(
             Arg::with_name("tx-file")
                 .long("tx-file")
+                .short("f")
                 .required_unless("bin")
                 .help("Filename containing JSON formatted transaction dump")
                 .takes_value(true),
@@ -208,10 +211,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         hex_decode_fallback(&hex_script_hash.as_bytes()[2..], &mut b[..]);
         Byte32::new(b)
     } else {
-        let cell_type = matches_cell_type;
-        let cell_index = matches_cell_index;
-        if cell_type.is_none() || cell_index.is_none() {
-            panic!("You must provide either script hash, or cell type + cell index");
+        let mut cell_type = matches_cell_type;
+        let mut cell_index = matches_cell_index;
+        match verifier_script_group_type {
+            ScriptGroupType::Lock => {
+                if cell_type.is_none() {
+                    cell_type = Some("input");
+                    println!("Lock script always runs from input cells. Assume --cell-type = input");
+                }
+                if cell_index.is_none() {
+                    cell_index = Some("0");
+                    println!("cell_index is not specified. Assume --cell-index = 0")
+                }
+            }
+            ScriptGroupType::Type => {
+                if cell_type.is_none() || cell_index.is_none() {
+                    panic!("You must provide either script hash, or cell type + cell index");
+                }
+            }
         }
         let cell_type = cell_type.unwrap();
         let cell_index: usize = cell_index.unwrap().parse()?;
