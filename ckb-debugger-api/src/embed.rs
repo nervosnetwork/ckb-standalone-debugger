@@ -77,7 +77,7 @@ impl Embed {
     }
 
     pub fn replace_def_type(&mut self) -> &mut Self {
-        let regex = Regex::new(r"\{\{ ?def_type (.+?) ?\}\}").unwrap();
+        let regex = Regex::new(r#""?\{\{ ?def_type (.+?) ?\}\}"?"#).unwrap();
         self.data = regex
             .replace_all(&self.data, |caps: &Captures| -> String {
                 let cap1 = &caps[1];
