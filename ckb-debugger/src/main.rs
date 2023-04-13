@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate log;
 
+use ckb_debugger_api::check;
 use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
@@ -186,6 +187,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         };
         let repr_mock_tx: ReprMockTransaction = from_json_str(&mock_tx)?;
+        check(&repr_mock_tx)?;
         repr_mock_tx.into()
     };
     let verifier_script_group_type = {
