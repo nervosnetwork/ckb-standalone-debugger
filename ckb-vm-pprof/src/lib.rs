@@ -9,12 +9,10 @@ use ckb_vm::machine::{DefaultMachine, DefaultMachineBuilder, VERSION0};
 use ckb_vm::memory::Memory;
 use ckb_vm::registers::{A0, SP};
 use ckb_vm::{
-    Bytes, CoreMachine, DefaultCoreMachine, Error, Machine, Register, SparseMemory, SupportMachine, Syscalls,
-    WXorXMemory, ISA_MOP,
+    cost_model, Bytes, CoreMachine, DefaultCoreMachine, Error, Machine, Register, SparseMemory, SupportMachine,
+    Syscalls, WXorXMemory, ISA_MOP,
 };
-
-mod cost_model;
-pub use cost_model::instruction_cycles;
+pub use cost_model::estimate_cycles;
 
 type Addr2LineEndianReader = addr2line::gimli::EndianReader<addr2line::gimli::RunTimeEndian, Rc<[u8]>>;
 type Addr2LineContext = addr2line::Context<Addr2LineEndianReader>;
@@ -201,9 +199,9 @@ impl Profile {
         writer.flush().unwrap();
     }
 
-    fn step<'a, R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>>(
+    fn step<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>>(
         &mut self,
-        machine: &mut DefaultMachine<'a, Inner>,
+        machine: &mut DefaultMachine<Inner>,
         decoder: &mut Decoder,
     ) -> Result<(), Error> {
         let pc = machine.pc().to_u64();
@@ -282,7 +280,7 @@ impl Profile {
             quit_or_skip(self, addr);
             return Ok(());
         };
-        if opcode == ckb_vm::instructions::insts::OP_JALR {
+        if opcode == ckb_vm::instructions::insts::OP_JALR_VERSION0 | ckb_vm::instructions::insts::OP_JALR_VERSION1 {
             let inst_length = instruction_length(inst) as u64;
             let inst = ckb_vm::instructions::Itype(inst);
             let base = machine.registers()[inst.rs1()].to_u64();
@@ -323,12 +321,12 @@ impl Profile {
     }
 }
 
-pub struct PProfMachine<'a, Inner> {
-    pub machine: DefaultMachine<'a, Inner>,
+pub struct PProfMachine<Inner> {
+    pub machine: DefaultMachine<Inner>,
     pub profile: Profile,
 }
 
-impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> CoreMachine for PProfMachine<'_, Inner> {
+impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> CoreMachine for PProfMachine<Inner> {
     type REG = <Inner as CoreMachine>::REG;
     type MEM = <Inner as CoreMachine>::MEM;
 
@@ -369,7 +367,7 @@ impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> C
     }
 }
 
-impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> Machine for PProfMachine<'_, Inner> {
+impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> Machine for PProfMachine<Inner> {
     fn ecall(&mut self) -> Result<(), Error> {
         self.machine.ecall()
     }
@@ -379,8 +377,8 @@ impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> M
     }
 }
 
-impl<'a, R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> PProfMachine<'a, Inner> {
-    pub fn new(machine: DefaultMachine<'a, Inner>, profile: Profile) -> Self {
+impl<'a, R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> PProfMachine<Inner> {
+    pub fn new(machine: DefaultMachine<Inner>, profile: Profile) -> Self {
         Self { machine, profile }
     }
 
@@ -406,8 +404,8 @@ impl<'a, R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M
     }
 }
 
-pub fn quick_start<'a>(
-    syscalls: Vec<Box<(dyn Syscalls<DefaultCoreMachine<u64, WXorXMemory<SparseMemory<u64>>>> + 'a)>>,
+pub fn quick_start(
+    syscalls: Vec<Box<(dyn Syscalls<DefaultCoreMachine<u64, WXorXMemory<SparseMemory<u64>>>>)>>,
     fl_bin: &str,
     fl_arg: Vec<&str>,
     output_filename: &str,
@@ -415,13 +413,13 @@ pub fn quick_start<'a>(
     let code_data = std::fs::read(fl_bin)?;
     let code = Bytes::from(code_data);
 
-    let isa = ckb_vm::ISA_IMC | ckb_vm::ISA_B | ckb_vm::ISA_MOP;
+    let isa = ckb_vm::ISA_IMC | ckb_vm::ISA_A | ckb_vm::ISA_B | ckb_vm::ISA_MOP;
     let default_core_machine = ckb_vm::DefaultCoreMachine::<
         u64,
         ckb_vm::memory::wxorx::WXorXMemory<ckb_vm::memory::sparse::SparseMemory<u64>>,
-    >::new(isa, ckb_vm::machine::VERSION1, 1 << 32);
+    >::new(isa, ckb_vm::machine::VERSION2, 1 << 32);
     let mut builder =
-        DefaultMachineBuilder::new(default_core_machine).instruction_cycle_func(&cost_model::instruction_cycles);
+        DefaultMachineBuilder::new(default_core_machine).instruction_cycle_func(Box::new(cost_model::estimate_cycles));
     builder = syscalls.into_iter().fold(builder, |builder, syscall| builder.syscall(syscall));
     let default_machine = builder.build();
     let profile = Profile::new(&code).unwrap();

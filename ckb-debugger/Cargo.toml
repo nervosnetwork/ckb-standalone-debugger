@@ -12,13 +12,13 @@ stdio = ["ckb-vm-debug-utils/stdio"]
 
 [dependencies]
 clap = "2.33.0"
-ckb-chain-spec = "=0.108.1"
+ckb-chain-spec = { git = "https://github.com/nervosnetwork/ckb", branch = "ckb2023" }
 ckb-debugger-api = { path = "../ckb-debugger-api" }
-ckb-hash = "=0.108.1"
+ckb-hash = { git = "https://github.com/nervosnetwork/ckb", branch = "ckb2023" }
 ckb-mock-tx-types = { path = "../ckb-mock-tx-types" }
-ckb-script = { version="=0.108.1", default-features = false }
-ckb-types = "=0.108.1"
-ckb-vm = { version = "=0.22.2" }
+ckb-script = { git = "https://github.com/nervosnetwork/ckb", branch = "ckb2023", default-features = false }
+ckb-types = { git = "https://github.com/nervosnetwork/ckb", branch = "ckb2023" }
+ckb-vm = { version = "=0.24.0-beta" }
 ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils" }
 ckb-vm-pprof = { path = "../ckb-vm-pprof" }
 env_logger = "0.4.3"

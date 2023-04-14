@@ -2,8 +2,10 @@
 extern crate log;
 
 use bytes::Bytes;
+use ckb_vm::machine::VERSION2;
 use ckb_vm::{
-    DefaultCoreMachine, DefaultMachineBuilder, SparseMemory, SupportMachine, WXorXMemory, ISA_B, ISA_IMC, ISA_MOP,
+    DefaultCoreMachine, DefaultMachineBuilder, SparseMemory, SupportMachine, WXorXMemory, ISA_A, ISA_B, ISA_IMC,
+    ISA_MOP,
 };
 use ckb_vm_debug_utils::GdbHandler;
 #[cfg(feature = "stdio")]
@@ -32,8 +34,8 @@ fn main() {
         if let Ok(stream) = res {
             // TODO: vm version and isa should be configurable in the future.
             let machine_core = DefaultCoreMachine::<u64, WXorXMemory<SparseMemory<u64>>>::new(
-                ISA_IMC | ISA_B | ISA_MOP,
-                1,
+                ISA_IMC | ISA_A | ISA_B | ISA_MOP,
+                VERSION2,
                 u64::max_value(),
             );
             let machine_builder = DefaultMachineBuilder::new(machine_core);
