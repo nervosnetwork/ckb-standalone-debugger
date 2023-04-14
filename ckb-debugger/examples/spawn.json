@@ -3,22 +3,23 @@
     "inputs": [
       {
         "input": {
+          "since": "0x0",
           "previous_output": {
             "tx_hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
             "index": "0x0"
-          },
-          "since": "0x0"
+          }
         },
         "output": {
           "capacity": "0x10000000",
           "lock": {
-            "args": "0x",
-            "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "hash_type": "data2"
+            "code_hash": "0x{{ hash spawn_caller_strcat }}",
+            "hash_type": "data1",
+            "args": "0x"
           },
           "type": null
         },
-        "data": "0x"
+        "data": "0x",
+        "header": null
       }
     ],
     "cell_deps": [
@@ -33,13 +34,34 @@
         "output": {
           "capacity": "0x10000000",
           "lock": {
-            "args": "0x",
             "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "hash_type": "data2"
+            "hash_type": "data1",
+            "args": "0x"
           },
           "type": null
         },
-        "data": "0x"
+        "data": "0x{{ data spawn_caller_strcat }}",
+        "header": null
+      },
+      {
+        "cell_dep": {
+          "out_point": {
+            "tx_hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "index": "0x1"
+          },
+          "dep_type": "code"
+        },
+        "output": {
+          "capacity": "0x10000000",
+          "lock": {
+            "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "hash_type": "data1",
+            "args": "0x"
+          },
+          "type": null
+        },
+        "data": "0x{{ data spawn_callee_strcat }}",
+        "header": null
       }
     ],
     "header_deps": []
@@ -53,37 +75,44 @@
           "index": "0x0"
         },
         "dep_type": "code"
+      },
+      {
+        "out_point": {
+          "tx_hash": "0x0000000000000000000000000000000000000000000000000000000000000001",
+          "index": "0x1"
+        },
+        "dep_type": "code"
       }
     ],
     "header_deps": [],
     "inputs": [
       {
+        "since": "0x0",
         "previous_output": {
           "tx_hash": "0x0000000000000000000000000000000000000000000000000000000000000002",
           "index": "0x0"
-        },
-        "since": "0x0"
+        }
       }
     ],
     "outputs": [
       {
         "capacity": "0x0",
         "lock": {
-          "args": "0x",
           "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "hash_type": "data2"
+          "hash_type": "data1",
+          "args": "0x"
         },
         "type": {
-          "args": "0x",
           "code_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "hash_type": "data2"
+          "hash_type": "data1",
+          "args": "0x"
         }
       }
     ],
-    "witnesses": [
+    "outputs_data": [
       "0x"
     ],
-    "outputs_data": [
+    "witnesses": [
       "0x"
     ]
   }

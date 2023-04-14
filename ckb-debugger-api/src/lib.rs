@@ -1,4 +1,4 @@
-use ckb_jsonrpc_types::{self, CellDep, CellInput, DepType};
+use ckb_jsonrpc_types::{CellDep, CellInput, DepType};
 use ckb_mock_tx_types::{MockInput, MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, TransactionScriptsVerifier};
 use ckb_types::{
