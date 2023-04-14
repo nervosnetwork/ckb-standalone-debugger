@@ -5,3 +5,4 @@
 - [mock_tx.md](./mock_tx.md): We can download a transaction from the network and execute it locally.
 - [out_of_memory.md](./out_of_memory.md): If your code triggers OOM, then ckb-debugger will print out the function call stack.
 - [print_log.md](./print_log.md): Tracing program execution by printing logs is a common operation.
+- [spawn.md](./spawn.md): Introduction for syscall spawn and DSL in mock_tx.json.

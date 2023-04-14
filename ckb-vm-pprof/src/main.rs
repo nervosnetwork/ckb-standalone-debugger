@@ -24,13 +24,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let code_data = std::fs::read(fl_bin)?;
     let code = ckb_vm::Bytes::from(code_data);
-    let isa = ckb_vm::ISA_IMC | ckb_vm::ISA_B | ckb_vm::ISA_MOP;
+    let isa = ckb_vm::ISA_IMC | ckb_vm::ISA_A | ckb_vm::ISA_B | ckb_vm::ISA_MOP;
     let default_core_machine = ckb_vm::DefaultCoreMachine::<
         u64,
         ckb_vm::memory::wxorx::WXorXMemory<ckb_vm::memory::sparse::SparseMemory<u64>>,
-    >::new(isa, ckb_vm::machine::VERSION1, 1 << 32);
+    >::new(isa, ckb_vm::machine::VERSION2, 1 << 32);
     let default_machine = ckb_vm::DefaultMachineBuilder::new(default_core_machine)
-        .instruction_cycle_func(Box::new(ckb_vm_pprof::instruction_cycles))
+        .instruction_cycle_func(Box::new(ckb_vm_pprof::estimate_cycles))
         .build();
     let profile = ckb_vm_pprof::Profile::new(&code)?;
     let mut machine = ckb_vm_pprof::PProfMachine::new(default_machine, profile);

@@ -547,6 +547,30 @@ impl<
 impl<R: Register, M: SupportMachine + CoreMachine<REG = R>, A> Memory for GdbStubHandler<M, A> {
     type REG = R;
 
+    fn new() -> Self {
+        todo!()
+    }
+
+    fn new_with_memory(_: usize) -> Self {
+        todo!()
+    }
+
+    fn memory_size(&self) -> usize {
+        self.machine.memory().memory_size()
+    }
+
+    fn load_bytes(&mut self, addr: u64, size: u64) -> Result<bytes::Bytes, ckb_vm::Error> {
+        self.machine.memory_mut().load_bytes(addr, size)
+    }
+
+    fn lr(&self) -> &<Self as Memory>::REG {
+        self.machine.memory().lr()
+    }
+
+    fn set_lr(&mut self, addr: &<Self as Memory>::REG) {
+        self.machine.memory_mut().set_lr(addr)
+    }
+
     fn init_pages(
         &mut self,
         addr: u64,
