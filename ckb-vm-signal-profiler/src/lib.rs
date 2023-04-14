@@ -116,7 +116,7 @@ struct UnwindInfo {
     // initial_address: u64,
 }
 
-impl<'a, 'b> StackUnwinder<'a> {
+impl<'a> StackUnwinder<'a> {
     fn new(context: &'a DebugContext, machine: &'a mut AsmMachine) -> Self {
         let mut registers = [None; 32];
         for (i, v) in machine.machine.registers().iter().enumerate() {

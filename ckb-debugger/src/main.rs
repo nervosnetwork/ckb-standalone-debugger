@@ -1,13 +1,15 @@
+use ckb_chain_spec::consensus::ConsensusBuilder;
 use ckb_debugger_api::check;
 use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{
-    cost_model::{instruction_cycles, transferred_byte_cycles},
-    ScriptGroupType, ScriptVersion, TransactionScriptsVerifier,
+    cost_model::transferred_byte_cycles, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv,
 };
 use ckb_types::core::cell::resolve_transaction;
+use ckb_types::core::HeaderView;
 use ckb_types::packed::Byte32;
+use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::{
     decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, SupportMachine, WXorXMemory,
 };
@@ -37,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
 
     let default_max_cycles = format!("{}", 70_000_000u64);
-    let default_script_version = "1";
+    let default_script_version = "2";
     let default_mode = "full";
 
     let matches = App::new("ckb-debugger")
@@ -212,7 +214,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let verifier_script_hash = if matches_tx_file.is_none() {
         let mut b = [0u8; 32];
         hex_decode_fallback(
-            b"8f59e340cfbea088720265cef0fd9afa4e420bf27c7b3dc8aebf6c6eda453e57",
+            b"51d98e5112c1da30d758fc9211e01f86291e64caf399008f20d17b009765ecbd",
             &mut b[..],
         );
         Byte32::new(b)
@@ -271,6 +273,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let verifier_script_version = match matches_script_version {
         "0" => ScriptVersion::V0,
         "1" => ScriptVersion::V1,
+        "2" => ScriptVersion::V2,
         _ => panic!("wrong script version"),
     };
     let verifier_resource = Resource::from_both(&verifier_mock_tx, DummyResourceLoader {})?;
@@ -280,7 +283,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &verifier_resource,
         &verifier_resource,
     )?;
-    let mut verifier = TransactionScriptsVerifier::new(Arc::new(verifier_resolve_transaction), verifier_resource);
+    let consensus = Arc::new(ConsensusBuilder::default().build());
+    let tx_env = Arc::new(TxVerifyEnv::new_commit(&HeaderView::new_advanced_builder().build()));
+    let mut verifier = TransactionScriptsVerifier::new(
+        Arc::new(verifier_resolve_transaction),
+        verifier_resource,
+        consensus.clone(),
+        tx_env.clone(),
+    );
     verifier.set_debug_printer(Box::new(move |_hash: &Byte32, message: &str| {
         println!("{}", message);
     }));
@@ -301,11 +311,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         #[cfg(feature = "stdio")]
         let mut machine_builder = DefaultMachineBuilder::new(machine_core)
-            .instruction_cycle_func(Box::new(instruction_cycles))
+            .instruction_cycle_func(Box::new(estimate_cycles))
             .syscall(Box::new(Stdio::new(false)));
         #[cfg(not(feature = "stdio"))]
         let mut machine_builder =
-            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(instruction_cycles));
+            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(estimate_cycles));
         if let Some(data) = matches_dump_file {
             machine_builder = machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
         }
