@@ -1,10 +1,9 @@
-use ckb_jsonrpc_types::{CellDep, CellInput};
-use ckb_mock_tx_types::{MockCellDep, MockInput, MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
+use ckb_mock_tx_types::{MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, TransactionScriptsVerifier};
 use ckb_types::{
     bytes::Bytes,
     core::{cell::resolve_transaction, Cycle, HeaderView},
-    packed::{self, Byte32, CellOutput, OutPoint},
+    packed::{Byte32, CellOutput, OutPoint},
     prelude::*,
     H256,
 };
@@ -130,37 +129,4 @@ pub fn run_json_with_printer(
     )
     .into();
     to_json_string(&json_result).expect("JSON serialization should not fail!")
-}
-
-pub fn check(tx: &ReprMockTransaction) -> Result<(), String> {
-    if tx.mock_info.cell_deps.len() != tx.tx.cell_deps.len() {
-        return Err(format!("Error: tx.mock_info.cell_deps.len() != tx.tx.cell_deps.len()"));
-    } else {
-        for i in 0..tx.mock_info.cell_deps.len() {
-            let mock_cell_dep: MockCellDep = tx.mock_info.cell_deps[i].clone().into();
-            let cell_dep: CellDep = tx.tx.cell_deps[i].clone();
-            let cell_dep: packed::CellDep = cell_dep.into();
-            if mock_cell_dep.cell_dep != cell_dep {
-                return Err(format!("Error: cell_deps at index {} is mismatched", i));
-            }
-        }
-    }
-    if tx.mock_info.inputs.len() != tx.tx.inputs.len() {
-        return Err(format!("Error: tx.mock_info.inputs.len() != tx.tx.inputs.len() "));
-    } else {
-        for i in 0..tx.mock_info.inputs.len() {
-            let mock_input: MockInput = tx.mock_info.inputs[i].clone().into();
-            let input: CellInput = tx.tx.inputs[i].clone();
-            let input: packed::CellInput = input.into();
-            if mock_input.input != input {
-                return Err(format!("Error: inputs at index {} is mismatched", i));
-            }
-        }
-    }
-    if tx.mock_info.header_deps.len() != tx.tx.header_deps.len() {
-        return Err(format!(
-            "Error: tx.mock_info.header_deps.len() != tx.tx.header_deps.len() "
-        ));
-    }
-    Ok(())
 }
