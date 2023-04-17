@@ -1,9 +1,10 @@
-use ckb_mock_tx_types::{MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
+use ckb_jsonrpc_types::{self, CellDep, CellInput, DepType};
+use ckb_mock_tx_types::{MockInput, MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, TransactionScriptsVerifier};
 use ckb_types::{
     bytes::Bytes,
     core::{cell::resolve_transaction, Cycle, HeaderView},
-    packed::{Byte32, CellOutput, OutPoint},
+    packed::{self, Byte32, CellOutput, OutPoint, OutPointVec},
     prelude::*,
     H256,
 };
@@ -129,4 +130,76 @@ pub fn run_json_with_printer(
     )
     .into();
     to_json_string(&json_result).expect("JSON serialization should not fail!")
+}
+
+fn parse_dep_group_data(slice: &[u8]) -> Result<OutPointVec, String> {
+    if slice.is_empty() {
+        Err("data is empty".to_owned())
+    } else {
+        match OutPointVec::from_slice(slice) {
+            Ok(v) => {
+                if v.is_empty() {
+                    Err("dep group is empty".to_owned())
+                } else {
+                    Ok(v)
+                }
+            }
+            Err(err) => Err(err.to_string()),
+        }
+    }
+}
+
+pub fn check(tx: &ReprMockTransaction) -> Result<(), String> {
+    let mut mock_cell_deps: Vec<CellDep> =
+        tx.mock_info.cell_deps.iter().map(|c| c.cell_dep.clone()).collect::<Vec<_>>();
+    let mut cell_deps = tx.tx.cell_deps.iter().map(|c| c.clone()).collect::<Vec<_>>();
+
+    for dep in &tx.mock_info.cell_deps {
+        if dep.cell_dep.dep_type == DepType::DepGroup {
+            let sub_outpoints = parse_dep_group_data(dep.data.as_bytes())?;
+            let outpoints: Vec<packed::OutPoint> = sub_outpoints.into_iter().collect::<Vec<_>>();
+            let resolved_cell_deps: Vec<CellDep> = outpoints
+                .into_iter()
+                .map(|o| CellDep {
+                    out_point: o.into(),
+                    dep_type: DepType::Code,
+                })
+                .collect::<Vec<_>>();
+            cell_deps.extend(resolved_cell_deps);
+        }
+    }
+    let compare = |a: &CellDep, b: &CellDep| {
+        let left = serde_json::to_string(a).unwrap();
+        let right = serde_json::to_string(b).unwrap();
+        left.cmp(&right)
+    };
+    mock_cell_deps.sort_by(compare);
+    cell_deps.sort_by(compare);
+
+    if mock_cell_deps.len() != cell_deps.len() {
+        return Err(format!("mock_cell_deps.len() != cell_deps.len("));
+    } else {
+        for (a, b) in mock_cell_deps.into_iter().zip(cell_deps.into_iter()) {
+            if a != b {
+                return Err(format!("CellDeps {:?} != {:?}", a, b));
+            }
+        }
+    }
+
+    if tx.mock_info.inputs.len() != tx.tx.inputs.len() {
+        return Err(format!("tx.mock_info.inputs.len() != tx.tx.inputs.len() "));
+    } else {
+        for i in 0..tx.mock_info.inputs.len() {
+            let mock_input: MockInput = tx.mock_info.inputs[i].clone().into();
+            let input: CellInput = tx.tx.inputs[i].clone();
+            let input: packed::CellInput = input.into();
+            if mock_input.input != input {
+                return Err(format!("inputs at index {} is mismatched", i));
+            }
+        }
+    }
+    if tx.mock_info.header_deps.len() != tx.tx.header_deps.len() {
+        return Err(format!("tx.mock_info.header_deps.len() != tx.tx.header_deps.len() "));
+    }
+    Ok(())
 }
