@@ -187,7 +187,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         };
         let repr_mock_tx: ReprMockTransaction = from_json_str(&mock_tx)?;
-        check(&repr_mock_tx)?;
+        if let Err(msg) = check(&repr_mock_tx) {
+            eprintln!("Warning, potential format error found: {}", msg);
+            eprintln!("If tx-file is crafted manually, please double check it.")
+        }
         repr_mock_tx.into()
     };
     let verifier_script_group_type = {
