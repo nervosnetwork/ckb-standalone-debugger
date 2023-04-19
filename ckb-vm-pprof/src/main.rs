@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ckb_vm::memory::wxorx::WXorXMemory<ckb_vm::memory::sparse::SparseMemory<u64>>,
     >::new(isa, ckb_vm::machine::VERSION1, 1 << 32);
     let default_machine = ckb_vm::DefaultMachineBuilder::new(default_core_machine)
-        .instruction_cycle_func(&ckb_vm_pprof::instruction_cycles)
+        .instruction_cycle_func(Box::new(ckb_vm_pprof::instruction_cycles))
         .build();
     let profile = ckb_vm_pprof::Profile::new(&code)?;
     let mut machine = ckb_vm_pprof::PProfMachine::new(default_machine, profile);

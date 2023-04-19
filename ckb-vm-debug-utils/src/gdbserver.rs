@@ -66,13 +66,13 @@ impl WatchPointStatus {
     }
 }
 
-pub struct GdbHandler<'a, M: Memory<REG = u64> + Default> {
-    machine: RefCell<DefaultMachine<'a, DefaultCoreMachine<u64, M>>>,
+pub struct GdbHandler<M: Memory<REG = u64> + Default> {
+    machine: RefCell<DefaultMachine<DefaultCoreMachine<u64, M>>>,
     breakpoints: RefCell<Vec<Breakpoint>>,
     watchpoints: RefCell<Vec<WatchPointStatus>>,
 }
 
-impl<'a, M: Memory<REG = u64> + Default> GdbHandler<'a, M> {
+impl<M: Memory<REG = u64> + Default> GdbHandler<M> {
     fn at_breakpoint(&self) -> bool {
         let pc = *self.machine.borrow().pc();
         self.breakpoints.borrow().iter().any(|b| b.addr == pc)
@@ -87,7 +87,7 @@ impl<'a, M: Memory<REG = u64> + Default> GdbHandler<'a, M> {
         Ok(result)
     }
 
-    pub fn new(machine: DefaultMachine<'a, DefaultCoreMachine<u64, M>>) -> Self {
+    pub fn new(machine: DefaultMachine<DefaultCoreMachine<u64, M>>) -> Self {
         GdbHandler {
             machine: RefCell::new(machine),
             breakpoints: RefCell::new(vec![]),
@@ -96,7 +96,7 @@ impl<'a, M: Memory<REG = u64> + Default> GdbHandler<'a, M> {
     }
 }
 
-impl<'a, M: Memory<REG = u64> + Default> Handler for GdbHandler<'a, M> {
+impl<M: Memory<REG = u64> + Default> Handler for GdbHandler<M> {
     fn attached(&self, _pid: Option<u64>) -> Result<ProcessType, Error> {
         Ok(ProcessType::Created)
     }

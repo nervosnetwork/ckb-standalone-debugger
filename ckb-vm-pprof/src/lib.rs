@@ -201,9 +201,9 @@ impl Profile {
         writer.flush().unwrap();
     }
 
-    fn step<'a, R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>>(
+    fn step<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>>(
         &mut self,
-        machine: &mut DefaultMachine<'a, Inner>,
+        machine: &mut DefaultMachine<Inner>,
         decoder: &mut Decoder,
     ) -> Result<(), Error> {
         let pc = machine.pc().to_u64();
@@ -323,12 +323,12 @@ impl Profile {
     }
 }
 
-pub struct PProfMachine<'a, Inner> {
-    pub machine: DefaultMachine<'a, Inner>,
+pub struct PProfMachine<Inner> {
+    pub machine: DefaultMachine<Inner>,
     pub profile: Profile,
 }
 
-impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> CoreMachine for PProfMachine<'_, Inner> {
+impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> CoreMachine for PProfMachine<Inner> {
     type REG = <Inner as CoreMachine>::REG;
     type MEM = <Inner as CoreMachine>::MEM;
 
@@ -369,7 +369,7 @@ impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> C
     }
 }
 
-impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> Machine for PProfMachine<'_, Inner> {
+impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> Machine for PProfMachine<Inner> {
     fn ecall(&mut self) -> Result<(), Error> {
         self.machine.ecall()
     }
@@ -379,8 +379,8 @@ impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> M
     }
 }
 
-impl<'a, R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> PProfMachine<'a, Inner> {
-    pub fn new(machine: DefaultMachine<'a, Inner>, profile: Profile) -> Self {
+impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> PProfMachine<Inner> {
+    pub fn new(machine: DefaultMachine<Inner>, profile: Profile) -> Self {
         Self { machine, profile }
     }
 
@@ -406,8 +406,8 @@ impl<'a, R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M
     }
 }
 
-pub fn quick_start<'a>(
-    syscalls: Vec<Box<(dyn Syscalls<DefaultCoreMachine<u64, WXorXMemory<SparseMemory<u64>>>> + 'a)>>,
+pub fn quick_start(
+    syscalls: Vec<Box<(dyn Syscalls<DefaultCoreMachine<u64, WXorXMemory<SparseMemory<u64>>>>)>>,
     fl_bin: &str,
     fl_arg: Vec<&str>,
     output_filename: &str,
@@ -420,8 +420,8 @@ pub fn quick_start<'a>(
         u64,
         ckb_vm::memory::wxorx::WXorXMemory<ckb_vm::memory::sparse::SparseMemory<u64>>,
     >::new(isa, ckb_vm::machine::VERSION1, 1 << 32);
-    let mut builder =
-        DefaultMachineBuilder::new(default_core_machine).instruction_cycle_func(&cost_model::instruction_cycles);
+    let mut builder = DefaultMachineBuilder::new(default_core_machine)
+        .instruction_cycle_func(Box::new(cost_model::instruction_cycles));
     builder = syscalls.into_iter().fold(builder, |builder, syscall| builder.syscall(syscall));
     let default_machine = builder.build();
     let profile = Profile::new(&code).unwrap();
