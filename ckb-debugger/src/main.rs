@@ -12,8 +12,7 @@ use ckb_script::{
 use ckb_types::core::cell::resolve_transaction;
 use ckb_types::packed::Byte32;
 use ckb_vm::{
-    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, SparseMemory,
-    SupportMachine, WXorXMemory,
+    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, SupportMachine, WXorXMemory,
 };
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
@@ -27,9 +26,15 @@ use serde_plain::from_str as from_plain_str;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::{collections::HashSet, io::Read};
 mod misc;
 use misc::{FileOperation, FileStream, HumanReadableCycles, Random, TimeNow};
+
+#[cfg(feature = "probes")]
+type MemoryType = ckb_vm::FlatMemory<u64>;
+#[cfg(not(feature = "probes"))]
+type MemoryType = ckb_vm::SparseMemory<u64>;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
@@ -73,7 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Arg::with_name("mode")
                 .long("mode")
                 .help("Execution mode of debugger")
-                .possible_values(&["full", "fast", "gdb"])
+                .possible_values(&["full", "fast", "gdb", "probe"])
                 .default_value(&default_mode)
                 .required(true)
                 .takes_value(true),
@@ -117,6 +122,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("step")
                 .multiple(true)
                 .help("Set to true to enable step mode, where we print PC address for each instruction"),
+        )
+        .arg(
+            Arg::with_name("prompt")
+                .long("prompt")
+                .required(false)
+                .takes_value(false)
+                .help("Set to true to prompt for stdin input before executing"),
         )
         .arg(
             Arg::with_name("tx-file")
@@ -273,7 +285,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &verifier_resource,
         &verifier_resource,
     )?;
-    let mut verifier = TransactionScriptsVerifier::new(&verifier_resolve_transaction, &verifier_resource);
+    let mut verifier = TransactionScriptsVerifier::new(Arc::new(verifier_resolve_transaction), verifier_resource);
     verifier.set_debug_printer(Box::new(move |hash: &Byte32, message: &str| {
         if long_log {
             debug!("script group: {} DEBUG OUTPUT: {}", hash, message);
@@ -291,7 +303,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let machine_init = || {
-        let machine_core = DefaultCoreMachine::<u64, WXorXMemory<SparseMemory<u64>>>::new(
+        let machine_core = DefaultCoreMachine::<u64, WXorXMemory<MemoryType>>::new(
             verifier_script_version.vm_isa(),
             verifier_script_version.vm_version(),
             verifier_max_cycles,
@@ -301,7 +313,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .instruction_cycle_func(&instruction_cycles)
             .syscall(Box::new(Stdio::new(false)));
         #[cfg(not(feature = "stdio"))]
-        let mut machine_builder = DefaultMachineBuilder::new(machine_core).instruction_cycle_func(&instruction_cycles);
+        let mut machine_builder =
+            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(instruction_cycles));
         if let Some(data) = matches_dump_file {
             machine_builder = machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
         }
@@ -320,44 +333,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         machine
     };
 
-    let machine_step = |machine: &mut PProfMachine<
-        DefaultCoreMachine<u64, WXorXMemory<SparseMemory<u64>>>,
-    >|
-     -> Result<i8, ckb_vm::Error> {
-        machine.machine.set_running(true);
-        let mut decoder = build_decoder::<u64>(
-            verifier_script_version.vm_isa(),
-            verifier_script_version.vm_version(),
-        );
-        let mut step_result = Ok(());
-        let skip_range = if let (Some(s), Some(e)) = (matches_skip_start, matches_skip_end) {
-            let s = u64::from_str_radix(s.trim_start_matches("0x"), 16).expect("parse skip start");
-            let e = u64::from_str_radix(e.trim_start_matches("0x"), 16).expect("parse skip end");
-            Some(std::ops::Range { start: s, end: e })
-        } else {
-            None
+    let machine_step =
+        |machine: &mut PProfMachine<DefaultCoreMachine<u64, WXorXMemory<MemoryType>>>| -> Result<i8, ckb_vm::Error> {
+            machine.machine.set_running(true);
+            let mut decoder =
+                build_decoder::<u64>(verifier_script_version.vm_isa(), verifier_script_version.vm_version());
+            let mut step_result = Ok(());
+            let skip_range = if let (Some(s), Some(e)) = (matches_skip_start, matches_skip_end) {
+                let s = u64::from_str_radix(s.trim_start_matches("0x"), 16).expect("parse skip start");
+                let e = u64::from_str_radix(e.trim_start_matches("0x"), 16).expect("parse skip end");
+                Some(std::ops::Range { start: s, end: e })
+            } else {
+                None
+            };
+            while machine.machine.running() && step_result.is_ok() {
+                let mut print_info = true;
+                if let Some(skip_range) = &skip_range {
+                    if skip_range.contains(machine.machine.pc()) {
+                        print_info = false;
+                    }
+                }
+                if print_info {
+                    println!("PC: 0x{:x}", machine.machine.pc());
+                    if matches_step > 1 {
+                        println!("Machine: {}", machine.machine);
+                    }
+                }
+                step_result = machine.machine.step(&mut decoder);
+            }
+            if step_result.is_err() {
+                Err(step_result.unwrap_err())
+            } else {
+                Ok(machine.machine.exit_code())
+            }
         };
-        while machine.machine.running() && step_result.is_ok() {
-            let mut print_info = true;
-            if let Some(skip_range) = &skip_range {
-                if skip_range.contains(machine.machine.pc()) {
-                    print_info = false;
-                }
-            }
-            if print_info {
-                println!("PC: 0x{:x}", machine.machine.pc());
-                if matches_step > 1 {
-                    println!("Machine: {}", machine.machine);
-                }
-            }
-            step_result = machine.machine.step(&mut decoder);
-        }
-        if step_result.is_err() {
-            Err(step_result.unwrap_err())
-        } else {
-            Ok(machine.machine.exit_code())
-        }
-    };
 
     if matches_mode == "full" {
         let mut machine = PProfMachine::new(machine_init(), Profile::new(&verifier_program)?);
@@ -435,6 +444,76 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         return Ok(());
+    }
+
+    if matches_mode == "probe" {
+        #[cfg(not(feature = "probes"))]
+        {
+            println!("To use probe mode, feature probes must be enabled!");
+            return Ok(());
+        }
+
+        #[cfg(feature = "probes")]
+        {
+            use ckb_vm::{instructions::execute, Register};
+            use probe::probe;
+            use std::io::BufRead;
+
+            let prompt = matches.is_present("prompt");
+            if prompt {
+                println!("Enter to start executing:");
+                let mut line = String::new();
+                std::io::stdin().lock().read_line(&mut line).expect("read");
+            }
+
+            let mut machine = machine_init();
+            let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
+            let transferred_cycles = transferred_byte_cycles(bytes);
+            machine.add_cycles(transferred_cycles)?;
+
+            machine.set_running(true);
+            let mut decoder =
+                build_decoder::<u64>(verifier_script_version.vm_isa(), verifier_script_version.vm_version());
+
+            let mut step_result = Ok(());
+            while machine.running() && step_result.is_ok() {
+                let pc = machine.pc().to_u64();
+                step_result = decoder
+                    .decode(machine.memory_mut(), pc)
+                    .and_then(|inst| {
+                        let cycles = machine.instruction_cycle_func()(inst);
+                        machine.add_cycles(cycles).map(|_| inst)
+                    })
+                    .and_then(|inst| {
+                        let regs = machine.registers().as_ptr();
+                        let memory = (&mut machine.memory_mut().inner_mut()).as_ptr();
+                        let cycles = machine.cycles();
+                        probe!(ckb_vm, execute_inst, pc, cycles, inst, regs, memory);
+                        let r = execute(inst, &mut machine);
+                        let cycles = machine.cycles();
+                        probe!(
+                            ckb_vm,
+                            execute_inst_end,
+                            pc,
+                            cycles,
+                            inst,
+                            regs,
+                            memory,
+                            if r.is_ok() { 0 } else { 1 }
+                        );
+                        r
+                    });
+            }
+            let result = step_result.map(|_| machine.exit_code());
+
+            println!("Run result: {:?}", result);
+            println!("Total cycles consumed: {}", HumanReadableCycles(machine.cycles()));
+            println!(
+                "Transfer cycles: {}, running cycles: {}",
+                HumanReadableCycles(transferred_cycles),
+                HumanReadableCycles(machine.cycles() - transferred_cycles)
+            );
+        }
     }
 
     Ok(())

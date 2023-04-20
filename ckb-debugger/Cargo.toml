@@ -7,18 +7,19 @@ authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2021"
 
 [features]
-default = []
+default = ["probes"]
 stdio = ["ckb-vm-debug-utils/stdio"]
+probes = ["probe", "ckb-script/flatmemory"]
 
 [dependencies]
 clap = "2.33.0"
-ckb-chain-spec = "=0.108.1"
+ckb-chain-spec = "=0.109.0"
 ckb-debugger-api = { path = "../ckb-debugger-api" }
-ckb-hash = "=0.108.1"
+ckb-hash = "=0.109.0"
 ckb-mock-tx-types = { path = "../ckb-mock-tx-types" }
-ckb-script = { version="=0.108.1", default-features = false }
-ckb-types = "=0.108.1"
-ckb-vm = { version = "=0.22.2" }
+ckb-script = { version="=0.109.0", default-features = false }
+ckb-types = "=0.109.0"
+ckb-vm = { version = "=0.23.2" }
 ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils" }
 ckb-vm-pprof = { path = "../ckb-vm-pprof" }
 env_logger = "0.4.3"
@@ -31,3 +32,4 @@ log = "0.4.0"
 rand = "0.8.5"
 serde_json = "1.0"
 serde_plain = "1.0"
+probe = { version = "0.5.0", optional = true }
