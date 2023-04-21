@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate log;
-
 use ckb_debugger_api::check;
 use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
@@ -169,7 +166,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_tx_file = matches.value_of("tx-file");
     let matches_args = matches.values_of("args").unwrap_or_default();
     let read_file_name = matches.value_of("read-file");
-    let long_log = matches.is_present("long-log");
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
     let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
@@ -232,7 +228,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ScriptGroupType::Lock => {
                 if cell_type.is_none() {
                     cell_type = Some("input");
-                    println!("Lock script always runs from input cells. Assume --cell-type = input");
                 }
                 if cell_index.is_none() {
                     cell_index = Some("0");
@@ -285,12 +280,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &verifier_resource,
     )?;
     let mut verifier = TransactionScriptsVerifier::new(Arc::new(verifier_resolve_transaction), verifier_resource);
-    verifier.set_debug_printer(Box::new(move |hash: &Byte32, message: &str| {
-        if long_log {
-            debug!("script group: {} DEBUG OUTPUT: {}", hash, message);
-        } else {
-            debug!("SCRIPT>{}", message);
-        }
+    verifier.set_debug_printer(Box::new(move |_hash: &Byte32, message: &str| {
+        println!("{}", message);
     }));
     let verifier_script_group = verifier.find_script_group(verifier_script_group_type, &verifier_script_hash).unwrap();
     let verifier_program = match matches_bin {
