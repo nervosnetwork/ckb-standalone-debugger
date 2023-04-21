@@ -7,8 +7,9 @@ authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2021"
 
 [features]
-default = []
+default = ["probes"]
 stdio = ["ckb-vm-debug-utils/stdio"]
+probes = ["probe", "ckb-script/flatmemory"]
 
 [dependencies]
 clap = "2.33.0"
@@ -31,3 +32,4 @@ log = "0.4.0"
 rand = "0.8.5"
 serde_json = "1.0"
 serde_plain = "1.0"
+probe = { version = "0.5.0", optional = true }

@@ -377,7 +377,7 @@ impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> M
     }
 }
 
-impl<'a, R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> PProfMachine<Inner> {
+impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> PProfMachine<Inner> {
     pub fn new(machine: DefaultMachine<Inner>, profile: Profile) -> Self {
         Self { machine, profile }
     }
