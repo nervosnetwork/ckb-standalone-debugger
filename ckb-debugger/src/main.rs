@@ -507,10 +507,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 let arg3 = machine.registers()[A3].to_u64();
                                 let arg4 = machine.registers()[A4].to_u64();
                                 let arg5 = machine.registers()[A5].to_u64();
+                                // TODO: Figure out if we also need to expose memory and registers
+                                // to tracers.
                                 probe::probe!(ckb_vm, syscall, code, arg0, arg1, arg2, arg3, arg4, arg5);
                                 let r = execute_instruction(inst, &mut machine);
                                 let ret_code = machine.registers()[A0].to_u64();
                                 let ret_code2 = machine.registers()[A1].to_u64();
+                                // TODO: Figure out if we also need to expose memory and registers
+                                // to tracers.
                                 probe::probe!(ckb_vm, syscall_ret, code, ret_code, ret_code2);
                                 r
                             }
