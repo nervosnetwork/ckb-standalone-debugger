@@ -17,3 +17,5 @@ gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol
 libc = { version = "0.2.47", optional = true }
 log = "0.4.0"
 nix = { version = "0.26.2", optional = true }
+gdbstub = "0.6.6"
+gdbstub_arch = "0.2.4"
