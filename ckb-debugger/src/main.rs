@@ -446,11 +446,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         #[cfg(feature = "probes")]
         {
-            use ckb_vm::{
-                instructions::{execute_instruction, extract_opcode, instruction_length, insts, Itype, Utype},
-                registers::{A0, A1, A2, A3, A4, A5, A7},
-                Register,
-            };
+            use ckb_vm::{instructions::execute, Register};
             use probe::probe;
             use std::io::BufRead;
 
@@ -484,82 +480,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let memory = (&mut machine.memory_mut().inner_mut()).as_ptr();
                         let cycles = machine.cycles();
                         probe!(ckb_vm, execute_inst, pc, cycles, inst, regs, memory);
-
-                        // We replicate the instuctions execution logic from ckb-vm to expose
-                        // information to users via USDT.
-                        // https://github.com/nervosnetwork/ckb-vm/blob/879a5ef4044649be820117900ca8f98f74c3397e/src/instructions/execute.rs#L1197-L1206
-                        // We should try our best to reuse the code in ckb-vm lest diverge too
-                        // much from ckb-vm, e.g. use execute_instruction when possible.
-                        let instruction_size = instruction_length(inst);
-                        let next_pc = machine.pc().overflowing_add(&u64::from_u8(instruction_size));
-                        machine.update_pc(next_pc);
-                        let op = extract_opcode(inst);
-                        // Below we try to decode some useful instructions and expose some useful
-                        // information. Every state change should carry out by calling
-                        // execute_instruction. This way we don't have to maintain instuctions
-                        // execution logic.
-                        let r = match op {
-                            insts::OP_ECALL => {
-                                let code = machine.registers()[A7].to_u64();
-                                let arg0 = machine.registers()[A0].to_u64();
-                                let arg1 = machine.registers()[A1].to_u64();
-                                let arg2 = machine.registers()[A2].to_u64();
-                                let arg3 = machine.registers()[A3].to_u64();
-                                let arg4 = machine.registers()[A4].to_u64();
-                                let arg5 = machine.registers()[A5].to_u64();
-                                // TODO: Figure out if we also need to expose memory and registers
-                                // to tracers.
-                                probe::probe!(ckb_vm, syscall, code, arg0, arg1, arg2, arg3, arg4, arg5);
-                                let r = execute_instruction(inst, &mut machine);
-                                let ret_code = machine.registers()[A0].to_u64();
-                                let ret_code2 = machine.registers()[A1].to_u64();
-                                // TODO: Figure out if we also need to expose memory and registers
-                                // to tracers.
-                                probe::probe!(ckb_vm, syscall_ret, code, ret_code, ret_code2);
-                                r
-                            }
-                            insts::OP_JALR => {
-                                let i = Itype(inst);
-                                let size = instruction_length(inst);
-                                let link = machine.pc().overflowing_add(&u64::from_u8(size));
-                                let (mut next_pc, _) =
-                                    machine.registers()[i.rs1()].overflowing_add(u64::from_i32(i.immediate_s()));
-                                next_pc = next_pc & (!u64::one());
-                                probe::probe!(ckb_vm, jump, link, next_pc, regs, memory);
-                                execute_instruction(inst, &mut machine)
-                            }
-                            insts::OP_FAR_JUMP_REL => {
-                                let i = Utype(inst);
-                                let size = instruction_length(inst);
-                                let link = machine.pc().overflowing_add(&u64::from_u8(size));
-                                let next_pc =
-                                    machine.pc().overflowing_add(&u64::from_i32(i.immediate_s())) & (!u64::one());
-                                probe::probe!(ckb_vm, jump, link.to_u64(), next_pc.to_u64(), regs, memory);
-                                execute_instruction(inst, &mut machine)
-                            }
-                            insts::OP_FAR_JUMP_ABS => {
-                                let i = Utype(inst);
-                                let size = instruction_length(inst);
-                                let link = machine.pc().overflowing_add(&u64::from_u8(size));
-                                let next_pc = u64::from_i32(i.immediate_s()) & (!u64::one());
-                                probe::probe!(ckb_vm, jump, link.to_u64(), next_pc.to_u64(), regs, memory);
-                                execute_instruction(inst, &mut machine)
-                            }
-                            insts::OP_JAL => {
-                                let i = Utype(inst);
-                                let imm = i.immediate_s();
-                                let xbytes = instruction_length(inst);
-                                let link = machine.pc().overflowing_add(&u64::from_u8(xbytes));
-                                let next_pc = machine.pc().overflowing_add(&u64::from_i32(imm));
-                                probe::probe!(ckb_vm, jump, link.to_u64(), next_pc.to_u64(), regs, memory);
-                                execute_instruction(inst, &mut machine)
-                            }
-                            _ => execute_instruction(inst, &mut machine),
-                        };
-                        machine.commit_pc();
-
+                        let r = execute(inst, &mut machine);
                         let cycles = machine.cycles();
-
                         probe!(
                             ckb_vm,
                             execute_inst_end,
