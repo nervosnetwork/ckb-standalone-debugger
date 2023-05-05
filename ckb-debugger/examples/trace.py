@@ -51,17 +51,62 @@ BPF_HASH(memory_addrs, uint64_t);
 BPF_HASH(jump_from_addresses, uint64_t);
 BPF_HASH(parameter1_counts, uint64_t);
 BPF_HASH(parameter2_counts, uint64_t);
+BPF_HASH(jump_stats, uint64_t);
 
-int do_jump(struct pt_regs *ctx) {
-    // link is always current_pc + instruction_length()
-    // Initialize link, so that bpf verifier does not report error like R8 !read_ok
-    uint64_t link = 0;
-    bpf_usdt_readarg(1, ctx, &link);
+int do_execute(struct pt_regs *ctx) {
+    uint64_t pc = 0;
+    bpf_usdt_readarg(1, ctx, &pc);
 
-    // next_pc is the pc address that this jump instruction intends to jump to.
-    // Initialize link, so that bpf verifier does not report error like R8 !read_ok
-    uint64_t next_pc = 0;
-    bpf_usdt_readarg(2, ctx, &next_pc);
+    Instruction instruction = 0;
+    bpf_usdt_readarg(3, ctx, &instruction);
+
+    uint64_t regs_addr = 0;
+    bpf_usdt_readarg(4, ctx, &regs_addr);
+
+    uint64_t *regs_ptr = (uint64_t *)regs_addr;
+
+    InstructionOpcode opcode = EXTRACT_OPCODE(instruction);
+    uint8_t instruction_length = INSTRUCTION_LENGTH(instruction);
+    // The return address that we will jump to when this jump instruction finishes,
+    // normally current_pc + instruction_length.
+    uint64_t link;
+    // The address that this jump instruction will jump to.
+    uint64_t next_pc;
+    SImmediate imm;
+    RegisterIndex ind;
+
+    // Decode the instuction to get function calls/returns information.
+    switch (opcode)
+    {
+        case OP_JAL:
+            link = pc + instruction_length;
+            imm = UTYPE_IMMEDIATE_S(instruction);
+            next_pc = pc + imm;
+            break;
+        case OP_JALR_VERSION0:
+        case OP_JALR_VERSION1:
+            link = pc + instruction_length;
+            imm = ITYPE_IMMEDIATE_S(instruction);
+            ind = ITYPE_RS1(instruction);
+            uint64_t reg_value = 0;
+            bpf_probe_read_user(&reg_value, sizeof(uint64_t), (void *)(regs_addr + sizeof(uint64_t) * ind));
+            next_pc = (reg_value + imm) & ~1;
+            break;
+        case OP_FAR_JUMP_ABS:
+            link = pc + instruction_length;
+            imm = UTYPE_IMMEDIATE_S(instruction);
+            next_pc = imm & ~1;
+            break;
+        case OP_FAR_JUMP_REL:
+            link = pc + instruction_length;
+            imm = UTYPE_IMMEDIATE_S(instruction);
+            next_pc = (pc + imm) & ~1;
+            break;
+        default:
+            return 0;
+    }
+
+    jump_stats.increment(1);
 
     // x calls a, link = current address in x + instruction_length(), next_pc = start address of a
     // y returns to a, link = current address in y + instruction_length(), next_pc = some address of a
@@ -98,11 +143,8 @@ int do_jump(struct pt_regs *ctx) {
 
     num_of_effective_jumps.increment(1);
 
-    uint64_t regs_addr = 0;
-    bpf_usdt_readarg(3, ctx, &regs_addr);
-
     uint64_t mem_addr = 0;
-    bpf_usdt_readarg(4, ctx, &mem_addr);
+    bpf_usdt_readarg(5, ctx, &mem_addr);
 
     if (is_calling == 1) {
         num_of_calling.increment(1);
@@ -144,7 +186,7 @@ print(bpf_text)
 # Run the ckb-debugger and attach a BPF program to the process. 
 p = Popen(CKB_DEBUGGER_ARGUMENTS, stdin=PIPE)
 u = USDT(pid=int(p.pid))
-u.enable_probe(probe="ckb_vm:jump", fn_name="do_jump")
+u.enable_probe(probe="ckb_vm:execute_inst", fn_name="do_execute")
 include_path = os.path.dirname(os.path.abspath(__file__))
 b = BPF(
     text=bpf_text,
@@ -154,6 +196,10 @@ b = BPF(
 
 # Prime ckb-debugger to execute the program
 p.communicate(input="\n".encode())
+
+num_jump = b["jump_stats"].get(ctypes.c_ulong(1))
+if num_jump:
+    print("Executed jumping-related instructions %s times!" % (num_jump.value))
 
 # Dump the inforamtion saved by the BPF program
 called = b["num_of_effective_jumps"][ctypes.c_ulong(1)].value
