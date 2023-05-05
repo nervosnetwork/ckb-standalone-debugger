@@ -41,69 +41,70 @@ Afterwards, we can list all the defined tracing points with `sudo bpftrace -l 'u
 ```
 usdt:./target/release/ckb-debugger:ckb_vm:execute_inst
 usdt:./target/release/ckb-debugger:ckb_vm:execute_inst_end
-usdt:./target/release/ckb-debugger:ckb_vm:jump
-usdt:./target/release/ckb-debugger:ckb_vm:syscall
-usdt:./target/release/ckb-debugger:ckb_vm:syscall_ret
 ```
 
-Currently there are three major categories of static tracing points defined in ckb-debugger.
-One is used to track the execution of all instructions (including `execute_inst` and `execute_inst_end`),
-another is used track the running and returning of syscalls (including `syscall` and `syscall_ret`). 
-The final one (`jump`) is used to track riscv jump instructions (including both `JAL` and `JARL`).
-We now explain how to use each of these probes.
+Currently there are two static tracing points defined in ckb-debugger.
+One (`execute_inst`) is used to track the execution of all instructions,
+and another trace point (`execute_inst_end`) is reached when the execution of one instruction has finished).
+Both of they have exposed the following variables
+- `pc`, value of current program counter
+- `cycles`, cycles consumed so far
+- `inst`, current instruction (note this instruction is in an internal representation)
+- `regs`, the start address of ckb-vm's registers values in the host
+- `memory`, the start address of ckb-vm's memory in the host
+
+`execute_inst_end` has an additionally parameter to indicate the return value of the instruction execution.
+It is 0 if execution of the instruction has finished normally.
 
 # Usage of ckb-debugger Probes
 Below we give a brief introduction on how to trace programs on ckb-vm with bpftrace and bcc,
 more examples are available in [xxuejie/ckb-vm-bpf-toolkit](https://github.com/xxuejie/ckb-vm-bpf-toolkit).
 
 ## Tracing Istructions
-TODO
+Say we want to trace a syscall. Since the instruction of syscall `ecall` is encoded into `0x2000023` (the details of this instruction encoding can be found at [ckb-vm/instructions.rs](https://github.com/nervosnetwork/ckb-vm/blob/b7d75770875f27ea1ca15ab11cd14a01c7f19f38/definitions/src/instructions.rs)), we can run the following command to trace any syscall (assuming `./target/release/ckb-debugger` is the path of ckb-debugger).
 
-## Tracing Syscalls
-[Syscalls](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0009-vm-syscalls/0009-vm-syscalls.md) are easy to trace with USDT probes.
-We assumes some basic knowledge of how syscalls in ckb-vm works. If there are some unfamiliar concepts,
-you can refer to [rfcs/0009-vm-syscalls.md](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0009-vm-syscalls/0009-vm-syscalls.md) for
-the conventions used in the ckb-vm syscalls.
-
-To print the arguments to the syscall with number 2061 (`ckb_load_tx_hash`), we can just run bpftrace
 ```
-sudo bpftrace -e 'usdt:./target/release/ckb-debugger:ckb_vm:syscall /arg0 == 2061/ { printf("%d, %d, %d, %d, %d, %d\n", arg0, arg1, arg2, arg3, arg4, arg5); }'
+sudo bpftrace -e 'usdt:./target/release/ckb-debugger:ckb_vm:execute_inst /arg2 == 0x2000023/ { printf("%p, %d, %p, %p, %p\n", arg0, arg1, arg2, arg3, arg4); }'
 ```
 
-Here arg0 is the syscall number, and arg1, arg2, arg3, arg4, args5 are the values of registers A0, A1, A2, A3, A4
-(which are arguments passed to the syscall, note due to the limitation to the number of arguments of a USDT probe,
-the content of A5 is not exposed). A sample output is
+An example output of the above command is
 
 ```
 Attaching 1 probe...
-2061, 0, 4188960, 0, 0
-2061, 399744, 4188960, 0, 0
+0x11ffa, 78788, 0x2000023, 0x7ffdbea9bed8, 0x7fb6ff935010
+0x11ffa, 1644225, 0x2000023, 0x7ffdbea9bed8, 0x7fb6ff935010
+0x11ffa, 1645644, 0x2000023, 0x7ffdbea9bed8, 0x7fb6ff935010
+0x15b68, 1968395, 0x2000023, 0x7ffdbea9bed8, 0x7fb6ff935010
 ```
 
-Another thing we can do is to trace the return value of a syscall.
-To trace the return values to the syscall `ckb_load_tx_hash`, we can run
-```
-sudo bpftrace -e 'usdt:./target/release/ckb-debugger:ckb_vm:syscall_ret /arg0 == 2061/ { printf("%d, %d, %d, %d, %d\n", arg0, arg1, arg2); }'
-```
-Here arg0 is the syscall number, and arg1, arg2 are the values of registers A0, A1 (which are return values of the syscall).
+The second line of the output `0x11ffa, 78788, 0x2000023, 0x7ffdbea9bed8, 0x7fb6ff935010` represents
+the program counter is 0x11ffa, current consumed cycles are 78788, the running instruction is 0x2000023, the start address of registers content is 0x7ffdbea9bed8 and the start address of memory content is 0x7fb6ff935010.
+
+In the same vein, we can use the trace point `execute_inst_end` to trace the result of any syscall.
+
+In order to do more complex work like dumping the syscall number and dumping memory content, we need to use more sophisticated techniques like using bcc python module. Below is an example of tracing function calls/returns with bcc.
 
 ## Tracing Functions Calls/Returns
+
+### Obtaining the Memory Address Range of Some Function
 More work is needed when we want to trace functions return values and parameters of a ckb-vm programs.
 Ckb-vm only know the instructions which is about to execute, we need to parse the binary file to find out
 the context of the instructions (which function does this instruction belongs). This
 may be done by something like [`addr2line`](https://linux.die.net/man/1/addr2line).
 To do this programatically, we can use The file [elfutils.py](../examples/elfutils.py) to obtain memory address range for a function.
 
+### How Tracing Function Calls and Returns Works
 In order to understand the workflow of tracing function calls and returns. 
 We need to understand how to do control flow transfer in RISC-V.
-In the RISC-V ISA there are two unconditional control transfer instructions: jalr,
+In the RISC-V ISA there are two unconditional control transfer instructions: `jalr`,
 which jumps to an absolute address as specified by an immediate offset from a register;
-and jal, which jumps to a pc-relative offset as specified by an immediate.
+and `jal`, which jumps to a pc-relative offset as specified by an immediate.
 Whenever there is a jal/jalr instruction, we save the link address (an address that this jump started from) to a hash map.
 If the destination address of next jal/jalr instruction was found in the hash map,
 then this instruction is likely a function return. Otherwise, this may be a function call.
 
-The script [trace.py](../examples/trace.py) implements such logic.
+### Real World Function Calls/Returns Example
+
 It can trace the parameters and return values of the function `test_func` of the below program.
 ```
 int* test_func(int parameter1, int parameter2) {
@@ -123,6 +124,7 @@ To trace the function calling and returning,
 We can run `sudo ./example/trace.py`. Below is a sample output of running this script.
 
 ```
+Executed jumping-related instructions 57874 times!
 Func test_func has been jumped to/from 2 times!
 Func test_func has been called 1 times!
 Func test_func has returned 1 times!
@@ -139,3 +141,109 @@ memory addr: 000000000005d020, content: 0000002b0000002a
 As we can see, both the parameter passed to the function `test_func` and the return value of this function can be traced.
 Even better, we can dump the memory content located at the return address of `test_func`.
 BCC is so flexible that you may easily tweak this script to meet your needs. Feel free to modify this script.
+
+### Walkthrough of Tracing Function Calls/Returns
+The script [trace.py](../examples/trace.py) implements such logic to trace function calls/returns.
+Refer to [bcc/reference_guide.md](https://github.com/iovisor/bcc/blob/master/docs/reference_guide.md) for the BCC python API
+and [RISC-V Specifications](https://riscv.org/technical/specifications/) for the detailed meaning of
+each instruction and their operands.
+
+We first decode the instruction obtained from trace point `execute_inst`.
+Here we early return on finding that the instruction currently running is not a jump instruction.
+If the instruction is indeed a jump related instruction then we save the link
+(the return address that we will jump to when this jump instruction finishes, normally 
+`current_pc` + `instruction_length`) and next program counter to jump to.
+Note here in addition to jal/jalr we also have two pseudo-instructions `OP_FAR_JUMP_ABS` and `OP_FAR_JUMP_REL`
+to jump to another function. They are [https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0033-ckb-vm-version-1/0033-ckb-vm-version-1.md#42-mon](macro-operation fusion) to improve the performance.
+
+```c
+    InstructionOpcode opcode = EXTRACT_OPCODE(instruction);
+    uint8_t instruction_length = INSTRUCTION_LENGTH(instruction);
+    // The return address that we will jump to when this jump instruction finishes,
+    // normally current_pc + instruction_length.
+    uint64_t link;
+    // The address that this jump instruction will jump to.
+    uint64_t next_pc;
+    SImmediate imm;
+    RegisterIndex ind;
+
+    // Decode the instuction to get function calls/returns information.
+    switch (opcode)
+    {
+        case OP_JAL:
+            link = pc + instruction_length;
+            imm = UTYPE_IMMEDIATE_S(instruction);
+            next_pc = pc + imm;
+            break;
+        case OP_JALR_VERSION0:
+        case OP_JALR_VERSION1:
+            link = pc + instruction_length;
+            imm = ITYPE_IMMEDIATE_S(instruction);
+            ind = ITYPE_RS1(instruction);
+            uint64_t reg_value = 0;
+            bpf_probe_read_user(&reg_value, sizeof(uint64_t), (void *)(regs_addr + sizeof(uint64_t) * ind));
+            next_pc = (reg_value + imm) & ~1;
+            break;
+        case OP_FAR_JUMP_ABS:
+            link = pc + instruction_length;
+            imm = UTYPE_IMMEDIATE_S(instruction);
+            next_pc = imm & ~1;
+            break;
+        case OP_FAR_JUMP_REL:
+            link = pc + instruction_length;
+            imm = UTYPE_IMMEDIATE_S(instruction);
+            next_pc = (pc + imm) & ~1;
+            break;
+        default:
+            return 0;
+    }
+```
+
+We then determine if this jump is a function call or return by checking if the jumping-to address is the
+start of the function and looking up the hash table of all link addresses.
+If the next pc is saved in the hash table, that is to say it is been previously linked and is now returning to it,
+this is a function return.
+
+```c
+    int is_calling = 0;
+    int is_returning = 0;
+    if (next_pc == @@LOW_PC@@) {
+        // Initialize reference of the link, increment refcount if neccesary. 
+        jump_from_addresses.increment(link);
+        is_calling = 1;
+    }
+
+    if (link > @@LOW_PC@@ && link <= @@HIGH_PC@@) {
+        uint64_t *refcount = jump_from_addresses.lookup(&next_pc);
+        (*refcount)--;
+        if (*refcount == 0) {
+            jump_from_addresses.delete(&next_pc);
+        }
+        is_returning = 1;
+    }
+```
+
+We load the function parameters and return values by `bpf_probe_read_user` and then save them
+into bpf tables which can then be read by userspace programs (in our case the main python script).
+Memory contents at the address `ret` can read by first loading the start addres with `bpf_usdt_readarg(5, ctx, &mem_addr)`
+and then reading the content with `bpf_probe_read_user(&content, sizeof(uint64_t), (void *)(mem_addr + ret));`
+Finally, memory content is saved to the bpf table `memory_contents`.
+
+```c
+    uint64_t mem_addr = 0;
+    bpf_usdt_readarg(5, ctx, &mem_addr);
+
+    uint64_t ret = 0;
+    bpf_probe_read_user(&ret, sizeof(uint64_t), (void *)(regs_addr + 8 * A0));
+
+    uint64_t content = 0;
+    bpf_probe_read_user(&content, sizeof(uint64_t), (void *)(mem_addr + ret));
+    memory_contents.update(&ret, &content);
+```
+
+Finally we can iterate over the bpf tables and print out their values.
+
+```python
+for k, v in sorted(b.get_table("memory_contents").items(), key=lambda kv: kv[0].value):
+    print(f"memory addr: {k.value:016x}, content: {v.value:016x}")
+```
