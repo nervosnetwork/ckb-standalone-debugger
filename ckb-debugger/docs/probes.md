@@ -91,7 +91,7 @@ More work is needed when we want to trace functions return values and parameters
 Ckb-vm only know the instructions which is about to execute, we need to parse the binary file to find out
 the context of the instructions (which function does this instruction belongs). This
 may be done by something like [`addr2line`](https://linux.die.net/man/1/addr2line).
-To do this programatically, we can use The file [elfutils.py](../examples/elfutils.py) to obtain memory address range for a function.
+To do this programatically, we can use the file [elfutils.py](./elfutils.py) to obtain memory address range for a function.
 
 ### How Tracing Function Calls and Returns Works
 In order to understand the workflow of tracing function calls and returns. 
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 ```
 
 To trace the function calling and returning, 
-We can run `sudo ./example/trace.py`. Below is a sample output of running this script.
+We can run `sudo ./trace.py`. Below is a sample output of running this script.
 
 ```
 Executed jumping-related instructions 57874 times!
@@ -143,18 +143,18 @@ Even better, we can dump the memory content located at the return address of `te
 BCC is so flexible that you may easily tweak this script to meet your needs. Feel free to modify this script.
 
 ### Walkthrough of Tracing Function Calls/Returns
-The script [trace.py](../examples/trace.py) implements such logic to trace function calls/returns.
+The script [trace.py](./trace.py) implements such logic to trace function calls/returns.
 Refer to [bcc/reference_guide.md](https://github.com/iovisor/bcc/blob/master/docs/reference_guide.md) for the BCC python API
 and [RISC-V Specifications](https://riscv.org/technical/specifications/) for the detailed meaning of
 each instruction and their operands.
 
-We first decode the instruction obtained from trace point `execute_inst`.
+We first decode the instruction (see [riscv.h](./riscv.h) for details) obtained from trace point `execute_inst`.
 Here we early return on finding that the instruction currently running is not a jump instruction.
-If the instruction is indeed a jump related instruction then we save the link
+If the instruction is indeed a jumping-related instruction then we save the link
 (the return address that we will jump to when this jump instruction finishes, normally 
 `current_pc` + `instruction_length`) and next program counter to jump to.
 Note here in addition to jal/jalr we also have two pseudo-instructions `OP_FAR_JUMP_ABS` and `OP_FAR_JUMP_REL`
-to jump to another function. They are [https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0033-ckb-vm-version-1/0033-ckb-vm-version-1.md#42-mon](macro-operation fusion) to improve the performance.
+to jump to another function. They are [macro-operation fusion](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0033-ckb-vm-version-1/0033-ckb-vm-version-1.md#42-mop) to improve the performance.
 
 ```c
     InstructionOpcode opcode = EXTRACT_OPCODE(instruction);
@@ -201,7 +201,7 @@ to jump to another function. They are [https://github.com/nervosnetwork/rfcs/blo
 
 We then determine if this jump is a function call or return by checking if the jumping-to address is the
 start of the function and looking up the hash table of all link addresses.
-If the next pc is saved in the hash table, that is to say it is been previously linked and is now returning to it,
+If the next pc is saved in the hash table, that is to say it is been previously linked and we are now returning to it,
 this is a function return.
 
 ```c
@@ -225,9 +225,9 @@ this is a function return.
 
 We load the function parameters and return values by `bpf_probe_read_user` and then save them
 into bpf tables which can then be read by userspace programs (in our case the main python script).
-Memory contents at the address `ret` can read by first loading the start addres with `bpf_usdt_readarg(5, ctx, &mem_addr)`
-and then reading the content with `bpf_probe_read_user(&content, sizeof(uint64_t), (void *)(mem_addr + ret));`
-Finally, memory content is saved to the bpf table `memory_contents`.
+Data at the address `ret` can read by first loading the start address with `bpf_usdt_readarg(5, ctx, &mem_addr)`
+and then reading the content with `bpf_probe_read_user(&content, sizeof(uint64_t), (void *)(mem_addr + ret));`.
+Memory content is then saved to the bpf table `memory_contents`.
 
 ```c
     uint64_t mem_addr = 0;
