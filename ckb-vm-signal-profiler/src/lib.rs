@@ -99,9 +99,9 @@ struct Profiler {
     report: Report,
 }
 
-struct StackUnwinder<'a, 'b> {
+struct StackUnwinder<'a> {
     context: &'a DebugContext,
-    machine: &'a mut AsmMachine<'b>,
+    machine: &'a mut AsmMachine,
     // Only keeping 3 registers here: 0 is pc, 1 is ra, 2 is s0(fp).
     registers: [Option<u64>; 32],
     state: Option<(gimli::UnwindTableRow<Addr2LineEndianReader>, u64)>,
@@ -116,8 +116,8 @@ struct UnwindInfo {
     // initial_address: u64,
 }
 
-impl<'a, 'b> StackUnwinder<'a, 'b> {
-    fn new(context: &'a DebugContext, machine: &'a mut AsmMachine<'b>) -> Self {
+impl<'a, 'b> StackUnwinder<'a> {
+    fn new(context: &'a DebugContext, machine: &'a mut AsmMachine) -> Self {
         let mut registers = [None; 32];
         for (i, v) in machine.machine.registers().iter().enumerate() {
             registers[i] = Some(*v);
@@ -184,7 +184,7 @@ impl<'a, 'b> StackUnwinder<'a, 'b> {
     }
 }
 
-impl<'a, 'b> Iterator for StackUnwinder<'a, 'b> {
+impl<'a> Iterator for StackUnwinder<'a> {
     type Item = Symbol;
 
     fn next(&mut self) -> Option<Self::Item> {
