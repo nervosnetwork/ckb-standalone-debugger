@@ -260,7 +260,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-debugger"
-version = "0.108.1"
+version = "0.109.0"
 dependencies = [
  "ckb-chain-spec",
  "ckb-debugger-api",
@@ -268,7 +268,7 @@ dependencies = [
  "ckb-mock-tx-types",
  "ckb-script",
  "ckb-types",
- "ckb-vm 0.23.2",
+ "ckb-vm",
  "ckb-vm-debug-utils",
  "ckb-vm-pprof",
  "clap 2.34.0",
@@ -287,7 +287,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-debugger-api"
-version = "0.108.1"
+version = "0.109.0"
 dependencies = [
  "byteorder",
  "ckb-chain-spec",
@@ -296,7 +296,7 @@ dependencies = [
  "ckb-mock-tx-types",
  "ckb-script",
  "ckb-types",
- "ckb-vm 0.23.2",
+ "ckb-vm",
  "faster-hex 0.4.1",
  "hex",
  "js-sys",
@@ -385,7 +385,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-mock-tx-types"
-version = "0.108.1"
+version = "0.109.0"
 dependencies = [
  "ckb-jsonrpc-types",
  "ckb-traits",
@@ -474,7 +474,7 @@ dependencies = [
  "ckb-hash",
  "ckb-traits",
  "ckb-types",
- "ckb-vm 0.23.2",
+ "ckb-vm",
  "faster-hex 0.6.1",
  "serde",
 ]
@@ -538,24 +538,6 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm"
-version = "0.22.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1223acc8054ce96f91c5d99d4942898d0bdadd618c3b14f1acd3e67212991d8e"
-dependencies = [
- "byteorder",
- "bytes",
- "cc",
- "ckb-vm-definitions 0.22.2",
- "derive_more",
- "goblin 0.2.3",
- "goblin 0.4.0",
- "rand 0.7.3",
- "scroll",
- "serde",
-]
-
-[[package]]
-name = "ckb-vm"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fee7eb8d6525a0d3a4f113414c1b51dd3aaf75ef7b54fe7ce306e545c87cdd"
@@ -563,7 +545,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cc",
- "ckb-vm-definitions 0.23.2",
+ "ckb-vm-definitions",
  "derive_more",
  "goblin 0.2.3",
  "goblin 0.4.0",
@@ -574,11 +556,11 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-debug-utils"
-version = "0.108.1"
+version = "0.109.0"
 dependencies = [
  "byteorder",
  "bytes",
- "ckb-vm 0.23.2",
+ "ckb-vm",
  "env_logger 0.4.3",
  "gdb-remote-protocol",
  "libc",
@@ -588,22 +570,16 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-definitions"
-version = "0.22.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4af800ae2b6c54b70efa398dab015a09a52eeac2dd1ac3ad32c9bbe224974225"
-
-[[package]]
-name = "ckb-vm-definitions"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9403cda7180a8203facf05e96537f0038d188b2efdcef13c84538bfbdfcbcbf"
 
 [[package]]
 name = "ckb-vm-pprof"
-version = "0.108.1"
+version = "0.109.0"
 dependencies = [
  "addr2line 0.13.0",
- "ckb-vm 0.23.2",
+ "ckb-vm",
  "clap 2.34.0",
  "goblin 0.4.0",
  "object 0.20.0",
@@ -611,7 +587,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof-converter"
-version = "0.108.1"
+version = "0.109.0"
 dependencies = [
  "ckb-vm-pprof-protos",
  "clap 4.2.3",
@@ -620,7 +596,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof-protos"
-version = "0.108.1"
+version = "0.109.0"
 dependencies = [
  "protobuf",
  "protoc-bin-vendored",
@@ -629,10 +605,10 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-signal-profiler"
-version = "0.108.1"
+version = "0.109.0"
 dependencies = [
  "addr2line 0.17.0",
- "ckb-vm 0.22.2",
+ "ckb-vm",
  "ckb-vm-pprof-protos",
  "env_logger 0.9.3",
  "lazy_static",
