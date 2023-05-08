@@ -34,7 +34,11 @@ impl Embed {
                 } else {
                     Path::new(cap1).to_path_buf()
                 };
-                let data = std::fs::read(path).unwrap();
+                let data = std::fs::read(&path);
+                if data.is_err() {
+                    panic!("Read {:?} failed : {:?}", path, data);
+                }
+                let data = data.unwrap();
                 hex::encode(data)
             })
             .to_string();
