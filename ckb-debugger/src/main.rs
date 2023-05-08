@@ -301,7 +301,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         #[cfg(feature = "stdio")]
         let mut machine_builder = DefaultMachineBuilder::new(machine_core)
-            .instruction_cycle_func(&instruction_cycles)
+            .instruction_cycle_func(Box::new(instruction_cycles))
             .syscall(Box::new(Stdio::new(false)));
         #[cfg(not(feature = "stdio"))]
         let mut machine_builder =
