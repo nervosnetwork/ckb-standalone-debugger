@@ -1,6 +1,6 @@
 [package]
 name = "ckb-vm-pprof-protos"
-version = "0.109.0"
+version = "0.110.0"
 edition = "2018"
 description = "Crate for generating Rust definitions from pprof proto"
 
