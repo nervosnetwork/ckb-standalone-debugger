@@ -1,6 +1,6 @@
 [package]
 name = "ckb-vm-signal-profiler"
-version = "0.109.0"
+version = "0.110.0"
 edition = "2018"
 description = "Linux signal based profiler for ckb-vm, note this is profiling ckb-vm itself, not the programs running in ckb-vm"
 
