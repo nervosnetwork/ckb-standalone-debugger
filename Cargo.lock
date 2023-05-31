@@ -274,7 +274,8 @@ dependencies = [
  "clap 2.34.0",
  "env_logger 0.4.3",
  "faster-hex 0.4.1",
- "gdb-remote-protocol",
+ "gdbstub",
+ "gdbstub_arch",
  "hex",
  "lazy_static",
  "libc",
@@ -563,6 +564,8 @@ dependencies = [
  "ckb-vm",
  "env_logger 0.4.3",
  "gdb-remote-protocol",
+ "gdbstub",
+ "gdbstub_arch",
  "libc",
  "log 0.4.17",
  "nix 0.26.2",
@@ -834,6 +837,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "gdbstub"
+version = "0.6.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4e02bf1b1a624d96925c608f1b268d82a76cbc587ce9e59f7c755e9ea11c75c"
+dependencies = [
+ "bitflags",
+ "cfg-if",
+ "log 0.4.17",
+ "managed",
+ "num-traits",
+ "paste",
+]
+
+[[package]]
+name = "gdbstub_arch"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eecb536c55c43593a00dde9074dbbdb0e81ce5f20dbca921400f8779c21dea9c"
+dependencies = [
+ "gdbstub",
+ "num-traits",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1066,6 +1093,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "managed"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ca88d725a0a943b096803bd34e73a4437208b6077654cc4ecb2947a5f91618d"
+
+[[package]]
 name = "memchr"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1164,6 +1197,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-traits"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
+dependencies = [
+ "autocfg",
+]
+
+[[package]]
 name = "numext-constructor"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1257,6 +1299,12 @@ dependencies = [
  "smallvec",
  "windows-sys 0.45.0",
 ]
+
+[[package]]
+name = "paste"
+version = "1.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f746c4065a8fa3fe23974dd82f15431cc8d40779821001404d10d2e79ca7d79"
 
 [[package]]
 name = "phf"

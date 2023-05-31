@@ -9,15 +9,20 @@ use ckb_script::{
 use ckb_types::core::cell::resolve_transaction;
 use ckb_types::packed::Byte32;
 use ckb_vm::{
-    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, SupportMachine, WXorXMemory,
+    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, Error, SupportMachine,
+    WXorXMemory,
 };
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
-use ckb_vm_debug_utils::{ElfDumper, GdbHandler};
+use ckb_vm_debug_utils::{ElfDumper, GdbStubHandler, GdbStubHandlerEventLoop};
 use ckb_vm_pprof::{PProfMachine, Profile};
 use clap::{crate_version, App, Arg};
 use faster_hex::hex_decode_fallback;
-use gdb_remote_protocol::process_packets_from;
+use gdbstub::{
+    conn::ConnectionExt,
+    stub::{DisconnectReason, GdbStub, GdbStubError},
+};
+use gdbstub_arch::riscv::Riscv64;
 use serde_json::from_str as from_json_str;
 use serde_plain::from_str as from_plain_str;
 use std::fs::{read, read_to_string};
@@ -423,15 +428,50 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if matches_mode == "gdb" {
         let listen_address = matches_gdb_listen.unwrap();
         let listener = TcpListener::bind(listen_address)?;
+        println!("Listening for gdb remote connection on {}", listen_address);
         for res in listener.incoming() {
             if let Ok(stream) = res {
+                println!("Accepted connection from: {}, booting VM", stream.peer_addr()?);
                 let mut machine = machine_init();
                 let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
                 let transferred_cycles = transferred_byte_cycles(bytes);
                 machine.add_cycles(transferred_cycles)?;
                 machine.set_running(true);
-                let h = GdbHandler::new(machine);
-                process_packets_from(stream.try_clone().unwrap(), stream, h);
+                let mut h: GdbStubHandler<_, Riscv64> = GdbStubHandler::new(machine);
+                let connection: Box<(dyn ConnectionExt<Error = std::io::Error> + 'static)> = Box::new(stream);
+                let gdb = GdbStub::new(connection);
+
+                let result = match gdb.run_blocking::<GdbStubHandlerEventLoop<_, _>>(&mut h) {
+                    Ok(disconnect_reason) => match disconnect_reason {
+                        DisconnectReason::Disconnect => {
+                            println!("GDB client has disconnected. Running to completion...");
+                            h.run_till_exited()
+                        }
+                        DisconnectReason::TargetExited(_) => h.run_till_exited(),
+                        DisconnectReason::TargetTerminated(sig) => {
+                            Err(Error::External(format!("Target terminated with signal {}!", sig)))
+                        }
+                        DisconnectReason::Kill => Err(Error::External("GDB sent a kill command!".to_string())),
+                    },
+                    Err(GdbStubError::TargetError(e)) => {
+                        Err(Error::External(format!("target encountered a fatal error: {}", e)))
+                    }
+                    Err(e) => Err(Error::External(format!("gdbstub encountered a fatal error: {}", e))),
+                };
+                match result {
+                    Ok((exit_code, cycles)) => {
+                        println!("Exit code: {:?}", exit_code);
+                        println!("Total cycles consumed: {}", HumanReadableCycles(cycles));
+                        println!(
+                            "Transfer cycles: {}, running cycles: {}",
+                            HumanReadableCycles(transferred_cycles),
+                            HumanReadableCycles(cycles - transferred_cycles)
+                        );
+                    }
+                    Err(e) => {
+                        println!("Error: {}", e);
+                    }
+                }
             }
         }
         return Ok(());
