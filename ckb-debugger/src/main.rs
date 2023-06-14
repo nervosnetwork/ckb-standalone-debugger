@@ -319,7 +319,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Some(data) = matches_dump_file {
             machine_builder = machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
         }
-        let machine_syscalls = verifier.generate_syscalls(verifier_script_version, verifier_script_group);
+        let machine_syscalls =
+            verifier.generate_syscalls(verifier_script_version, verifier_script_group, Default::default());
         machine_builder =
             machine_syscalls.into_iter().fold(machine_builder, |builder, syscall| builder.syscall(syscall));
         let machine_builder = if let Some(fs) = fs_syscall.clone() {
