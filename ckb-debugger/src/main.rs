@@ -143,13 +143,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Read content from local file or stdin. Then feed the content to syscall in scripts")
                 .takes_value(true),
         )
-        .arg(
-            Arg::with_name("long-log")
-                .long("long-log")
-                .required(false)
-                .takes_value(false)
-                .help("long log message with script group"),
-        )
         .arg(Arg::with_name("args").multiple(true))
         .get_matches();
 
@@ -169,12 +162,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_step = matches.occurrences_of("step");
     let matches_tx_file = matches.value_of("tx-file");
     let matches_args = matches.values_of("args").unwrap_or_default();
-    let read_file_name = matches.value_of("read-file");
+    let matches_read_file_name = matches.value_of("read-file");
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
     let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
 
-    let fs_syscall = if let Some(file_name) = read_file_name {
+    let fs_syscall = if let Some(file_name) = matches_read_file_name {
         Some(FileStream::new(file_name))
     } else {
         None
