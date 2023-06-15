@@ -186,6 +186,9 @@ impl<M: Memory<REG = u64>> Handler for GdbHandler<M> {
         let (vcont, _thread_id) = &request[0];
         match vcont {
             VCont::Continue => {
+                if self.machine.borrow_mut().reset_signal() {
+                    decoder.reset_instructions_cache()
+                }
                 let res = self.machine.borrow_mut().step(&mut decoder);
                 if res.is_err() {
                     show_warning(&res.err().unwrap());
@@ -197,6 +200,9 @@ impl<M: Memory<REG = u64>> Handler for GdbHandler<M> {
                     if self.at_watchpoint()? {
                         break;
                     }
+                    if self.machine.borrow_mut().reset_signal() {
+                        decoder.reset_instructions_cache()
+                    }
                     let res = self.machine.borrow_mut().step(&mut decoder);
                     if res.is_err() {
                         show_warning(&res.err().unwrap());
@@ -206,6 +212,9 @@ impl<M: Memory<REG = u64>> Handler for GdbHandler<M> {
             }
             VCont::Step => {
                 if self.machine.borrow().running() {
+                    if self.machine.borrow_mut().reset_signal() {
+                        decoder.reset_instructions_cache()
+                    }
                     let res = self.machine.borrow_mut().step(&mut decoder);
                     if res.is_err() {
                         show_warning(&res.err().unwrap());
@@ -214,6 +223,9 @@ impl<M: Memory<REG = u64>> Handler for GdbHandler<M> {
                 }
             }
             VCont::RangeStep(range) => {
+                if self.machine.borrow_mut().reset_signal() {
+                    decoder.reset_instructions_cache()
+                }
                 let res = self.machine.borrow_mut().step(&mut decoder);
                 if res.is_err() {
                     show_warning(&res.err().unwrap());
@@ -226,6 +238,9 @@ impl<M: Memory<REG = u64>> Handler for GdbHandler<M> {
                 {
                     if self.at_watchpoint()? {
                         break;
+                    }
+                    if self.machine.borrow_mut().reset_signal() {
+                        decoder.reset_instructions_cache()
                     }
                     let res = self.machine.borrow_mut().step(&mut decoder);
                     if res.is_err() {

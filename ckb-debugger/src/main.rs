@@ -3,16 +3,14 @@ use ckb_debugger_api::check;
 use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
-use ckb_script::{
-    cost_model::transferred_byte_cycles, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv,
-};
+use ckb_script::cost_model::transferred_byte_cycles;
+use ckb_script::{ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::core::cell::resolve_transaction;
 use ckb_types::core::HeaderView;
 use ckb_types::packed::Byte32;
 use ckb_vm::cost_model::estimate_cycles;
-use ckb_vm::{
-    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, SupportMachine, WXorXMemory,
-};
+use ckb_vm::decoder::build_decoder;
+use ckb_vm::{Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, Register, SupportMachine, WXorXMemory};
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
 use ckb_vm_debug_utils::{ElfDumper, GdbHandler};
@@ -450,7 +448,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         #[cfg(feature = "probes")]
         {
-            use ckb_vm::{instructions::execute, Register};
+            use ckb_vm::instructions::execute;
             use probe::probe;
             use std::io::BufRead;
 
