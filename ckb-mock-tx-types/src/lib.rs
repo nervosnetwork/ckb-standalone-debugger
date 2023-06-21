@@ -109,6 +109,7 @@ pub trait MockResourceLoader {
 pub struct Resource {
     required_cells: HashMap<OutPoint, CellMeta>,
     required_headers: HashMap<Byte32, HeaderView>,
+    block_extensions: HashMap<Byte32, packed::Bytes>,
 }
 
 impl Resource {
@@ -117,7 +118,16 @@ impl Resource {
     }
 
     #[allow(clippy::mutable_key_type)]
-    pub fn from_both<L: MockResourceLoader>(mock_tx: &MockTransaction, mut loader: L) -> Result<Resource, String> {
+    pub fn from_both<L: MockResourceLoader>(mock_tx: &MockTransaction, loader: L) -> Result<Resource, String> {
+        Self::from_loader_and_block_extensions(mock_tx, loader, HashMap::default())
+    }
+
+    #[allow(clippy::mutable_key_type)]
+    pub fn from_loader_and_block_extensions<L: MockResourceLoader>(
+        mock_tx: &MockTransaction,
+        mut loader: L,
+        block_extensions: HashMap<Byte32, packed::Bytes>,
+    ) -> Result<Resource, String> {
         let tx = mock_tx.core_transaction();
         let mut required_cells = HashMap::default();
         let mut required_headers = HashMap::default();
@@ -171,6 +181,7 @@ impl Resource {
         Ok(Resource {
             required_cells,
             required_headers,
+            block_extensions,
         })
     }
 
@@ -217,8 +228,8 @@ impl HeaderProvider for Resource {
 }
 
 impl ExtensionProvider for Resource {
-    fn get_block_extension(&self, _hash: &Byte32) -> Option<packed::Bytes> {
-        unimplemented!()
+    fn get_block_extension(&self, hash: &Byte32) -> Option<packed::Bytes> {
+        self.block_extensions.get(hash).cloned()
     }
 }
 
