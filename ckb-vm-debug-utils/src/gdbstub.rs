@@ -151,14 +151,14 @@ impl<R: Register + Debug + Eq + StdHash, M: SupportMachine + CoreMachine<REG = R
                         }
                     }
                 }
+                if self.breakpoints.contains(self.machine.inner_mut().pc()) {
+                    return Some(VmEvent::Break);
+                }
                 if !self.memory_writes.is_empty() {
                     return Some(VmEvent::WatchWrite(self.memory_writes.pop().unwrap()));
                 }
                 if !self.memory_reads.is_empty() {
                     return Some(VmEvent::WatchRead(self.memory_reads.pop().unwrap()));
-                }
-                if self.breakpoints.contains(self.machine.inner_mut().pc()) {
-                    return Some(VmEvent::Break);
                 }
                 None
             }
