@@ -1,17 +1,17 @@
+use ckb_chain_spec::consensus::ConsensusBuilder;
 use ckb_debugger_api::check;
 use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
-use ckb_script::{
-    cost_model::{instruction_cycles, transferred_byte_cycles},
-    ScriptGroupType, ScriptVersion, TransactionScriptsVerifier,
-};
+use ckb_script::cost_model::transferred_byte_cycles;
+use ckb_script::{ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::core::cell::resolve_transaction;
+use ckb_types::core::HeaderView;
 use ckb_types::packed::Byte32;
-use ckb_vm::{
-    decoder::build_decoder, Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, Error, SupportMachine,
-    WXorXMemory,
-};
+use ckb_vm::cost_model::estimate_cycles;
+use ckb_vm::decoder::build_decoder;
+use ckb_vm::error::Error;
+use ckb_vm::{Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, Register, SupportMachine, WXorXMemory};
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
 use ckb_vm_debug_utils::{ElfDumper, GdbStubHandler, GdbStubHandlerEventLoop};
@@ -42,7 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
 
     let default_max_cycles = format!("{}", 70_000_000u64);
-    let default_script_version = "1";
+    let default_script_version = "2";
     let default_mode = "full";
 
     let matches = App::new("ckb-debugger")
@@ -146,13 +146,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Read content from local file or stdin. Then feed the content to syscall in scripts")
                 .takes_value(true),
         )
-        .arg(
-            Arg::with_name("long-log")
-                .long("long-log")
-                .required(false)
-                .takes_value(false)
-                .help("long log message with script group"),
-        )
         .arg(Arg::with_name("args").multiple(true))
         .get_matches();
 
@@ -172,12 +165,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_step = matches.occurrences_of("step");
     let matches_tx_file = matches.value_of("tx-file");
     let matches_args = matches.values_of("args").unwrap_or_default();
-    let read_file_name = matches.value_of("read-file");
+    let matches_read_file_name = matches.value_of("read-file");
 
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
     let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
 
-    let fs_syscall = if let Some(file_name) = read_file_name {
+    let fs_syscall = if let Some(file_name) = matches_read_file_name {
         Some(FileStream::new(file_name))
     } else {
         None
@@ -217,7 +210,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let verifier_script_hash = if matches_tx_file.is_none() {
         let mut b = [0u8; 32];
         hex_decode_fallback(
-            b"8f59e340cfbea088720265cef0fd9afa4e420bf27c7b3dc8aebf6c6eda453e57",
+            b"51d98e5112c1da30d758fc9211e01f86291e64caf399008f20d17b009765ecbd",
             &mut b[..],
         );
         Byte32::new(b)
@@ -276,6 +269,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let verifier_script_version = match matches_script_version {
         "0" => ScriptVersion::V0,
         "1" => ScriptVersion::V1,
+        "2" => ScriptVersion::V2,
         _ => panic!("wrong script version"),
     };
     let verifier_resource = Resource::from_both(&verifier_mock_tx, DummyResourceLoader {})?;
@@ -285,7 +279,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &verifier_resource,
         &verifier_resource,
     )?;
-    let mut verifier = TransactionScriptsVerifier::new(Arc::new(verifier_resolve_transaction), verifier_resource);
+    let consensus = Arc::new(ConsensusBuilder::default().build());
+    let tx_env = Arc::new(TxVerifyEnv::new_commit(&HeaderView::new_advanced_builder().build()));
+    let mut verifier = TransactionScriptsVerifier::new(
+        Arc::new(verifier_resolve_transaction),
+        verifier_resource,
+        consensus.clone(),
+        tx_env.clone(),
+    );
     verifier.set_debug_printer(Box::new(move |_hash: &Byte32, message: &str| {
         println!("{}", message);
     }));
@@ -306,15 +307,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         #[cfg(feature = "stdio")]
         let mut machine_builder = DefaultMachineBuilder::new(machine_core)
-            .instruction_cycle_func(Box::new(instruction_cycles))
+            .instruction_cycle_func(Box::new(estimate_cycles))
             .syscall(Box::new(Stdio::new(false)));
         #[cfg(not(feature = "stdio"))]
         let mut machine_builder =
-            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(instruction_cycles));
+            DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(estimate_cycles));
         if let Some(data) = matches_dump_file {
             machine_builder = machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
         }
-        let machine_syscalls = verifier.generate_syscalls(verifier_script_version, verifier_script_group);
+        let machine_syscalls =
+            verifier.generate_syscalls(verifier_script_version, verifier_script_group, Default::default());
         machine_builder =
             machine_syscalls.into_iter().fold(machine_builder, |builder, syscall| builder.syscall(syscall));
         let machine_builder = if let Some(fs) = fs_syscall.clone() {
@@ -486,7 +488,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         #[cfg(feature = "probes")]
         {
-            use ckb_vm::{instructions::execute, Register};
+            use ckb_vm::instructions::execute;
             use probe::probe;
             use std::io::BufRead;
 

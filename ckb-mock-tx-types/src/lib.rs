@@ -1,7 +1,7 @@
 // Originally modified from https://github.com/nervosnetwork/ckb-cli/blob/d6eceb3f9f108a17bcae0b1d760023e5da1e6e6a/ckb-sdk-types/src/transaction.rs
 // Current version modified(just fix clippy) from https://github.com/nervosnetwork/ckb-standalone-debugger/blob/5c0490cb8279f7c7860c403b9f1773b65403e57a/src/transaction.rs
 use ckb_jsonrpc_types as json_types;
-use ckb_traits::{CellDataProvider, HeaderProvider};
+use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_types::{
     bytes::Bytes,
     core::{
@@ -9,7 +9,7 @@ use ckb_types::{
         error::OutPointError,
         DepType, EpochNumberWithFraction, HeaderView, TransactionInfo, TransactionView,
     },
-    packed::{Byte32, CellDep, CellInput, CellOutput, OutPoint, OutPointVec, Transaction},
+    packed::{self, Byte32, CellDep, CellInput, CellOutput, OutPoint, OutPointVec, Transaction},
     prelude::*,
     H256,
 };
@@ -109,6 +109,7 @@ pub trait MockResourceLoader {
 pub struct Resource {
     required_cells: HashMap<OutPoint, CellMeta>,
     required_headers: HashMap<Byte32, HeaderView>,
+    block_extensions: HashMap<Byte32, packed::Bytes>,
 }
 
 impl Resource {
@@ -117,7 +118,16 @@ impl Resource {
     }
 
     #[allow(clippy::mutable_key_type)]
-    pub fn from_both<L: MockResourceLoader>(mock_tx: &MockTransaction, mut loader: L) -> Result<Resource, String> {
+    pub fn from_both<L: MockResourceLoader>(mock_tx: &MockTransaction, loader: L) -> Result<Resource, String> {
+        Self::from_loader_and_block_extensions(mock_tx, loader, HashMap::default())
+    }
+
+    #[allow(clippy::mutable_key_type)]
+    pub fn from_loader_and_block_extensions<L: MockResourceLoader>(
+        mock_tx: &MockTransaction,
+        mut loader: L,
+        block_extensions: HashMap<Byte32, packed::Bytes>,
+    ) -> Result<Resource, String> {
         let tx = mock_tx.core_transaction();
         let mut required_cells = HashMap::default();
         let mut required_headers = HashMap::default();
@@ -171,6 +181,7 @@ impl Resource {
         Ok(Resource {
             required_cells,
             required_headers,
+            block_extensions,
         })
     }
 
@@ -213,6 +224,12 @@ impl CellDataProvider for Resource {
 impl HeaderProvider for Resource {
     fn get_header(&self, block_hash: &Byte32) -> Option<HeaderView> {
         self.required_headers.get(block_hash).cloned()
+    }
+}
+
+impl ExtensionProvider for Resource {
+    fn get_block_extension(&self, hash: &Byte32) -> Option<packed::Bytes> {
+        self.block_extensions.get(hash).cloned()
     }
 }
 

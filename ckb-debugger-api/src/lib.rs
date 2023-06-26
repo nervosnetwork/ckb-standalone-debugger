@@ -1,6 +1,7 @@
-use ckb_jsonrpc_types::{self, CellDep, CellInput, DepType};
+use ckb_chain_spec::consensus::ConsensusBuilder;
+use ckb_jsonrpc_types::{CellDep, CellInput, DepType};
 use ckb_mock_tx_types::{MockInput, MockResourceLoader, MockTransaction, ReprMockTransaction, Resource};
-use ckb_script::{ScriptGroupType, TransactionScriptsVerifier};
+use ckb_script::{ScriptGroupType, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::{
     bytes::Bytes,
     core::{cell::resolve_transaction, Cycle, HeaderView},
@@ -43,7 +44,10 @@ pub fn run(
         resolve_transaction(tx, &mut seen_inputs, &resource, &resource)
             .map_err(|err| format!("Resolve transaction error: {:?}", err))?
     };
-    let mut verifier = TransactionScriptsVerifier::new(Arc::new(rtx), resource.clone());
+    let consensus = Arc::new(ConsensusBuilder::default().build());
+    let tx_env = Arc::new(TxVerifyEnv::new_commit(&HeaderView::new_advanced_builder().build()));
+    let mut verifier =
+        TransactionScriptsVerifier::new(Arc::new(rtx), resource.clone(), consensus.clone(), tx_env.clone());
     if let Some(debug_printer) = debug_printer {
         verifier.set_debug_printer(debug_printer);
     }

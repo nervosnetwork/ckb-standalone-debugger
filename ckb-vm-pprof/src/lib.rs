@@ -9,12 +9,10 @@ use ckb_vm::machine::{DefaultMachine, DefaultMachineBuilder, VERSION0};
 use ckb_vm::memory::Memory;
 use ckb_vm::registers::{A0, SP};
 use ckb_vm::{
-    Bytes, CoreMachine, DefaultCoreMachine, Error, Machine, Register, SparseMemory, SupportMachine, Syscalls,
-    WXorXMemory, ISA_MOP,
+    cost_model, Bytes, CoreMachine, DefaultCoreMachine, Error, Machine, Register, SparseMemory, SupportMachine,
+    Syscalls, WXorXMemory, ISA_MOP,
 };
-
-mod cost_model;
-pub use cost_model::instruction_cycles;
+pub use cost_model::estimate_cycles;
 
 type Addr2LineEndianReader = addr2line::gimli::EndianReader<addr2line::gimli::RunTimeEndian, Rc<[u8]>>;
 type Addr2LineContext = addr2line::Context<Addr2LineEndianReader>;
@@ -282,7 +280,9 @@ impl Profile {
             quit_or_skip(self, addr);
             return Ok(());
         };
-        if opcode == ckb_vm::instructions::insts::OP_JALR {
+        if opcode == ckb_vm::instructions::insts::OP_JALR_VERSION0
+            || opcode == ckb_vm::instructions::insts::OP_JALR_VERSION1
+        {
             let inst_length = instruction_length(inst) as u64;
             let inst = ckb_vm::instructions::Itype(inst);
             let base = machine.registers()[inst.rs1()].to_u64();
@@ -415,13 +415,13 @@ pub fn quick_start(
     let code_data = std::fs::read(fl_bin)?;
     let code = Bytes::from(code_data);
 
-    let isa = ckb_vm::ISA_IMC | ckb_vm::ISA_B | ckb_vm::ISA_MOP;
+    let isa = ckb_vm::ISA_IMC | ckb_vm::ISA_A | ckb_vm::ISA_B | ckb_vm::ISA_MOP;
     let default_core_machine = ckb_vm::DefaultCoreMachine::<
         u64,
         ckb_vm::memory::wxorx::WXorXMemory<ckb_vm::memory::sparse::SparseMemory<u64>>,
-    >::new(isa, ckb_vm::machine::VERSION1, 1 << 32);
-    let mut builder = DefaultMachineBuilder::new(default_core_machine)
-        .instruction_cycle_func(Box::new(cost_model::instruction_cycles));
+    >::new(isa, ckb_vm::machine::VERSION2, 1 << 32);
+    let mut builder =
+        DefaultMachineBuilder::new(default_core_machine).instruction_cycle_func(Box::new(cost_model::estimate_cycles));
     builder = syscalls.into_iter().fold(builder, |builder, syscall| builder.syscall(syscall));
     let default_machine = builder.build();
     let profile = Profile::new(&code).unwrap();
