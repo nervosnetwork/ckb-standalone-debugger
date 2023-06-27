@@ -10,6 +10,7 @@ edition = "2021"
 default = ["probes"]
 stdio = ["ckb-vm-debug-utils/stdio"]
 probes = ["probe", "ckb-script/flatmemory"]
+gdbstub_impl = ["gdbstub", "gdbstub_arch"]
 
 [dependencies]
 clap = "2.33.0"
@@ -24,8 +25,9 @@ ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils" }
 ckb-vm-pprof = { path = "../ckb-vm-pprof" }
 env_logger = "0.4.3"
 faster-hex = "0.4.0"
-gdbstub = "0.6.6"
-gdbstub_arch = "0.2.4"
+gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol", rev = "565ab0c" }
+gdbstub = { version = "0.6.6", optional = true }
+gdbstub_arch = { version = "0.2.4", optional = true }
 hex = "0.4"
 lazy_static = "1.4.0"
 libc = "0.2.132"
