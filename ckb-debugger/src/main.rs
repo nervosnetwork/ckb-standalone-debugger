@@ -4,13 +4,24 @@ use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::cost_model::transferred_byte_cycles;
-use ckb_script::{ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
+use ckb_script::{
+    update_caller_machine, MachineContext, ResumableMachine, ScriptGroupType, ScriptVersion,
+    TransactionScriptsVerifier, TxVerifyEnv,
+};
 use ckb_types::core::cell::resolve_transaction;
 use ckb_types::core::HeaderView;
 use ckb_types::packed::Byte32;
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::build_decoder;
-use ckb_vm::{Bytes, CoreMachine, DefaultCoreMachine, DefaultMachineBuilder, Register, SupportMachine, WXorXMemory};
+use ckb_vm::error::Error;
+use ckb_vm::instructions::extract_opcode;
+use ckb_vm::instructions::insts::OP_ECALL;
+use ckb_vm::memory::flat::FlatMemory;
+use ckb_vm::registers::A7;
+use ckb_vm::{
+    Bytes, CoreMachine, DefaultCoreMachine, DefaultMachine, DefaultMachineBuilder, Register, SupportMachine,
+    WXorXMemory,
+};
 use ckb_vm_debug_utils::ElfDumper;
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
@@ -22,7 +33,7 @@ use serde_plain::from_str as from_plain_str;
 use std::fs::{read, read_to_string};
 use std::net::TcpListener;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::{collections::HashSet, io::Read};
 mod misc;
 use misc::{FileOperation, FileStream, HumanReadableCycles, Random, TimeNow};
@@ -38,6 +49,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let default_max_cycles = format!("{}", 70_000_000u64);
     let default_script_version = "2";
     let default_mode = "full";
+    let default_gdb_specify_depth = "0";
 
     let matches = App::new("ckb-debugger")
         .version(crate_version!())
@@ -61,6 +73,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Arg::with_name("gdb-listen")
                 .long("gdb-listen")
                 .help("Address to listen for GDB remote debugging server")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("gdb-specify-depth")
+                .long("gdb-specify-depth")
+                .help("Specifies the depth of the exec/spawn stack")
+                .default_value(&default_gdb_specify_depth)
                 .takes_value(true),
         )
         .arg(
@@ -149,6 +168,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_pprof = matches.value_of("pprof");
     let matches_dump_file = matches.value_of("dump-file");
     let matches_gdb_listen = matches.value_of("gdb-listen");
+    let matches_gdb_specify_depth = matches.value_of("gdb-specify-depth").unwrap();
     let matches_max_cycles = matches.value_of("max-cycles").unwrap();
     let matches_mode = matches.value_of("mode").unwrap();
     let matches_script_hash = matches.value_of("script-hash");
@@ -293,6 +313,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => verifier.extract_script(&verifier_script_group.script)?,
     };
 
+    let machine_context = Arc::new(Mutex::new(MachineContext::default()));
     let machine_init = || {
         let machine_core = DefaultCoreMachine::<u64, WXorXMemory<MemoryType>>::new(
             verifier_script_version.vm_isa(),
@@ -310,7 +331,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             machine_builder = machine_builder.syscall(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
         }
         let machine_syscalls =
-            verifier.generate_syscalls(verifier_script_version, verifier_script_group, Default::default());
+            verifier.generate_syscalls(verifier_script_version, verifier_script_group, machine_context.clone());
         machine_builder =
             machine_syscalls.into_iter().fold(machine_builder, |builder, syscall| builder.syscall(syscall));
         let machine_builder = if let Some(fs) = fs_syscall.clone() {
@@ -433,6 +454,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let transferred_cycles = transferred_byte_cycles(bytes);
                 machine.add_cycles(transferred_cycles)?;
                 machine.set_running(true);
+
+                let specify = usize::from_str_radix(matches_gdb_specify_depth, 10).unwrap();
+                let machine = machine_sget(machine, machine_context.clone(), specify)?;
 
                 #[cfg(not(feature = "gdbstub_impl"))]
                 {
@@ -561,4 +585,57 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+fn machine_sget(
+    machine: DefaultMachine<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>,
+    context: Arc<Mutex<MachineContext>>,
+    specify: usize,
+) -> Result<DefaultMachine<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>, Error> {
+    let mut machine = machine;
+    let mut decoder = build_decoder::<u64>(machine.isa(), machine.version());
+    let mut specify = specify;
+    let mut machine_vec = vec![];
+    let mut spawn_data = None;
+    while specify != 0 {
+        decoder.reset_instructions_cache();
+        while machine.running() {
+            let opcode = {
+                let pc = machine.pc().to_u64();
+                let memory = machine.memory_mut();
+                extract_opcode(decoder.decode(memory, pc)?)
+            };
+            if opcode == OP_ECALL && machine.registers()[A7] == 2043 {
+                machine.step(&mut decoder)?;
+                if machine.reset_signal() {
+                    decoder.reset_instructions_cache()
+                }
+                specify -= 1;
+                break;
+            }
+            if opcode == OP_ECALL && machine.registers()[A7] == 2101 {
+                let cycles_current = machine.cycles();
+                machine.set_cycles(machine.max_cycles() - 500);
+                let cycles_diff = machine.cycles() - cycles_current;
+                let _ = machine.step(&mut decoder);
+                machine.set_cycles(cycles_current + 500);
+
+                let machine_resumable = context.lock().unwrap().suspended_machines.pop().unwrap();
+                if let ResumableMachine::Spawn(mut machine_child, spawn_data_child) = machine_resumable {
+                    machine_child.machine.inner_mut().set_max_cycles(cycles_diff);
+                    machine_vec.push(machine);
+                    machine = machine_child.machine;
+                    spawn_data = Some(spawn_data_child);
+                }
+                specify -= 1;
+                break;
+            }
+            machine.step(&mut decoder)?;
+        }
+        if !machine.running() {
+            machine = machine_vec.pop().unwrap();
+            update_caller_machine(&mut machine, 0, 0, &spawn_data.clone().unwrap()).unwrap();
+        }
+    }
+    return Ok(machine);
 }
