@@ -274,6 +274,7 @@ dependencies = [
  "clap 2.34.0",
  "env_logger 0.4.3",
  "faster-hex 0.4.1",
+ "gdb-remote-protocol",
  "gdbstub",
  "gdbstub_arch",
  "hex",
