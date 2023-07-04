@@ -1,7 +1,7 @@
 [package]
 name = "ckb-mock-tx-types"
 description = "CKB mock transaction types"
-version = "0.111.0-rc6"
+version = "0.111.0-rc8"
 license = "MIT"
 edition = "2021"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
@@ -9,7 +9,7 @@ authors = ["Nervos Core Dev <dev@nervos.org>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ckb-types = "=0.111.0-rc6"
-ckb-jsonrpc-types = "=0.111.0-rc6"
-ckb-traits = "=0.111.0-rc6"
+ckb-types = "=0.111.0-rc8"
+ckb-jsonrpc-types = "=0.111.0-rc8"
+ckb-traits = "=0.111.0-rc8"
 serde = { version = "1.0", features=["derive"] }
