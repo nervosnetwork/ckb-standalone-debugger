@@ -37,6 +37,7 @@ pub struct MockInfo {
     pub inputs: Vec<MockInput>,
     pub cell_deps: Vec<MockCellDep>,
     pub header_deps: Vec<HeaderView>,
+    pub extensions: Vec<(Byte32, Bytes)>,
 }
 
 /// A wrapper transaction with mock inputs and deps
@@ -178,10 +179,14 @@ impl Resource {
             required_headers.insert(block_hash, header);
         }
 
+        let mut extensions: HashMap<Byte32, packed::Bytes> =
+            mock_tx.mock_info.extensions.iter().map(|(hash, data)| (hash.clone(), data.pack())).collect();
+        extensions.extend(block_extensions);
+
         Ok(Resource {
             required_cells,
             required_headers,
-            block_extensions,
+            block_extensions: extensions,
         })
     }
 
@@ -252,6 +257,8 @@ pub struct ReprMockInfo {
     pub inputs: Vec<ReprMockInput>,
     pub cell_deps: Vec<ReprMockCellDep>,
     pub header_deps: Vec<json_types::HeaderView>,
+    #[serde(default)]
+    pub extensions: Vec<(H256, json_types::JsonBytes)>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ReprMockTransaction {
@@ -317,6 +324,11 @@ impl From<MockInfo> for ReprMockInfo {
                     json_header
                 })
                 .collect(),
+            extensions: info
+                .extensions
+                .into_iter()
+                .map(|(hash, data)| (hash.unpack(), json_types::JsonBytes::from_bytes(data)))
+                .collect(),
         }
     }
 }
@@ -335,6 +347,7 @@ impl From<ReprMockInfo> for MockInfo {
                     HeaderView::from(json_header).fake_hash(hash)
                 })
                 .collect(),
+            extensions: info.extensions.into_iter().map(|(hash, data)| (hash.pack(), data.into_bytes())).collect(),
         }
     }
 }
