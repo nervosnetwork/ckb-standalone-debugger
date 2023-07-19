@@ -50,31 +50,13 @@ impl InstructionInfo {
     }
 
     pub fn get_ins_info(&self) -> String {
-        use ckb_vm::ckb_vm_definitions::instructions::*;
         use ckb_vm::instructions::*;
 
-        match self.opcode {
-            OP_LB_VERSION0 | OP_LB_VERSION1 | OP_LH_VERSION0 | OP_LH_VERSION1 | OP_LW_VERSION0 | OP_LW_VERSION1
-            | OP_LD_VERSION0 | OP_LD_VERSION1 | OP_LBU_VERSION0 | OP_LBU_VERSION1 | OP_LHU_VERSION0
-            | OP_LHU_VERSION1 | OP_LWU_VERSION0 | OP_LWU_VERSION1 | OP_ADDI | OP_ADDIW | OP_XORI | OP_ORI | OP_ANDI
-            | OP_SLTI | OP_SLTIU | OP_JALR_VERSION0 | OP_JALR_VERSION1 | OP_SLLI | OP_SRLI | OP_SRAI | OP_SLLIW
-            | OP_SRLIW | OP_SRAIW | OP_BCLRI | OP_BEXTI | OP_BINVI | OP_BSETI | OP_RORI | OP_RORIW | OP_SLLIUW => {
-                Itype(self.instruction).to_string()
-            }
-            OP_SB | OP_SH | OP_SW | OP_SD | OP_BEQ | OP_BNE | OP_BLT | OP_BGE | OP_BLTU | OP_BGEU => {
-                Stype(self.instruction).to_string()
-            }
-            OP_LUI | OP_AUIPC | OP_JAL | OP_FAR_JUMP_REL | OP_FAR_JUMP_ABS | OP_CUSTOM_LOAD_UIMM
-            | OP_CUSTOM_LOAD_IMM => Utype(self.instruction).to_string(),
-            OP_ECALL => "ecall".to_string(),
-            OP_EBREAK => "break".to_string(),
-            OP_FENCEI => "fencei".to_string(),
-            OP_FENCE => "fence".to_string(),
-            OP_WIDE_MUL | OP_WIDE_MULU | OP_WIDE_MULSU | OP_WIDE_DIV | OP_WIDE_DIVU | OP_SBB | OP_ADCS | OP_SBBS => {
-                R4type(self.instruction).to_string()
-            }
-            OP_ADD3A | OP_ADD3B | OP_ADD3C => R5type(self.instruction).to_string(),
-            _ => Rtype(self.instruction).to_string(),
+        let tagged_instruction_option = tagged::TaggedInstruction::try_from(self.instruction);
+        if let Ok(tagged_instruction) = tagged_instruction_option {
+            tagged_instruction.to_string()
+        } else {
+            panic!("unknown instruction")
         }
     }
 
