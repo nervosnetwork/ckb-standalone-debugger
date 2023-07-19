@@ -8,8 +8,7 @@ enum ISA {
 }
 
 pub fn decode_instruction(data: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let has_0x = data.find("0x");
-    let instruction = if has_0x.is_some() && has_0x.unwrap() == 0 {
+    let instruction = if data.starts_with("0x") {
         u64::from_str_radix(&data[2..], 16)?
     } else {
         u64::from_str_radix(data, 10)?
