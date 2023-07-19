@@ -35,7 +35,9 @@ use std::net::TcpListener;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::{collections::HashSet, io::Read};
+mod decode;
 mod misc;
+use decode::decode_instruction;
 use misc::{FileOperation, FileStream, HumanReadableCycles, Random, TimeNow};
 
 #[cfg(feature = "probes")]
@@ -149,7 +151,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Arg::with_name("tx-file")
                 .long("tx-file")
                 .short("f")
-                .required_unless("bin")
+                .required_unless_one(&["bin", "decode"])
                 .help("Filename containing JSON formatted transaction dump")
                 .takes_value(true),
         )
@@ -160,7 +162,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .takes_value(true),
         )
         .arg(Arg::with_name("args").multiple(true))
+        .arg(
+            Arg::with_name("decode")
+                .long("decode")
+                .help("Decode RISC-V instruction")
+                .takes_value(true)
+                .conflicts_with_all(&["bin", "tx-file"]),
+        )
         .get_matches();
+
+    let matches_decode = matches.value_of_lossy("decode");
+    if matches_decode.is_some() {
+        return decode_instruction(&matches_decode.unwrap());
+    }
 
     let matches_bin = matches.value_of("bin");
     let matches_cell_index = matches.value_of("cell-index");
