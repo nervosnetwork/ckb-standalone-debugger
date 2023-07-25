@@ -10,24 +10,31 @@ pub fn decode_instruction(data: &str) -> Result<(), Box<dyn std::error::Error>> 
 
     let (ins, isa) = if let Some(i) = i::factory::<u64>(instruction, VERSION2) {
         let tagged_instruction: tagged::TaggedInstruction = tagged::TaggedInstruction::try_from(i).unwrap();
-        (tagged_instruction.to_string(), "Integer Instruction")
+        (tagged_instruction.to_string(), "I")
     } else if let Some(i) = m::factory::<u64>(instruction, VERSION2) {
         let tagged_instruction = tagged::TaggedInstruction::try_from(i).unwrap();
-        (tagged_instruction.to_string(), "M extension")
+        (tagged_instruction.to_string(), "M")
     } else if let Some(i) = a::factory::<u64>(instruction, VERSION2) {
         let tagged_instruction = tagged::TaggedInstruction::try_from(i).unwrap();
-        (tagged_instruction.to_string(), "A extension")
+        (tagged_instruction.to_string(), "A")
     } else if let Some(i) = b::factory::<u64>(instruction, VERSION2) {
         let tagged_instruction = tagged::TaggedInstruction::try_from(i).unwrap();
-        (tagged_instruction.to_string(), "B extension")
+        (tagged_instruction.to_string(), "B")
     } else if let Some(i) = rvc::factory::<u64>(instruction, VERSION2) {
         let tagged_instruction = tagged::TaggedInstruction::try_from(i).unwrap();
-        (tagged_instruction.to_string(), "RVC")
+        (tagged_instruction.to_string(), "C")
     } else {
         panic!("unknow instruction")
     };
 
-    println!("instruction: {}\nIt is in RISC-V {}.", ins, isa);
+    println!("       Assembly = {}", ins);
+    println!("         Binary = {:032b}", instruction);
+    if isa == "C" {
+        println!("    Hexadecimal = {:04x}", instruction);
+    } else {
+        println!("    Hexadecimal = {:08x}", instruction);
+    }
+    println!("Instruction set = {}", isa);
 
     Ok(())
 }
