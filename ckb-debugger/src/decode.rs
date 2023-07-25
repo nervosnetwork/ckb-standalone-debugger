@@ -24,14 +24,15 @@ pub fn decode_instruction(data: &str) -> Result<(), Box<dyn std::error::Error>> 
         let tagged_instruction = tagged::TaggedInstruction::try_from(i).unwrap();
         (tagged_instruction.to_string(), "C")
     } else {
-        panic!("unknow instruction")
+        ("?".to_string(), "?")
     };
 
     println!("       Assembly = {}", ins);
-    println!("         Binary = {:032b}", instruction);
     if isa == "C" {
+        println!("         Binary = {:016b}", instruction);
         println!("    Hexadecimal = {:04x}", instruction);
     } else {
+        println!("         Binary = {:032b}", instruction);
         println!("    Hexadecimal = {:08x}", instruction);
     }
     println!("Instruction set = {}", isa);
