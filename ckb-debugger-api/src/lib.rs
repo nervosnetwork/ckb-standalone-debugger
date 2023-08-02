@@ -4,7 +4,9 @@ use ckb_mock_tx_types::{MockInput, MockResourceLoader, MockTransaction, ReprMock
 use ckb_script::{ScriptGroupType, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::{
     bytes::Bytes,
-    core::{cell::resolve_transaction, Cycle, HeaderView},
+    core::cell::resolve_transaction,
+    core::{Cycle, HeaderView, EpochNumberWithFraction},
+    core::hardfork::{CKB2023, CKB2021, HardForks},
     packed::{self, Byte32, CellOutput, OutPoint, OutPointVec},
     prelude::*,
     H256,
@@ -44,8 +46,14 @@ pub fn run(
         resolve_transaction(tx, &mut seen_inputs, &resource, &resource)
             .map_err(|err| format!("Resolve transaction error: {:?}", err))?
     };
-    let consensus = Arc::new(ConsensusBuilder::default().build());
-    let tx_env = Arc::new(TxVerifyEnv::new_commit(&HeaderView::new_advanced_builder().build()));
+    let hardfork_switch = HardForks {
+        ckb2021: CKB2021::new_mirana(),
+        ckb2023: CKB2023::new_mirana().as_builder().rfc_0049(2023).build().unwrap(),
+    };
+    let consensus = Arc::new(ConsensusBuilder::default().hardfork_switch(hardfork_switch).build());
+    let epoch = EpochNumberWithFraction::new(2023, 0, 1);
+    let header = HeaderView::new_advanced_builder().epoch(epoch.pack()).build();
+    let tx_env = Arc::new(TxVerifyEnv::new_commit(&header));
     let mut verifier =
         TransactionScriptsVerifier::new(Arc::new(rtx), resource.clone(), consensus.clone(), tx_env.clone());
     if let Some(debug_printer) = debug_printer {
