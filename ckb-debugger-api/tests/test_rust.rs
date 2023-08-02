@@ -78,6 +78,7 @@ pub fn test_bench() {
         inputs: vec![mock_input],
         cell_deps: vec![data_dep, code_dep],
         header_deps: vec![],
+        extensions: vec![],
     };
     let mock_transaction = MockTransaction {
         mock_info,
