@@ -175,3 +175,36 @@ pub fn check(tx: &ReprMockTransaction) -> Result<(), String> {
     }
     Ok(())
 }
+
+// Get script hash by give group type, cell type and cell index.
+// Note cell_type should be a string, in the range ["input", "output"].
+pub fn get_script_hash_by_index(
+    mock_tx: &MockTransaction,
+    script_group_type: &ScriptGroupType,
+    cell_type: &str,
+    cell_index: usize,
+) -> Byte32 {
+    match (&script_group_type, cell_type) {
+        (ScriptGroupType::Lock, "input") => mock_tx.mock_info.inputs[cell_index].output.calc_lock_hash(),
+        (ScriptGroupType::Type, "input") => mock_tx.mock_info.inputs[cell_index]
+            .output
+            .type_()
+            .to_opt()
+            .expect("cell should have type script")
+            .calc_script_hash(),
+        (ScriptGroupType::Type, "output") => mock_tx
+            .tx
+            .raw()
+            .outputs()
+            .get(cell_index)
+            .expect("index out of bound")
+            .type_()
+            .to_opt()
+            .expect("cell should have type script")
+            .calc_script_hash(),
+        _ => panic!(
+            "Invalid specified script: {:?} {} {}",
+            script_group_type, cell_type, cell_index
+        ),
+    }
+}
