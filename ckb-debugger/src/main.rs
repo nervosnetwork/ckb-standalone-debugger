@@ -236,12 +236,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         from_plain_str(script_group_type)?
     };
     let verifier_script_hash = if matches_tx_file.is_none() {
-        let mut b = [0u8; 32];
-        hex_decode_fallback(
-            b"51d98e5112c1da30d758fc9211e01f86291e64caf399008f20d17b009765ecbd",
-            &mut b[..],
-        );
-        Byte32::new(b)
+        verifier_mock_tx.mock_info.inputs[0].output.calc_lock_hash()
     } else if let Some(hex_script_hash) = matches_script_hash {
         if hex_script_hash.len() != 66 || (!hex_script_hash.starts_with("0x")) {
             panic!("Invalid script hash format!");
