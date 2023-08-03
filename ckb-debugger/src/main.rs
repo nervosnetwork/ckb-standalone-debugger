@@ -1,7 +1,7 @@
 use ckb_chain_spec::consensus::ConsensusBuilder;
-use ckb_debugger_api::{check, get_script_hash_by_index};
 use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
+use ckb_debugger_api::{check, get_script_hash_by_index};
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::cost_model::transferred_byte_cycles;
 use ckb_script::{

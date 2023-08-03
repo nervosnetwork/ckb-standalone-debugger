@@ -5,8 +5,8 @@ use ckb_script::{ScriptGroupType, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::{
     bytes::Bytes,
     core::cell::resolve_transaction,
-    core::{Cycle, HeaderView, EpochNumberWithFraction},
-    core::hardfork::{CKB2023, CKB2021, HardForks},
+    core::hardfork::{HardForks, CKB2021, CKB2023},
+    core::{Cycle, EpochNumberWithFraction, HeaderView},
     packed::{self, Byte32, CellOutput, OutPoint, OutPointVec},
     prelude::*,
     H256,
