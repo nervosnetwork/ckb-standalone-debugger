@@ -1,5 +1,5 @@
 use ckb_chain_spec::consensus::ConsensusBuilder;
-use ckb_debugger_api::check;
+use ckb_debugger_api::{check, get_script_hash_by_index};
 use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::DummyResourceLoader;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
@@ -265,29 +265,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         let cell_type = cell_type.unwrap();
         let cell_index: usize = cell_index.unwrap().parse()?;
-        match (&verifier_script_group_type, cell_type) {
-            (ScriptGroupType::Lock, "input") => verifier_mock_tx.mock_info.inputs[cell_index].output.calc_lock_hash(),
-            (ScriptGroupType::Type, "input") => verifier_mock_tx.mock_info.inputs[cell_index]
-                .output
-                .type_()
-                .to_opt()
-                .expect("cell should have type script")
-                .calc_script_hash(),
-            (ScriptGroupType::Type, "output") => verifier_mock_tx
-                .tx
-                .raw()
-                .outputs()
-                .get(cell_index)
-                .expect("index out of bound")
-                .type_()
-                .to_opt()
-                .expect("cell should have type script")
-                .calc_script_hash(),
-            _ => panic!(
-                "Invalid specified script: {:?} {} {}",
-                verifier_script_group_type, cell_type, cell_index
-            ),
-        }
+        get_script_hash_by_index(&verifier_mock_tx, &verifier_script_group_type, cell_type, cell_index)
     };
     let verifier_script_version = match matches_script_version {
         "0" => ScriptVersion::V0,
