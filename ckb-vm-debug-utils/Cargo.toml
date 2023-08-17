@@ -1,6 +1,6 @@
 [package]
 name = "ckb-vm-debug-utils"
-version = "0.111.0-rc8"
+version = "0.111.0-rc9"
 authors = ["Xuejie Xiao <xxuejie@gmail.com>"]
 edition = "2021"
 
@@ -11,7 +11,7 @@ stdio = ["libc", "nix"]
 [dependencies]
 byteorder = "1"
 bytes = "1.0.0"
-ckb-vm = "=0.24.0"
+ckb-vm = "=0.24.4"
 env_logger = "0.4.3"
 gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol", rev = "565ab0c" }
 libc = { version = "0.2.47", optional = true }
