@@ -95,7 +95,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Arg::with_name("mode")
                 .long("mode")
                 .help("Execution mode of debugger")
-                .possible_values(&["full", "fast", "gdb", "probe"])
+                .possible_values(&["full", "fast", "gdb", "probe", "gdb_gdbstub"])
                 .default_value(&default_mode)
                 .required(true)
                 .takes_value(true),
@@ -451,7 +451,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    if matches_mode == "gdb" {
+    if matches_mode == "gdb" || matches_mode == "gdb_gdbstub" {
         let listen_address = matches_gdb_listen.unwrap();
         let listener = TcpListener::bind(listen_address)?;
         println!("Listening for gdb remote connection on {}", listen_address);
@@ -467,15 +467,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let specify = usize::from_str_radix(matches_gdb_specify_depth, 10).unwrap();
                 let machine = machine_sget(machine, machine_context.clone(), specify)?;
 
-                #[cfg(not(feature = "gdbstub_impl"))]
-                {
+                if matches_mode == "gdb" {
                     let h = ckb_vm_debug_utils::GdbHandler::new(machine);
                     gdb_remote_protocol::process_packets_from(stream.try_clone().unwrap(), stream, h);
-                }
-
-                #[cfg(feature = "gdbstub_impl")]
-                {
-                    use ckb_vm::error::Error;
+                } else if matches_mode == "gdb_gdbstub" {
                     use ckb_vm_debug_utils::{GdbStubHandler, GdbStubHandlerEventLoop};
                     use gdbstub::{
                         conn::ConnectionExt,
