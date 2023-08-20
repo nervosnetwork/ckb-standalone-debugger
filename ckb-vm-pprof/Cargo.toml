@@ -1,6 +1,6 @@
 [package]
 name = "ckb-vm-pprof"
-version = "0.111.0-rc9"
+version = "0.111.0-rc10"
 authors = ["mohanson <mohanson@outlook.com>"]
 edition = "2021"
 
