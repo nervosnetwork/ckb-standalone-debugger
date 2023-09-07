@@ -1,12 +1,12 @@
 [package]
 name = "ckb-vm-pprof"
-version = "0.111.0-rc10"
+version = "0.111.0-rc11"
 authors = ["mohanson <mohanson@outlook.com>"]
 edition = "2021"
 
 [dependencies]
 addr2line = "0.13.0"
 clap = "2.33"
-ckb-vm = { version = "=0.24.4", features=["pprof"] }
+ckb-vm = { version = "=0.24.6", features=["pprof"] }
 goblin = "0.4"
 object = "0.20"
