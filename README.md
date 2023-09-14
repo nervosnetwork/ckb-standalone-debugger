@@ -28,4 +28,4 @@ $ brew install protobuf
 
 # Licences
 
-MIT.
+MIT
