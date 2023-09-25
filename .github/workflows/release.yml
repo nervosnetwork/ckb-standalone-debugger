@@ -64,7 +64,7 @@ jobs:
           dist/ckb-debugger-macos-x64.tar.gz
           dist/ckb-debugger-macos-x64-sha256.txt
 
-  publish-windoes:
+  publish-windows:
     name: Publish binary on Windows
     needs: [release]
     runs-on: windows-latest
