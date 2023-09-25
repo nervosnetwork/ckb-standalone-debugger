@@ -86,3 +86,15 @@ jobs:
         files: |
           dist/ckb-debugger-windows-x64.tar.gz
           dist/ckb-debugger-windoes-x64-sha256.txt
+
+  publish-crates-io:
+    name: Publish ckb-mock-tx-types to crates.io
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Publish
+      run: |
+        cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        cd ckb-mock-tx-types
+        cargo publish
