@@ -289,7 +289,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         tx_env.clone(),
     );
     verifier.set_debug_printer(Box::new(move |_hash: &Byte32, message: &str| {
-        println!("{}", message);
+        print!("{}", message);
+        if !message.ends_with('\n') {
+            println!("");
+        }
     }));
     let verifier_script_group = verifier.find_script_group(verifier_script_group_type, &verifier_script_hash).unwrap();
     let verifier_program = match matches_bin {
