@@ -9,37 +9,39 @@ For Rust library usage, refer to the included tests, they are quite self-explana
 See the command line help part for usage on the binary debugger:
 
 ```text
-ckb-debugger 0.108.1
+ckb-debugger 0.111.0
 
 USAGE:
     ckb-debugger [FLAGS] [OPTIONS] --mode <mode> --tx-file <tx-file> [args]...
 
 FLAGS:
-    -h, --help        Prints help information
-        --long-log    long log message with script group
-        --step        Set to true to enable step mode, where we print PC address for each instruction
-    -V, --version     Prints version information
+    -h, --help       Prints help information
+        --prompt     Set to true to prompt for stdin input before executing
+        --step       Set to true to enable step mode, where we print PC address for each instruction
+    -V, --version    Prints version information
 
 OPTIONS:
         --bin <bin>                                File used to replace the binary denoted in the script
-        --cell-index <cell-index>                  Index of cell to run
-        --cell-type <cell-type>                    Type of cell to run [possible values: input, output]
+    -i, --cell-index <cell-index>                  Index of cell to run
+    -t, --cell-type <cell-type>                    Type of cell to run [possible values: input, output]
+        --decode <decode>                          Decode RISC-V instruction
         --dump-file <dump-file>                    Dump file name
         --gdb-listen <gdb-listen>                  Address to listen for GDB remote debugging server
+        --gdb-specify-depth <gdb-specify-depth>    Specifies the depth of the exec/spawn stack [default: 0]
         --max-cycles <max-cycles>                  Max cycles [default: 70000000]
         --mode <mode>
-            Execution mode of debugger [default: full]  [possible values: full, fast, gdb]
+            Execution mode of debugger [default: full]  [possible values: full, fast, gdb, probe, gdb_gdbstub]
 
         --pprof <pprof>                            Performance profiling, specify output file for further use
         --read-file <read-file>
             Read content from local file or stdin. Then feed the content to syscall in scripts
 
-        --script-group-type <script-group-type>    Script group type [possible values: lock, type]
+    -s, --script-group-type <script-group-type>    Script group type [possible values: lock, type]
         --script-hash <script-hash>                Script hash
-        --script-version <script-version>          Script version [default: 1]
+        --script-version <script-version>          Script version [default: 2]
         --skip-end <skip-end>                      End address to skip printing debug info
         --skip-start <skip-start>                  Start address to skip printing debug info
-        --tx-file <tx-file>                        Filename containing JSON formatted transaction dump
+    -f, --tx-file <tx-file>                        Filename containing JSON formatted transaction dump
 
 ARGS:
     <args>...
