@@ -7,6 +7,9 @@ CKB standalone debugger is a collection of debugging tools.
 - [ckb-mock-tx-types](./ckb-mock-tx-types)
 - [ckb-vm-debug-utils](./ckb-vm-debug-utils)
 - [ckb-vm-pprof](./ckb-vm-pprof)
+- [ckb-vm-pprof-converter](./ckb-vm-pprof-converter)
+- [ckb-vm-pprof-protos](./ckb-vm-pprof-protos)
+- [ckb-vm-signal-profiler](./ckb-vm-signal-profiler)
 
 We provide a command line tool that allows you to develop CKB scripts offline. To install
 
