@@ -4,7 +4,7 @@ use ckb_vm::{
     RISCV_GENERAL_REGISTER_NUMBER,
 };
 
-use gdb_remote_protocol::{
+use ckb_gdb_remote_protocol::{
     Breakpoint, Error, Handler, MemoryRegion, ProcessType, StopReason, ThreadId, VCont, VContFeature, Watchpoint,
 };
 use log::debug;

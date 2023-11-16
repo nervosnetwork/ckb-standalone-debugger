@@ -3,6 +3,8 @@ name = "ckb-vm-debug-utils"
 version = "0.111.0"
 authors = ["Xuejie Xiao <xxuejie@gmail.com>"]
 edition = "2021"
+description = "Utils for ckb-debugger"
+license = "MIT"
 
 [features]
 default = []
@@ -13,7 +15,7 @@ byteorder = "1"
 bytes = "1.0.0"
 ckb-vm = "=0.24.6"
 env_logger = "0.4.3"
-gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol", rev = "565ab0c" }
+ckb-gdb-remote-protocol = { path = "../ckb-gdb-remote-protocol", version="0.111.0" }
 libc = { version = "0.2.47", optional = true }
 log = "0.4.0"
 nix = { version = "0.26.2", optional = true }
