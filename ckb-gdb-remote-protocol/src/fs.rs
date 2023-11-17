@@ -210,12 +210,7 @@ pub fn read_stat(v: &[u8]) -> io::Result<HostStat> {
 /// TODO: doc
 pub trait FileSystem {
     /// Open a file on the remote stub's current filesystem.
-    fn host_open(
-        &self,
-        _filename: Vec<u8>,
-        _flags: HostOpenFlags,
-        _mode: HostMode,
-    ) -> IOResult<u64> {
+    fn host_open(&self, _filename: Vec<u8>, _flags: HostOpenFlags, _mode: HostMode) -> IOResult<u64> {
         Err(())
     }
 

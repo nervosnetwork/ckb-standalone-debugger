@@ -140,8 +140,7 @@ impl FileSystem for LibcFS {
         Ok((|| {
             let filename = CString::new(filename).map_err(|_| HostErrno::ENOENT)?;
 
-            let fd: libc::c_int =
-                unsafe { libc::open(filename.as_ptr(), flags.into_libc(), mode.into_libc()) };
+            let fd: libc::c_int = unsafe { libc::open(filename.as_ptr(), flags.into_libc(), mode.into_libc()) };
             if fd >= 0 {
                 Ok(u64::from(fd as u32))
             } else {
