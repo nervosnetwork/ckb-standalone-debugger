@@ -11,7 +11,6 @@ use ckb_types::{
     prelude::*,
     H256,
 };
-use faster_hex::hex_decode_fallback;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str as from_json_str, to_string as to_json_string};
 use serde_plain::from_str as from_plain_str;
@@ -98,9 +97,8 @@ fn internal_run_json(
     if hex_script_hash.len() != 66 || (!hex_script_hash.starts_with("0x")) {
         return Err("Invalid script hash format!".to_string());
     }
-    let mut b = [0u8; 32];
-    hex_decode_fallback(&hex_script_hash.as_bytes()[2..], &mut b[..]);
-    let script_hash = Byte32::new(b);
+    let b = hex::decode(&hex_script_hash.as_bytes()[2..]).map_err(|e| e.to_string())?;
+    let script_hash = Byte32::from_slice(b.as_slice()).map_err(|e| e.to_string())?;
     let max_cycle: Cycle = max_cycle.parse().map_err(|_| "Invalid max cycle!".to_string())?;
     run(&mock_tx, &script_group_type, &script_hash, max_cycle, debug_printer)
 }

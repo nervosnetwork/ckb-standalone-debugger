@@ -309,7 +309,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df80db694e42b64a5774ae551daff3c8310cd99bb528643dbe0dd409abb298e7"
 dependencies = [
  "ckb-fixed-hash",
- "faster-hex 0.6.1",
+ "faster-hex",
  "lazy_static",
  "rand 0.7.3",
  "secp256k1",
@@ -343,7 +343,6 @@ dependencies = [
  "ckb-vm-pprof",
  "clap 2.34.0",
  "env_logger 0.4.3",
- "faster-hex 0.4.1",
  "gdbstub",
  "gdbstub_arch",
  "hex",
@@ -368,7 +367,6 @@ dependencies = [
  "ckb-script",
  "ckb-types",
  "ckb-vm",
- "faster-hex 0.4.1",
  "hex",
  "js-sys",
  "regex 1.9.5",
@@ -406,7 +404,7 @@ version = "0.111.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bdd1727a6ecd4d0bcab604cb1ef707fe92e939fa6e9a438f9f25bf05208cb080"
 dependencies = [
- "faster-hex 0.6.1",
+ "faster-hex",
  "serde",
  "thiserror",
 ]
@@ -474,7 +472,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d789a71538da07871c11aecbd28d6c632bb426bdfeed5fc2fa1b455e31152468"
 dependencies = [
  "ckb-types",
- "faster-hex 0.6.1",
+ "faster-hex",
  "serde",
  "serde_json",
 ]
@@ -580,7 +578,7 @@ dependencies = [
  "ckb-traits",
  "ckb-types",
  "ckb-vm",
- "faster-hex 0.6.1",
+ "faster-hex",
  "serde",
 ]
 
@@ -591,7 +589,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa5c59063142de7a68cfad4449c6b3863563856219a2925dfb8c5f019ec2aa47"
 dependencies = [
  "blake2b-rs",
- "faster-hex 0.6.1",
+ "faster-hex",
  "includedir",
  "includedir_codegen",
  "phf",
@@ -944,12 +942,6 @@ checksum = "4443176a9f2c162692bd3d352d745ef9413eec5782a80d8fd6f8a1ac692a07f7"
 
 [[package]]
 name = "faster-hex"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "348138dd23e03bb0018caef99647fb1a5befec5ff4b501991de88f09854d4c28"
-
-[[package]]
-name = "faster-hex"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51e2ce894d53b295cf97b05685aa077950ff3e8541af83217fc720a6437169f8"
@@ -1278,7 +1270,7 @@ checksum = "d4fd9767ab5e5f2ea40f71ff4c8bdb633c50509052e093c2fdd0e390a749dfa3"
 dependencies = [
  "bytes",
  "cfg-if",
- "faster-hex 0.6.1",
+ "faster-hex",
 ]
 
 [[package]]
