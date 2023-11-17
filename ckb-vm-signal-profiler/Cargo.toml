@@ -16,4 +16,4 @@ log = "0.4.16"
 nix = "0.23.1"
 lazy_static = "1.4.0"
 protobuf = { version = "2.25.1", features = ["with-bytes", "with-serde"] }
-ckb-vm-pprof-protos = { path = "../ckb-vm-pprof-protos" }
+ckb-vm-pprof-protos = { path = "../ckb-vm-pprof-protos", version="0.111.0" }

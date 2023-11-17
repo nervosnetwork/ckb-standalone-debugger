@@ -450,7 +450,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 if matches_mode == "gdb" {
                     let h = ckb_vm_debug_utils::GdbHandler::new(machine);
-                    gdb_remote_protocol::process_packets_from(stream.try_clone().unwrap(), stream, h);
+                    ckb_gdb_remote_protocol::process_packets_from(stream.try_clone().unwrap(), stream, h);
                 } else if matches_mode == "gdb_gdbstub" {
                     use ckb_vm_debug_utils::{GdbStubHandler, GdbStubHandlerEventLoop};
                     use gdbstub::{

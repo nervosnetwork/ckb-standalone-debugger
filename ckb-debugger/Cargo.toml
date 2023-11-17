@@ -14,17 +14,17 @@ probes = ["probe", "ckb-script/flatmemory"]
 [dependencies]
 clap = "2.33.0"
 ckb-chain-spec = "=0.111.0"
-ckb-debugger-api = { path = "../ckb-debugger-api" }
+ckb-debugger-api = { path = "../ckb-debugger-api", version="0.111.0" }
 ckb-hash = "=0.111.0"
-ckb-mock-tx-types = { path = "../ckb-mock-tx-types" }
+ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version="0.111.0" }
 ckb-script = { version = "=0.111.0", default-features = false }
 ckb-types = "=0.111.0"
 ckb-vm = { version = "=0.24.6" }
-ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils" }
-ckb-vm-pprof = { path = "../ckb-vm-pprof" }
+ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils", version="0.111.0" }
+ckb-vm-pprof = { path = "../ckb-vm-pprof", version="0.111.0" }
 env_logger = "0.4.3"
 faster-hex = "0.4.0"
-gdb-remote-protocol = { git = "https://github.com/luser/rust-gdb-remote-protocol", rev = "565ab0c" }
+ckb-gdb-remote-protocol = { path = "../ckb-gdb-remote-protocol", version="0.111.0" }
 gdbstub = "0.6.6"
 gdbstub_arch = "0.2.4"
 hex = "0.4"
