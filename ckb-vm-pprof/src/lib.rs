@@ -133,7 +133,7 @@ pub struct Profile {
 
 impl Profile {
     pub fn new(program: &Bytes) -> Result<Self, Box<dyn std::error::Error>> {
-        let object = object::File::parse(&program)?;
+        let object = addr2line::object::File::parse(program.as_ref())?;
         let ctx = addr2line::Context::new(&object)?;
         let trie_root = Rc::new(RefCell::new(TrieNode::root()));
         let elf = goblin::elf::Elf::parse(&program)?;

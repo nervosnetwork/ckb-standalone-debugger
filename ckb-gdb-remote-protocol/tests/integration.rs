@@ -136,9 +136,7 @@ fn gdb_test() -> GDBTestBuilder {
     let gdb_s = gdb.to_string_lossy();
     // Next, create a TCP socket to listen on.
     let listener = TcpListener::bind("0.0.0.0:0").expect("Failed to bind TCP listen socket!");
-    let addr = listener
-        .local_addr()
-        .expect("Failed to get listen socket address!");
+    let addr = listener.local_addr().expect("Failed to get listen socket address!");
     let remote_cmd = format!("target remote {}", addr);
     let assert = Assert::command(&[&gdb_s, "-nx", "-batch", "-ex", &remote_cmd]);
     let handler = Default::default();
@@ -153,7 +151,5 @@ fn gdb_test() -> GDBTestBuilder {
 fn simple() {
     // GDB will not do much with a process that has already exited, which is the default
     // stop_reason.
-    gdb_test()
-        .assert(|a| a.stderr().contains("The target is not running"))
-        .execute()
+    gdb_test().assert(|a| a.stderr().contains("The target is not running")).execute()
 }
