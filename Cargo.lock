@@ -368,7 +368,6 @@ dependencies = [
  "ckb-types",
  "ckb-vm",
  "hex",
- "js-sys",
  "regex 1.9.5",
  "serde",
  "serde_json",
@@ -668,7 +667,6 @@ dependencies = [
  "bytes",
  "ckb-gdb-remote-protocol",
  "ckb-vm",
- "env_logger 0.4.3",
  "gdbstub",
  "gdbstub_arch",
  "libc",
@@ -1143,15 +1141,6 @@ name = "itoa"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af150ab688ff2122fcef229be89cb50dd66af9e01a4ff320cc137eecc9bacc38"
-
-[[package]]
-name = "js-sys"
-version = "0.3.64"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5f195fe497f702db0f318b07fdd68edb16955aed830df8363d837542f8f935a"
-dependencies = [
- "wasm-bindgen",
-]
 
 [[package]]
 name = "lazy_static"

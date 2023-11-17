@@ -195,7 +195,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_args = matches.values_of("args").unwrap_or_default();
     let matches_read_file_name = matches.value_of("read-file");
 
-    let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.clone().into()).collect();
+    let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.into()).collect();
     let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
 
     let fs_syscall = if let Some(file_name) = matches_read_file_name {

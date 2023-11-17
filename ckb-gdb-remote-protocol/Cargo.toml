@@ -1,6 +1,6 @@
 [package]
 name = "ckb-gdb-remote-protocol"
-edition = "2018"
+edition = "2021"
 version = "0.111.0"
 description = "An implementation of the GDB remote protocol"
 authors = ["Ted Mielczarek <ted@mielczarek.org>"]
