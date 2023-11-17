@@ -11,6 +11,7 @@ use ckb_script::{
 use ckb_types::core::cell::resolve_transaction;
 use ckb_types::core::HeaderView;
 use ckb_types::packed::Byte32;
+use ckb_types::prelude::Entity;
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::build_decoder;
 use ckb_vm::error::Error;
@@ -27,7 +28,6 @@ use ckb_vm_debug_utils::ElfDumper;
 use ckb_vm_debug_utils::Stdio;
 use ckb_vm_pprof::{PProfMachine, Profile};
 use clap::{crate_version, App, Arg};
-use faster_hex::hex_decode_fallback;
 use serde_json::from_str as from_json_str;
 use serde_plain::from_str as from_plain_str;
 use std::fs::{read, read_to_string};
@@ -241,9 +241,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if hex_script_hash.len() != 66 || (!hex_script_hash.starts_with("0x")) {
             panic!("Invalid script hash format!");
         }
-        let mut b = [0u8; 32];
-        hex_decode_fallback(&hex_script_hash.as_bytes()[2..], &mut b[..]);
-        Byte32::new(b)
+        let b = hex::decode(&hex_script_hash.as_bytes()[2..])?;
+        Byte32::from_slice(b.as_slice())?
     } else {
         let mut cell_type = matches_cell_type;
         let mut cell_index = matches_cell_index;

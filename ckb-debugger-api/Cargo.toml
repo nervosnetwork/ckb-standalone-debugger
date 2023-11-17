@@ -17,7 +17,6 @@ ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version="0.111.0" }
 ckb-script = { version = "=0.111.0", default-features = false }
 ckb-types = "=0.111.0"
 ckb-vm = "=0.24.6"
-faster-hex = "0.4.0"
 hex = "0.4"
 js-sys = "0.3.27"
 regex = "1"
