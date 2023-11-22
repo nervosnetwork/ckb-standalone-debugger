@@ -3,6 +3,8 @@ name = "ckb-vm-signal-profiler"
 version = "0.112.1"
 edition = "2021"
 description = "Linux signal based profiler for ckb-vm, note this is profiling ckb-vm itself, not the programs running in ckb-vm"
+license = "MIT"
+authors = ["Nervos Core Dev <dev@nervos.org>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

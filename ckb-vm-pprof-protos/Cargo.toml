@@ -3,6 +3,8 @@ name = "ckb-vm-pprof-protos"
 version = "0.112.1"
 edition = "2021"
 description = "Crate for generating Rust definitions from pprof proto"
+license = "MIT"
+authors = ["Nervos Core Dev <dev@nervos.org>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
