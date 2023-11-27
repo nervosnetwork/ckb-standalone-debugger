@@ -155,7 +155,7 @@ pub fn check(tx: &ReprMockTransaction) -> Result<(), String> {
     cell_deps.sort_by(compare);
 
     if mock_cell_deps.len() != cell_deps.len() {
-        return Err(format!("mock_cell_deps.len() != cell_deps.len("));
+        return Err(format!("mock_cell_deps.len() != cell_deps.len(), {} != {}", mock_cell_deps.len(), cell_deps.len()));
     } else {
         for (a, b) in mock_cell_deps.into_iter().zip(cell_deps.into_iter()) {
             if a != b {
