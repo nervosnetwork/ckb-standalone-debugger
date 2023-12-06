@@ -129,6 +129,7 @@ pub struct Profile {
     cache_fun: HashMap<u64, String>,
     sbrk_addr: u64,
     sbrk_heap: u64,
+    disable_overlapping_detection: bool,
 }
 
 impl Profile {
@@ -146,7 +147,13 @@ impl Profile {
             cache_fun: goblin_fun(&elf),
             sbrk_addr: goblin_get_sym(&elf, "_sbrk"),
             sbrk_heap: goblin_get_sym(&elf, "_end"),
+            disable_overlapping_detection: false,
         })
+    }
+
+    pub fn set_disable_overlapping_detection(mut self, disable_detection: bool) -> Self {
+        self.disable_overlapping_detection = disable_detection;
+        self
     }
 
     pub fn get_tag(&mut self, addr: u64) -> Tags {
@@ -205,12 +212,14 @@ impl Profile {
         decoder: &mut Decoder,
     ) -> Result<(), Error> {
         let pc = machine.pc().to_u64();
-        let sp = machine.registers()[SP].to_u64();
-        if sp < self.sbrk_heap {
-            return Err(Error::External(format!(
-                "Heap and stack overlapping sp={} heap={}",
-                sp, self.sbrk_heap
-            )));
+        if !self.disable_overlapping_detection {
+            let sp = machine.registers()[SP].to_u64();
+            if sp < self.sbrk_heap {
+                return Err(Error::External(format!(
+                    "Heap and stack overlapping sp={} heap={}",
+                    sp, self.sbrk_heap
+                )));
+            }
         }
         let inst = decoder.decode(machine.memory_mut(), pc)?;
         let opcode = ckb_vm::instructions::extract_opcode(inst);
