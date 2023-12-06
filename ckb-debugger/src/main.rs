@@ -169,6 +169,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .takes_value(true)
                 .conflicts_with_all(&["bin", "tx-file"]),
         )
+        .arg(
+            Arg::with_name("disable-overlapping-detection")
+                .long("disable-overlapping-detection")
+                .required(false)
+                .takes_value(false)
+                .help("Set to true to disable overlapping detection between stack and heap"),
+        )
         .get_matches();
 
     let matches_decode = matches.value_of_lossy("decode");
@@ -371,7 +378,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
 
     if matches_mode == "full" {
-        let mut machine = PProfMachine::new(machine_init(), Profile::new(&verifier_program)?);
+        let mut machine = PProfMachine::new(
+            machine_init(),
+            Profile::new(&verifier_program)?
+                .set_disable_overlapping_detection(matches.is_present("disable-overlapping-detection")),
+        );
         let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
         let transferred_cycles = transferred_byte_cycles(bytes);
         machine.machine.add_cycles(transferred_cycles)?;
@@ -405,6 +416,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 machine.profile.display_stacktrace("  ", &mut std::io::stdout());
                 println!("Error:");
                 println!("  {:?}", err);
+                println!("Machine: {}", machine.machine);
             }
         }
         return Ok(());
