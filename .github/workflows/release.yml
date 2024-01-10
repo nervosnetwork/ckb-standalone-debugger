@@ -85,7 +85,7 @@ jobs:
       with:
         files: |
           dist/ckb-debugger-windows-x64.tar.gz
-          dist/ckb-debugger-windoes-x64-sha256.txt
+          dist/ckb-debugger-windows-x64-sha256.txt
 
   publish-crates-io:
     name: Publish crates to crates.io
