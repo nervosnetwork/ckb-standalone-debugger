@@ -9,7 +9,7 @@ For Rust library usage, refer to the included tests, they are quite self-explana
 See the command line help part for usage on the binary debugger:
 
 ```text
-ckb-debugger 0.112.1
+ckb-debugger 0.113.0
 
 USAGE:
     ckb-debugger [FLAGS] [OPTIONS] --mode <mode> --tx-file <tx-file> [args]...
