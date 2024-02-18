@@ -309,9 +309,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "ckb-chain-spec"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "210df338c83691c2173136656c411c3fe09578a66377a05014956419bede76cf"
+checksum = "a6d1802c660a49eddef455725c3e7d96967b98963af669bb69ce2074c4064135"
 dependencies = [
  "cacache",
  "ckb-constant",
@@ -332,24 +332,24 @@ dependencies = [
 
 [[package]]
 name = "ckb-channel"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50d21e6d4ad47858609ced9d887e63e821ba6770f28e7be58e8d56213a0d0924"
+checksum = "bedfa69cb6143f053ced2d815b604a1a6a915312420c25467273b6b6cf78de51"
 dependencies = [
  "crossbeam-channel",
 ]
 
 [[package]]
 name = "ckb-constant"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b42093e370876b71569292fc0aa9ae1078114ee678c4e4b4ae77a81b590fdba7"
+checksum = "b259209758d5d9af2e7b1cdcd86edee06b5fc49006021132c7024091b92458b4"
 
 [[package]]
 name = "ckb-crypto"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35ed640e73c39b5e0fc8a39c6d013733761023424e2bc70dafd74d92ce6c36cb"
+checksum = "c963f47d6eeebe098aeaca3e01c79929438e1060532e8dd17116a0f4855f41b9"
 dependencies = [
  "ckb-fixed-hash",
  "faster-hex",
@@ -361,9 +361,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-dao-utils"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aaf9300f9b1ff36e576ca6ed374ec9704f6da6f61492ea48038ff0b9067c2779"
+checksum = "0abd5c104dec8516a2b50906f7786f4bf0ce38ea0c0b2e0a08aebc9b25a08058"
 dependencies = [
  "byteorder",
  "ckb-error",
@@ -372,7 +372,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-debugger"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "ckb-chain-spec",
  "ckb-debugger-api",
@@ -400,7 +400,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-debugger-api"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "byteorder",
  "ckb-chain-spec",
@@ -420,9 +420,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-error"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9948a60c3fa47131ec9907cfb64c94e4fd9199ef9329ba0ba4d53b8e03adfbbe"
+checksum = "c9eb2cc6e4ba976cc5d697287d5b071de6a357ff1b2359238c7ba22ed506e6f9"
 dependencies = [
  "anyhow",
  "ckb-occupied-capacity",
@@ -432,9 +432,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-fixed-hash"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0629983e05127c5bbf025cefdac36a91c3a0720acf1b2e2637ff1f0ac673a78c"
+checksum = "0ce4068711feae250501aa4abdd8ae5f09b2bd2cb264575e7cebcb01a4381249"
 dependencies = [
  "ckb-fixed-hash-core",
  "ckb-fixed-hash-macros",
@@ -442,9 +442,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-fixed-hash-core"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c582d7d52e96ce65c2995a7f399c6dc3f314fec64dd15d47ec903896ac24a428"
+checksum = "712c75c9dd4d22f15faf18ca771d1d16dcbc57c59eaeb3f7e8e0f215e1c16317"
 dependencies = [
  "faster-hex",
  "serde",
@@ -453,9 +453,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-fixed-hash-macros"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bae4184f70cbd2e36839d902f403f06ea6a009df67ac2f7d37942890459618c"
+checksum = "24ac013ba392c9d5613fe297038decd2cfaafbbe93951a16bb5701a53db9bbcf"
 dependencies = [
  "ckb-fixed-hash-core",
  "proc-macro2",
@@ -465,7 +465,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-gdb-remote-protocol"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "assert_cli",
  "bitflags 1.3.2",
@@ -484,9 +484,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-gen-types"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c709b63557041d03db0bc09b56ddc95de455ea555d537d5599117163f095973c"
+checksum = "d9d445c8a5b7991ffd98972f86009431bf3fae8a18f0476f01e74aa9fe55d82c"
 dependencies = [
  "cfg-if",
  "ckb-error",
@@ -499,9 +499,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-hash"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b78504239eedf043013a4c1d5a3cf38a2917ef37643c3608ff4183aa2888f48f"
+checksum = "5ae6a981a0fb56627725f6c5ee5763325c999e594cf9237569687a61b16a3a95"
 dependencies = [
  "blake2b-ref",
  "blake2b-rs",
@@ -509,9 +509,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-jsonrpc-types"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97cf7e01a18fb980f3d993fafdf06999379b71ebca098196ed42824bab0b3d9d"
+checksum = "87d1ff188d81b1248e742d0e758f69f9cac069ec21fa6cd55597b28ffbe6e3a0"
 dependencies = [
  "ckb-types",
  "faster-hex",
@@ -521,9 +521,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-logger"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3f5f89647d0d71aef57cafc580c8ca770b1e7afa85400c29de10c6d6a5d2adc"
+checksum = "5252182b8740e57d95fe4f5ddf931b505417914dd86eeeb30a7d521a0be90cc2"
 dependencies = [
  "log 0.4.20",
 ]
@@ -539,7 +539,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-mock-tx-types"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "ckb-jsonrpc-types",
  "ckb-traits",
@@ -549,9 +549,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-occupied-capacity"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bfe678c0047869c71ae01369ada83ebb43567504c3c5e338a64dcd679b98ecad"
+checksum = "75bd8a27b4526fb77893c301248906c92a28c3798f894c94715349dc04c9e9d9"
 dependencies = [
  "ckb-occupied-capacity-core",
  "ckb-occupied-capacity-macros",
@@ -559,18 +559,18 @@ dependencies = [
 
 [[package]]
 name = "ckb-occupied-capacity-core"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35dba70fddc9eda1906875b4c99b14d64910a429a58972658e8f65930f77f27b"
+checksum = "f68c85413f9629642f696858c97908e52bcb2be6b4b49f90db479e51f981a395"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "ckb-occupied-capacity-macros"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a37efa3314fc8d1b6ead861743e7012126204449a7c6579f0e571a3456d0d34"
+checksum = "f72a414596a9f4e90356cc131df4345a04d41ddbaa340c50fb838d9747c8140b"
 dependencies = [
  "ckb-occupied-capacity-core",
  "quote 1.0.33",
@@ -579,9 +579,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-pow"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c28156a3ea6941bad362f0de75a2358bc759f52d505b4cfae0db223e25646fdd"
+checksum = "60a7ceb0977c39725354d262de043e73819b3e1de6ded97f652814608001f050"
 dependencies = [
  "byteorder",
  "ckb-hash",
@@ -593,9 +593,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-rational"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0d64ef7e9b0785e1b2acdc1a96072bbdefa6ac72bca36de91d9d9e65cd39bbd"
+checksum = "a4dc8c3672deb06abff715c75f5d3d3113f554a4dbcebd00d80b1870b4e7d779"
 dependencies = [
  "numext-fixed-uint",
  "serde",
@@ -603,9 +603,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-resource"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea0c9ca6ccc86e4ed3f49c3dc05b1bd58f27205cb9ded891b86995a9edd06974"
+checksum = "bd65877cf9a063e760818f401ad576b7cdd27e1715d2b6f8fb22e1c7d6c03b11"
 dependencies = [
  "ckb-system-scripts",
  "ckb-types",
@@ -618,9 +618,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-script"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec56fceeff7d1fb5229bf03af876360dabf7f9da7eab67a3ce5164c09b4a90d4"
+checksum = "5b752d8628916e47a727e11888af85f41421446a70889dea554f8948f2e5a5fb"
 dependencies = [
  "byteorder",
  "ckb-chain-spec",
@@ -648,18 +648,18 @@ dependencies = [
 
 [[package]]
 name = "ckb-traits"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4fe215ac785af5f9011aeae14f6f1b05d8cad7ca76a98fe97bf374650e07ccc"
+checksum = "dc194347cd7fcc761c12447f6bece7139b7805e08454794016db56bd39e5ace4"
 dependencies = [
  "ckb-types",
 ]
 
 [[package]]
 name = "ckb-types"
-version = "0.113.0"
+version = "0.114.0-rc1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb8a1e28eeb4bc18dfc0e97306147d1c9399ffab6292185346a2af2983ed80f3"
+checksum = "bcb153133a192a4aceb66640e8326a0e11164bef1a258b93b081ed22bf02598d"
 dependencies = [
  "bit-vec",
  "bytes",
@@ -701,7 +701,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-debug-utils"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "byteorder",
  "bytes",
@@ -725,7 +725,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "addr2line 0.17.0",
  "ckb-vm",
@@ -735,7 +735,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof-converter"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "ckb-vm-pprof-protos",
  "clap 4.4.4",
@@ -744,7 +744,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof-protos"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "protobuf",
  "protoc-bin-vendored",
@@ -753,7 +753,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-signal-profiler"
-version = "0.113.0"
+version = "0.114.0-rc1"
 dependencies = [
  "addr2line 0.17.0",
  "ckb-vm",
