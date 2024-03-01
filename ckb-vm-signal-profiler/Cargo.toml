@@ -1,6 +1,6 @@
 [package]
 name = "ckb-vm-signal-profiler"
-version = "0.114.0-rc3"
+version = "0.114.0"
 edition = "2021"
 description = "Linux signal based profiler for ckb-vm, note this is profiling ckb-vm itself, not the programs running in ckb-vm"
 license = "MIT"
@@ -18,4 +18,4 @@ log = "0.4.16"
 nix = "0.23.1"
 lazy_static = "1.4.0"
 protobuf = { version = "2.25.1", features = ["with-bytes", "with-serde"] }
-ckb-vm-pprof-protos = { path = "../ckb-vm-pprof-protos", version="0.114.0-rc3" }
+ckb-vm-pprof-protos = { path = "../ckb-vm-pprof-protos", version="0.114.0" }
