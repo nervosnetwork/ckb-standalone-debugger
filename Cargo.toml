@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "ckb-debugger",
     "ckb-debugger-api",
@@ -8,5 +9,5 @@ members = [
     "ckb-vm-pprof",
     "ckb-vm-pprof-converter",
     "ckb-vm-pprof-protos",
-    "ckb-vm-signal-profiler"
+    "ckb-vm-signal-profiler",
 ]
