@@ -13,13 +13,13 @@ probes = ["probe", "ckb-script/flatmemory"]
 
 [dependencies]
 clap = "2.33.0"
-ckb-chain-spec = "=0.115.0-rc2"
+ckb-chain-spec = "0.115.0-rc2"
 ckb-debugger-api = { path = "../ckb-debugger-api", version = "0.115.0-rc2" }
-ckb-hash = "=0.115.0-rc2"
+ckb-hash = "0.115.0-rc2"
 ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.115.0-rc2" }
-ckb-script = { version = "=0.115.0-rc2", default-features = false }
-ckb-types = "=0.115.0-rc2"
-ckb-vm = { version = "=0.24.9" }
+ckb-script = { version = "0.115.0-rc2", default-features = false }
+ckb-types = "0.115.0-rc2"
+ckb-vm = { version = "0.24.9" }
 ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils", version = "0.115.0-rc2" }
 ckb-vm-pprof = { path = "../ckb-vm-pprof", version = "0.115.0-rc2" }
 env_logger = "0.4.3"
