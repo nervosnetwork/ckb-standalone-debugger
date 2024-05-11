@@ -1,7 +1,7 @@
 [package]
 name = "ckb-debugger"
 description = "Standalone debugger for Nervos CKB"
-version = "0.115.0-rc2"
+version = "0.116.1"
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2021"
@@ -13,17 +13,17 @@ probes = ["probe", "ckb-script/flatmemory"]
 
 [dependencies]
 clap = "2.33.0"
-ckb-chain-spec = "=0.115.0-rc2"
-ckb-debugger-api = { path = "../ckb-debugger-api", version = "0.115.0-rc2" }
-ckb-hash = "=0.115.0-rc2"
-ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.115.0-rc2" }
-ckb-script = { version = "=0.115.0-rc2", default-features = false }
-ckb-types = "=0.115.0-rc2"
+ckb-chain-spec = "=0.116.1"
+ckb-debugger-api = { path = "../ckb-debugger-api", version = "0.116.1" }
+ckb-hash = "=0.116.1"
+ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.116.1" }
+ckb-script = { version = "=0.116.1", default-features = false }
+ckb-types = "=0.116.1"
 ckb-vm = { version = "=0.24.9" }
-ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils", version = "0.115.0-rc2" }
-ckb-vm-pprof = { path = "../ckb-vm-pprof", version = "0.115.0-rc2" }
+ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils", version = "0.116.1" }
+ckb-vm-pprof = { path = "../ckb-vm-pprof", version = "0.116.1" }
 env_logger = "0.4.3"
-ckb-gdb-remote-protocol = { path = "../ckb-gdb-remote-protocol", version = "0.115.0-rc2" }
+ckb-gdb-remote-protocol = { path = "../ckb-gdb-remote-protocol", version = "0.116.1" }
 gdbstub = "0.6.6"
 gdbstub_arch = "0.2.4"
 hex = "0.4"

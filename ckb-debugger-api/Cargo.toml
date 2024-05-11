@@ -1,7 +1,7 @@
 [package]
 name = "ckb-debugger-api"
 description = "Standalone debugger for Nervos CKB"
-version = "0.115.0-rc2"
+version = "0.116.1"
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2021"
@@ -10,12 +10,12 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-ckb-hash = "=0.115.0-rc2"
-ckb-chain-spec = "=0.115.0-rc2"
-ckb-jsonrpc-types = "=0.115.0-rc2"
-ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.115.0-rc2" }
-ckb-script = { version = "=0.115.0-rc2", default-features = false }
-ckb-types = "=0.115.0-rc2"
+ckb-hash = "=0.116.1"
+ckb-chain-spec = "=0.116.1"
+ckb-jsonrpc-types = "=0.116.1"
+ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.116.1" }
+ckb-script = { version = "=0.116.1", default-features = false }
+ckb-types = "=0.116.1"
 ckb-vm = "=0.24.9"
 hex = "0.4"
 regex = "1"
