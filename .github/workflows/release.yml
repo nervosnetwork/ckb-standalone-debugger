@@ -1,29 +1,15 @@
 name: Release
 
 on:
-  push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      - '*'
+  release:
+    types: [created]
 
 permissions:
   contents: write
 
 jobs:
-  release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    steps:
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        name: ckb-debugger ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-
   publish-linux:
     name: Publish binary on Linux
-    needs: [release]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -46,7 +32,6 @@ jobs:
 
   publish-macos:
     name: Publish binary on macOS
-    needs: [release]
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
@@ -69,7 +54,6 @@ jobs:
 
   publish-windows:
     name: Publish binary on Windows
-    needs: [release]
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
@@ -92,7 +76,6 @@ jobs:
 
   publish-crates-io:
     name: Publish crates to crates.io
-    needs: [release]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
