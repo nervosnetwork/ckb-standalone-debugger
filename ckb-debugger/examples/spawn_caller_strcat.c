@@ -2,31 +2,32 @@
 #include <string.h>
 
 #include "ckb_syscalls.h"
+#include "spawn_utils.h"
 
 int main() {
-  const char*  argv[] = {"hello", "world"};
-  int8_t       spgs_exit_code = 255;
-  uint8_t      spgs_content[80] = {};
-  uint64_t     spgs_content_length = 80;
-  spawn_args_t spgs = {
-    .memory_limit = 8,
-    .exit_code = &spgs_exit_code,
-    .content = &spgs_content[0],
-    .content_length = &spgs_content_length,
-  };
-  int success =
-      ckb_spawn(1, 3, 0, 2, argv, &spgs);
-  if (success != 0) {
-    return 1;
-  }
-  if (spgs_exit_code != 0) {
-    return 1;
-  }
-  if (strlen((char *)spgs_content) != 10) {
-    return 1;
-  }
-  if (strcmp((char *)spgs_content, "helloworld") != 0) {
-    return 1;
-  }
-  return 0;
+    int err = 0;
+    const char *argv[] = {"hello", "world"};
+    uint64_t pid = 0;
+    uint64_t fds[2] = {0};
+    uint64_t inherited_fds[3] = {0};
+    err = create_std_fds(fds, inherited_fds);
+    CHECK(err);
+
+    spawn_args_t spgs = {
+        .argc = 2,
+        .argv = argv,
+        .process_id = &pid,
+        .inherited_fds = inherited_fds,
+    };
+    err = ckb_spawn(1, CKB_SOURCE_CELL_DEP, 0, 0, &spgs);
+    CHECK(err);
+    uint8_t buffer[1024] = {0};
+    size_t length = 1024;
+    err = ckb_read(fds[CKB_STDIN], buffer, &length);
+    CHECK(err);
+    err = memcmp("helloworld", buffer, length);
+    CHECK(err);
+
+exit:
+    return err;
 }

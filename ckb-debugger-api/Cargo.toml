@@ -10,13 +10,14 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-ckb-hash = "=0.116.1"
-ckb-chain-spec = "=0.116.1"
-ckb-jsonrpc-types = "=0.116.1"
+ckb-hash = { path = "/home/ubuntu/src/ckb/util/hash" }
+ckb-chain-spec = { path = "/home/ubuntu/src/ckb/spec" }
+ckb-jsonrpc-types = { path = "/home/ubuntu/src/ckb/util/jsonrpc-types" }
 ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.116.1" }
-ckb-script = { version = "=0.116.1", default-features = false }
-ckb-types = "=0.116.1"
-ckb-vm = "=0.24.9"
+ckb-script = { path = "/home/ubuntu/src/ckb/script", default-features = false }
+ckb-types = { path = "/home/ubuntu/src/ckb/util/types" }
+# ckb-vm = "0.24.11"
+ckb-vm = { path = "/home/ubuntu/src/ckb-vm" }
 hex = "0.4"
 regex = "1"
 serde = { version = "1.0", features = ["derive"] }

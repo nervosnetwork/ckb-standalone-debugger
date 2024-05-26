@@ -5,8 +5,8 @@ This article introduces debugging programs by using gdb.
 For example, we want to know the parameters passed in to a function at runtime:
 
 ```sh
-$ ckb-debugger --mode gdb --gdb-listen 127.0.0.1:9999 --bin ckb-debugger/examples/fib
-$ riscv64-unknown-elf-gdb ckb-debugger/examples/fib
+$ ckb-debugger --mode gdb --gdb-listen 127.0.0.1:9999 --bin examples/fib
+$ riscv64-unknown-elf-gdb examples/fib
 
 $ (gdb) target remote 127.0.0.1:9999
 $ (gdb) b fib
