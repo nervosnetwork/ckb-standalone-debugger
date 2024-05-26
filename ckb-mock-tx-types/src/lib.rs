@@ -1,5 +1,7 @@
-// Originally modified from https://github.com/nervosnetwork/ckb-cli/blob/d6eceb3f9f108a17bcae0b1d760023e5da1e6e6a/ckb-sdk-types/src/transaction.rs
-// Current version modified(just fix clippy) from https://github.com/nervosnetwork/ckb-standalone-debugger/blob/5c0490cb8279f7c7860c403b9f1773b65403e57a/src/transaction.rs
+/// This Rust code provides a framework for working with mock transactions in a blockchain context, specifically for
+/// the CKB (Nervos) blockchain. It defines various structs and methods for handling mock cell dependencies, inputs,
+/// transactions, and resources. The code also includes serialization and deserialization capabilities for these mock
+/// types, making it easier to work with mock data in a structured and consistent manner.
 use ckb_jsonrpc_types as json_types;
 use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_types::{
@@ -16,6 +18,7 @@ use ckb_types::{
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Represents a cell dependency with its associated data and optional header.
 #[derive(Clone, Default)]
 pub struct MockCellDep {
     pub cell_dep: CellDep,
@@ -24,6 +27,7 @@ pub struct MockCellDep {
     pub header: Option<Byte32>,
 }
 
+/// Represents a transaction input with its associated data and optional header.
 #[derive(Clone, Default)]
 pub struct MockInput {
     pub input: CellInput,
@@ -32,6 +36,7 @@ pub struct MockInput {
     pub header: Option<Byte32>,
 }
 
+/// Aggregates multiple MockInput and MockCellDep instances, along with header dependencies and extensions.
 #[derive(Clone, Default)]
 pub struct MockInfo {
     pub inputs: Vec<MockInput>,
@@ -40,7 +45,7 @@ pub struct MockInfo {
     pub extensions: Vec<(Byte32, Bytes)>,
 }
 
-/// A wrapper transaction with mock inputs and deps
+/// A wrapper transaction with mock inputs and deps.
 #[derive(Clone, Default)]
 pub struct MockTransaction {
     pub mock_info: MockInfo,
@@ -48,6 +53,7 @@ pub struct MockTransaction {
 }
 
 impl MockTransaction {
+    /// Retrieve the input cell data for a given cell input.
     pub fn get_input_cell<F: FnMut(OutPoint) -> Result<Option<(CellOutput, Bytes, Option<Byte32>)>, String>>(
         &self,
         input: &CellInput,
@@ -61,6 +67,7 @@ impl MockTransaction {
         live_cell_getter(input.previous_output())
     }
 
+    /// Retrieve the cell dependency data for a given out point.
     pub fn get_dep_cell<F: FnMut(OutPoint) -> Result<Option<(CellOutput, Bytes, Option<Byte32>)>, String>>(
         &self,
         out_point: &OutPoint,
@@ -74,6 +81,7 @@ impl MockTransaction {
         live_cell_getter(out_point.clone())
     }
 
+    /// Retrieve the header for a given block hash.
     pub fn get_header<F: FnMut(H256) -> Result<Option<HeaderView>, String>>(
         &self,
         block_hash: &H256,
@@ -87,17 +95,19 @@ impl MockTransaction {
         header_getter(block_hash.clone())
     }
 
-    /// Generate the core transaction
+    /// Generate the core transaction.
     pub fn core_transaction(&self) -> TransactionView {
         self.tx.clone().into_view()
     }
 }
 
+/// The trait defines methods for loading headers and live cells.
 pub trait MockResourceLoader {
     fn get_header(&mut self, hash: H256) -> Result<Option<HeaderView>, String>;
     fn get_live_cell(&mut self, out_point: OutPoint) -> Result<Option<(CellOutput, Bytes, Option<Byte32>)>, String>;
 }
 
+/// The struct holds the necessary cells, headers, and extensions for validating a transaction.
 #[derive(Clone)]
 pub struct Resource {
     required_cells: HashMap<OutPoint, CellMeta>,
@@ -106,25 +116,19 @@ pub struct Resource {
 }
 
 impl Resource {
+    /// Create a resource from a mock transaction.
     pub fn from_mock_tx(mock_tx: &MockTransaction) -> Result<Resource, String> {
-        Self::from_both(mock_tx, DummyResourceLoader {})
+        Self::from_both(mock_tx, &mut DummyResourceLoader {})
     }
 
+    /// Create a resource from both mock transaction and a resource loader.
     #[allow(clippy::mutable_key_type)]
-    pub fn from_both<L: MockResourceLoader>(mock_tx: &MockTransaction, loader: L) -> Result<Resource, String> {
-        Self::from_loader_and_block_extensions(mock_tx, loader, HashMap::default())
-    }
-
-    #[allow(clippy::mutable_key_type)]
-    pub fn from_loader_and_block_extensions<L: MockResourceLoader>(
-        mock_tx: &MockTransaction,
-        mut loader: L,
-        block_extensions: HashMap<Byte32, packed::Bytes>,
-    ) -> Result<Resource, String> {
+    pub fn from_both<L: MockResourceLoader>(mock_tx: &MockTransaction, loader: &mut L) -> Result<Resource, String> {
         let tx = mock_tx.core_transaction();
         let mut required_cells = HashMap::default();
         let mut required_headers = HashMap::default();
 
+        // Process each input to gather required cells.
         for input in tx.inputs().into_iter() {
             let (output, data, header) = mock_tx
                 .get_input_cell(&input, |out_point| loader.get_live_cell(out_point))?
@@ -136,11 +140,12 @@ impl Resource {
             required_cells.insert(input.previous_output(), cell_meta);
         }
 
+        // Process each cell dependency to gather required cells.
         for cell_dep in tx.cell_deps().into_iter() {
             let (output, data, header) = mock_tx
                 .get_dep_cell(&cell_dep.out_point(), |out_point| loader.get_live_cell(out_point))?
                 .ok_or_else(|| format!("Can not get CellOutput by dep={}", cell_dep))?;
-            // Handle dep group
+            // Handle dep group.
             if cell_dep.dep_type() == DepType::DepGroup.into() {
                 for sub_out_point in OutPointVec::from_slice(&data)
                     .map_err(|err| format!("Parse dep group data error: {}", err))?
@@ -164,6 +169,7 @@ impl Resource {
             required_cells.insert(cell_dep.out_point(), cell_meta);
         }
 
+        // Process each header dependency to gather required headers.
         for block_hash in tx.header_deps().into_iter() {
             let header = mock_tx
                 .get_header(&block_hash.unpack(), |block_hash| loader.get_header(block_hash))?
@@ -171,15 +177,16 @@ impl Resource {
             required_headers.insert(block_hash, header);
         }
 
-        let mut extensions: HashMap<Byte32, packed::Bytes> =
+        // Merge block extensions.
+        let block_extensions: HashMap<Byte32, packed::Bytes> =
             mock_tx.mock_info.extensions.iter().map(|(hash, data)| (hash.clone(), data.pack())).collect();
-        extensions.extend(block_extensions);
 
-        Ok(Resource { required_cells, required_headers, block_extensions: extensions })
+        Ok(Resource { required_cells, required_headers, block_extensions })
     }
 
+    /// Build transaction info from a given header.
     fn build_transaction_info(header: Option<Byte32>) -> TransactionInfo {
-        // Only block hash might be used by script syscalls
+        // Only block hash might be used by script syscalls.
         TransactionInfo::new(0, EpochNumberWithFraction::new(0, 0, 1800), header.unwrap_or_default(), 0)
     }
 }
@@ -228,6 +235,7 @@ pub struct ReprMockCellDep {
     pub data: json_types::JsonBytes,
     pub header: Option<H256>,
 }
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ReprMockInput {
     pub input: json_types::CellInput,
@@ -235,6 +243,7 @@ pub struct ReprMockInput {
     pub data: json_types::JsonBytes,
     pub header: Option<H256>,
 }
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ReprMockInfo {
     pub inputs: Vec<ReprMockInput>,
@@ -243,6 +252,9 @@ pub struct ReprMockInfo {
     #[serde(default)]
     pub extensions: Vec<(H256, json_types::JsonBytes)>,
 }
+
+/// The structs and their implementations provide serialization and deserialization capabilities for mock cell
+/// dependencies, inputs, and transactions.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ReprMockTransaction {
     pub mock_info: ReprMockInfo,
@@ -259,6 +271,7 @@ impl From<MockCellDep> for ReprMockCellDep {
         }
     }
 }
+
 impl From<ReprMockCellDep> for MockCellDep {
     fn from(dep: ReprMockCellDep) -> MockCellDep {
         MockCellDep {
@@ -280,6 +293,7 @@ impl From<MockInput> for ReprMockInput {
         }
     }
 }
+
 impl From<ReprMockInput> for MockInput {
     fn from(input: ReprMockInput) -> MockInput {
         MockInput {
@@ -325,7 +339,7 @@ impl From<ReprMockInfo> for MockInfo {
                 .header_deps
                 .into_iter()
                 .map(|json_header| {
-                    // Keep the user given hash
+                    // Keep the user given hash.
                     let hash = json_header.hash.pack();
                     HeaderView::from(json_header).fake_hash(hash)
                 })
@@ -340,12 +354,14 @@ impl From<MockTransaction> for ReprMockTransaction {
         ReprMockTransaction { mock_info: tx.mock_info.into(), tx: tx.tx.into() }
     }
 }
+
 impl From<ReprMockTransaction> for MockTransaction {
     fn from(tx: ReprMockTransaction) -> MockTransaction {
         MockTransaction { mock_info: tx.mock_info.into(), tx: tx.tx.into() }
     }
 }
 
+/// Dummy resource loader used for testing purposes.
 pub struct DummyResourceLoader {}
 
 impl MockResourceLoader for DummyResourceLoader {

@@ -25,8 +25,8 @@ int main() {
     printf("%s", buf);
 
     int duration = now() - start;
-    printf("duration = %lld milli-second", duration / 1000 / 1000);
-    printf("generate a random number: %llu", random());
+    printf("duration = %d milli-second", duration / 1000 / 1000);
+    printf("generate a random number: %lu", random());
 
     return 0;
 }

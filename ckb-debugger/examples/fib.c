@@ -1,3 +1,5 @@
+#include "entry.h"
+
 int fib(int n) {
     if (n == 0 || n == 1) {
         return n;

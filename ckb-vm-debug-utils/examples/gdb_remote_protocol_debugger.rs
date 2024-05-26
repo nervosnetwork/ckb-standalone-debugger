@@ -2,6 +2,7 @@
 extern crate log;
 
 use bytes::Bytes;
+use ckb_gdb_remote_protocol::process_packets_from;
 use ckb_vm::machine::VERSION2;
 use ckb_vm::{
     DefaultCoreMachine, DefaultMachineBuilder, SparseMemory, SupportMachine, WXorXMemory, ISA_A, ISA_B, ISA_IMC,
@@ -10,7 +11,6 @@ use ckb_vm::{
 use ckb_vm_debug_utils::GdbHandler;
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
-use ckb_gdb_remote_protocol::process_packets_from;
 use std::env;
 use std::fs::File;
 use std::io::Read;
