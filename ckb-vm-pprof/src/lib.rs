@@ -22,11 +22,13 @@ fn sprint_fun(frame_iter: &mut Addr2LineFrameIter) -> String {
     let mut s = String::from("??");
     loop {
         if let Some(data) = frame_iter.next().unwrap() {
-            let function = data.function.unwrap();
-            s = String::from(addr2line::demangle_auto(
-                Cow::from(function.raw_name().unwrap()),
-                function.language,
-            ));
+            if let Some(function) = data.function {
+                s = String::from(addr2line::demangle_auto(
+                    Cow::from(function.raw_name().unwrap()),
+                    function.language,
+                ));
+                continue;
+            }
             continue;
         }
         break;
