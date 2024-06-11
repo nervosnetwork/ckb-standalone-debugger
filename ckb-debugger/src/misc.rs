@@ -40,10 +40,7 @@ lazy_static! {
 
 impl Default for FileStream {
     fn default() -> Self {
-        Self {
-            content: Default::default(),
-            offset: 0,
-        }
+        Self { content: Default::default(), offset: 0 }
     }
 }
 
@@ -211,10 +208,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
                 let path = Self::fetch_string(machine, arg0)?;
                 let mode = Self::fetch_string(machine, arg1)?;
                 let handler = unsafe {
-                    fopen(
-                        path.as_bytes().as_ptr() as *const c_char,
-                        mode.as_bytes().as_ptr() as *const c_char,
-                    )
+                    fopen(path.as_bytes().as_ptr() as *const c_char, mode.as_bytes().as_ptr() as *const c_char)
                 };
                 machine.set_register(A0, Mac::REG::from_u64(handler as u64));
             }
@@ -242,12 +236,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
                 }
                 let buf = vec![0u8; total_size as usize];
                 let read_count = unsafe {
-                    fread(
-                        buf.as_ptr() as *mut c_void,
-                        size as size_t,
-                        nitems as size_t,
-                        stream as *mut FILE,
-                    )
+                    fread(buf.as_ptr() as *mut c_void, size as size_t, nitems as size_t, stream as *mut FILE)
                 };
                 machine.memory_mut().store_bytes(ptr, &buf[0..read_count * size as usize])?;
                 machine.set_register(A0, Mac::REG::from_u64(read_count as u64));

@@ -122,14 +122,7 @@ impl<'a> StackUnwinder<'a> {
         for (i, v) in machine.machine.registers().iter().enumerate() {
             registers[i] = Some(*v);
         }
-        Self {
-            context,
-            machine,
-            registers,
-            state: None,
-            unwind_context: gimli::UnwindContext::new(),
-            at_start: true,
-        }
+        Self { context, machine, registers, state: None, unwind_context: gimli::UnwindContext::new(), at_start: true }
     }
 
     fn unwind_info(&mut self, address: u64) -> Result<Option<UnwindInfo>, String> {
@@ -265,11 +258,7 @@ fn extract_symbol(pc: u64, context: &DebugContext) -> Symbol {
     };
     let func = sprint_fun(&mut frame_iter);
 
-    Symbol {
-        name: Some(func),
-        line,
-        file,
-    }
+    Symbol { name: Some(func), line, file }
 }
 
 extern "C" fn perf_signal_handler(_signal: c_int) {
@@ -300,10 +289,7 @@ fn build_context(program: &Bytes) -> Result<DebugContext, String> {
             .section_by_name(id.name())
             .and_then(|section| section.uncompressed_data().ok())
             .unwrap_or(Cow::Borrowed(&[]));
-        Ok(gimli::EndianArcSlice::new(
-            Arc::from(&*data),
-            gimli::RunTimeEndian::Little,
-        ))
+        Ok(gimli::EndianArcSlice::new(Arc::from(&*data), gimli::RunTimeEndian::Little))
     })
     .map_err(|e: gimli::Error| format!("dwarf load error: {}", e))?;
 
@@ -315,8 +301,5 @@ fn build_context(program: &Bytes) -> Result<DebugContext, String> {
         .ok_or_else(|| "Provided binary is missing .debug_frame section!".to_string())?;
     let debug_frame_reader = Addr2LineEndianReader::new(Arc::from(&*debug_frame_section), gimli::RunTimeEndian::Little);
 
-    Ok(DebugContext {
-        addr_context,
-        debug_frame: debug_frame_reader.into(),
-    })
+    Ok(DebugContext { addr_context, debug_frame: debug_frame_reader.into() })
 }

@@ -36,29 +36,18 @@ pub struct Timer {
 impl Timer {
     pub fn new(frequency: c_int) -> Timer {
         let interval = 1e6 as i64 / i64::from(frequency);
-        let it_interval = Timeval {
-            tv_sec: interval / 1e6 as i64,
-            tv_usec: interval % 1e6 as i64,
-        };
+        let it_interval = Timeval { tv_sec: interval / 1e6 as i64, tv_usec: interval % 1e6 as i64 };
         let it_value = it_interval.clone();
 
         unsafe { setitimer(ITIMER_PROF, &mut Itimerval { it_interval, it_value }, null_mut()) };
 
-        Timer {
-            frequency,
-            start_time: SystemTime::now(),
-            start_instant: Instant::now(),
-        }
+        Timer { frequency, start_time: SystemTime::now(), start_instant: Instant::now() }
     }
 
     /// Returns a `ReportTiming` struct having this timer's frequency and start
     /// time; and the time elapsed since its creation as duration.
     pub fn timing(&self) -> ReportTiming {
-        ReportTiming {
-            frequency: self.frequency,
-            start_time: self.start_time,
-            duration: self.start_instant.elapsed(),
-        }
+        ReportTiming { frequency: self.frequency, start_time: self.start_time, duration: self.start_instant.elapsed() }
     }
 }
 
@@ -83,10 +72,6 @@ pub struct ReportTiming {
 
 impl Default for ReportTiming {
     fn default() -> Self {
-        Self {
-            frequency: 1,
-            start_time: SystemTime::UNIX_EPOCH,
-            duration: Default::default(),
-        }
+        Self { frequency: 1, start_time: SystemTime::UNIX_EPOCH, duration: Default::default() }
     }
 }

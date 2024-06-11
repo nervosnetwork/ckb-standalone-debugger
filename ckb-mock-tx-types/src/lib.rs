@@ -55,11 +55,7 @@ impl MockTransaction {
     ) -> Result<Option<(CellOutput, Bytes, Option<Byte32>)>, String> {
         for mock_input in &self.mock_info.inputs {
             if input == &mock_input.input {
-                return Ok(Some((
-                    mock_input.output.clone(),
-                    mock_input.data.clone(),
-                    mock_input.header.clone(),
-                )));
+                return Ok(Some((mock_input.output.clone(), mock_input.data.clone(), mock_input.header.clone())));
             }
         }
         live_cell_getter(input.previous_output())
@@ -72,11 +68,7 @@ impl MockTransaction {
     ) -> Result<Option<(CellOutput, Bytes, Option<Byte32>)>, String> {
         for mock_cell in &self.mock_info.cell_deps {
             if out_point == &mock_cell.cell_dep.out_point() {
-                return Ok(Some((
-                    mock_cell.output.clone(),
-                    mock_cell.data.clone(),
-                    mock_cell.header.clone(),
-                )));
+                return Ok(Some((mock_cell.output.clone(), mock_cell.data.clone(), mock_cell.header.clone())));
             }
         }
         live_cell_getter(out_point.clone())
@@ -183,21 +175,12 @@ impl Resource {
             mock_tx.mock_info.extensions.iter().map(|(hash, data)| (hash.clone(), data.pack())).collect();
         extensions.extend(block_extensions);
 
-        Ok(Resource {
-            required_cells,
-            required_headers,
-            block_extensions: extensions,
-        })
+        Ok(Resource { required_cells, required_headers, block_extensions: extensions })
     }
 
     fn build_transaction_info(header: Option<Byte32>) -> TransactionInfo {
         // Only block hash might be used by script syscalls
-        TransactionInfo::new(
-            0,
-            EpochNumberWithFraction::new(0, 0, 1800),
-            header.unwrap_or_default(),
-            0,
-        )
+        TransactionInfo::new(0, EpochNumberWithFraction::new(0, 0, 1800), header.unwrap_or_default(), 0)
     }
 }
 
@@ -354,18 +337,12 @@ impl From<ReprMockInfo> for MockInfo {
 
 impl From<MockTransaction> for ReprMockTransaction {
     fn from(tx: MockTransaction) -> ReprMockTransaction {
-        ReprMockTransaction {
-            mock_info: tx.mock_info.into(),
-            tx: tx.tx.into(),
-        }
+        ReprMockTransaction { mock_info: tx.mock_info.into(), tx: tx.tx.into() }
     }
 }
 impl From<ReprMockTransaction> for MockTransaction {
     fn from(tx: ReprMockTransaction) -> MockTransaction {
-        MockTransaction {
-            mock_info: tx.mock_info.into(),
-            tx: tx.tx.into(),
-        }
+        MockTransaction { mock_info: tx.mock_info.into(), tx: tx.tx.into() }
     }
 }
 

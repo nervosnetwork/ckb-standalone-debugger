@@ -16,21 +16,13 @@ pub struct ElfDumper {
 
 impl Default for ElfDumper {
     fn default() -> ElfDumper {
-        ElfDumper {
-            dump_file_name: "dump.bin".to_string(),
-            syscall_number: 4097,
-            maximum_zero_gap: 64,
-        }
+        ElfDumper { dump_file_name: "dump.bin".to_string(), syscall_number: 4097, maximum_zero_gap: 64 }
     }
 }
 
 impl ElfDumper {
     pub fn new(dump_file_name: String, syscall_number: u64, maximum_zero_gap: u64) -> Self {
-        ElfDumper {
-            dump_file_name,
-            syscall_number,
-            maximum_zero_gap,
-        }
+        ElfDumper { dump_file_name, syscall_number, maximum_zero_gap }
     }
 }
 
@@ -90,11 +82,8 @@ impl<Mac: SupportMachine> Syscalls<Mac> for ElfDumper {
                         let same_page = page == last_segment.last_page();
                         let gap = start - (last_segment.start + last_segment.data.len() as u64);
                         if last_segment.executable == executable && ((gap <= self.maximum_zero_gap) || same_page) {
-                            let Segment {
-                                start: segment_start,
-                                data: segment_data,
-                                ..
-                            } = segments.remove(segments.len() - 1);
+                            let Segment { start: segment_start, data: segment_data, .. } =
+                                segments.remove(segments.len() - 1);
                             let mut segment_data = BytesMut::from(segment_data.as_ref());
                             // Fill in gap first
                             let mut zeros = vec![];
@@ -117,11 +106,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for ElfDumper {
                         start += 8;
                     }
 
-                    segments.push(Segment {
-                        start: bytes_start,
-                        data: bytes_mut.freeze(),
-                        executable,
-                    });
+                    segments.push(Segment { start: bytes_start, data: bytes_mut.freeze(), executable });
                 }
             }
             page += 1;
@@ -187,11 +172,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for ElfDumper {
         register_buffer.put_u32_le(jump_instruction);
         assert!(register_buffer.len() < RISCV_PAGESIZE);
 
-        segments.push(Segment {
-            start: register_buffer_start,
-            data: register_buffer.freeze(),
-            executable: true,
-        });
+        segments.push(Segment { start: register_buffer_start, data: register_buffer.freeze(), executable: true });
 
         // Piece everything together into an ELF binary
         let mut elf = BytesMut::new();
@@ -319,10 +300,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for ElfDumper {
             elf.put_u8(0);
         }
         let current_offset = elf.len() as u64;
-        LittleEndian::write_u64(
-            &mut elf[program_header_offset..program_header_offset + 8],
-            current_offset,
-        );
+        LittleEndian::write_u64(&mut elf[program_header_offset..program_header_offset + 8], current_offset);
         LittleEndian::write_u16(
             &mut elf[program_header_number_offset..program_header_number_offset + 8],
             program_headers.len() as u16,
@@ -335,10 +313,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for ElfDumper {
             elf.put_u8(0);
         }
         let current_offset = elf.len() as u64;
-        LittleEndian::write_u64(
-            &mut elf[section_header_offset..section_header_offset + 8],
-            current_offset,
-        );
+        LittleEndian::write_u64(&mut elf[section_header_offset..section_header_offset + 8], current_offset);
         LittleEndian::write_u16(
             &mut elf[section_header_number_offset..section_header_number_offset + 8],
             section_headers.len() as u16,

@@ -72,14 +72,8 @@ struct JsonResult {
 impl From<Result<Cycle, String>> for JsonResult {
     fn from(result: Result<Cycle, String>) -> JsonResult {
         match result {
-            Ok(cycle) => JsonResult {
-                cycle: Some(cycle),
-                error: None,
-            },
-            Err(error) => JsonResult {
-                cycle: None,
-                error: Some(error),
-            },
+            Ok(cycle) => JsonResult { cycle: Some(cycle), error: None },
+            Err(error) => JsonResult { cycle: None, error: Some(error) },
         }
     }
 }
@@ -138,10 +132,7 @@ pub fn check(tx: &ReprMockTransaction) -> Result<(), String> {
             let outpoints: Vec<packed::OutPoint> = sub_outpoints.into_iter().collect::<Vec<_>>();
             let resolved_cell_deps: Vec<CellDep> = outpoints
                 .into_iter()
-                .map(|o| CellDep {
-                    out_point: o.into(),
-                    dep_type: DepType::Code,
-                })
+                .map(|o| CellDep { out_point: o.into(), dep_type: DepType::Code })
                 .collect::<Vec<_>>();
             cell_deps.extend(resolved_cell_deps);
         }
@@ -155,7 +146,11 @@ pub fn check(tx: &ReprMockTransaction) -> Result<(), String> {
     cell_deps.sort_by(compare);
 
     if mock_cell_deps.len() != cell_deps.len() {
-        return Err(format!("mock_cell_deps.len() != cell_deps.len(), {} != {}", mock_cell_deps.len(), cell_deps.len()));
+        return Err(format!(
+            "mock_cell_deps.len() != cell_deps.len(), {} != {}",
+            mock_cell_deps.len(),
+            cell_deps.len()
+        ));
     } else {
         for (a, b) in mock_cell_deps.into_iter().zip(cell_deps.into_iter()) {
             if a != b {
@@ -208,9 +203,6 @@ pub fn get_script_hash_by_index(
             .to_opt()
             .expect("cell should have type script")
             .calc_script_hash(),
-        _ => panic!(
-            "Invalid specified script: {:?} {} {}",
-            script_group_type, cell_type, cell_index
-        ),
+        _ => panic!("Invalid specified script: {:?} {} {}", script_group_type, cell_type, cell_index),
     }
 }

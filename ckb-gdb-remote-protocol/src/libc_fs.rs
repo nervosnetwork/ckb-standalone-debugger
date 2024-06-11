@@ -165,12 +165,7 @@ impl FileSystem for LibcFS {
 
             // Fill bytes as many as `read` bytes
             let read: isize = unsafe {
-                libc::pread(
-                    fd as libc::c_int,
-                    buf.as_mut_ptr() as *mut libc::c_void,
-                    count,
-                    offset as libc::off_t,
-                )
+                libc::pread(fd as libc::c_int, buf.as_mut_ptr() as *mut libc::c_void, count, offset as libc::off_t)
             };
 
             if read >= 0 {
@@ -188,12 +183,7 @@ impl FileSystem for LibcFS {
         Ok((|| {
             // Write data, as much as `written` bytes of data
             let written: isize = unsafe {
-                libc::pwrite(
-                    fd as libc::c_int,
-                    data.as_ptr() as *const libc::c_void,
-                    data.len(),
-                    offset as libc::off_t,
-                )
+                libc::pwrite(fd as libc::c_int, data.as_ptr() as *const libc::c_void, data.len(), offset as libc::off_t)
             };
 
             if written >= 0 {

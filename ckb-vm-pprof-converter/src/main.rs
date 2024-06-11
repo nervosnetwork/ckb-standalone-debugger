@@ -60,14 +60,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut stack: Vec<Symbol> = line[0..i]
             .split("; ")
             .map(|s| match s.find(":") {
-                Some(j) => Symbol {
-                    file: Some(s[0..j].to_string()),
-                    name: Some(normalize_function_name(&s[j + 1..s.len()])),
-                },
-                None => Symbol {
-                    name: Some(normalize_function_name(s)),
-                    file: None,
-                },
+                Some(j) => {
+                    Symbol { file: Some(s[0..j].to_string()), name: Some(normalize_function_name(&s[j + 1..s.len()])) }
+                }
+                None => Symbol { name: Some(normalize_function_name(s)), file: None },
             })
             .collect();
         stack.reverse();
@@ -120,16 +116,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ..Default::default()
             };
             functions.insert(name, function_id);
-            let line = profile::Line {
-                function_id,
-                line: 0,
-                ..Default::default()
-            };
-            let loc = profile::Location {
-                id: function_id,
-                line: vec![line].into(),
-                ..Default::default()
-            };
+            let line = profile::Line { function_id, line: 0, ..Default::default() };
+            let loc = profile::Location { id: function_id, line: vec![line].into(), ..Default::default() };
             // the fn_tbl has the same length with loc_tbl
             fn_tbl.push(function);
             loc_tbl.push(loc);
@@ -144,16 +132,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
         samples.push(sample);
     }
-    let samples_value = profile::ValueType {
-        field_type: strings[CYCLES] as i64,
-        unit: strings[COUNT] as i64,
-        ..Default::default()
-    };
-    let time_value = profile::ValueType {
-        field_type: strings[CPU] as i64,
-        unit: strings[NANOSECONDS] as i64,
-        ..Default::default()
-    };
+    let samples_value =
+        profile::ValueType { field_type: strings[CYCLES] as i64, unit: strings[COUNT] as i64, ..Default::default() };
+    let time_value =
+        profile::ValueType { field_type: strings[CPU] as i64, unit: strings[NANOSECONDS] as i64, ..Default::default() };
     let profile = profile::Profile {
         sample_type: vec![samples_value, time_value.clone()].into(),
         sample: samples.into(),

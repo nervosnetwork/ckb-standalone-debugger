@@ -94,16 +94,8 @@ impl Report {
                     ..Default::default()
                 };
                 functions.insert(name, function_id);
-                let line = protos::Line {
-                    function_id,
-                    line: symbol.line() as i64,
-                    ..Default::default()
-                };
-                let loc = protos::Location {
-                    id: function_id,
-                    line: vec![line].into(),
-                    ..Default::default()
-                };
+                let line = protos::Line { function_id, line: symbol.line() as i64, ..Default::default() };
+                let loc = protos::Location { id: function_id, line: vec![line].into(), ..Default::default() };
                 // the fn_tbl has the same length with loc_tbl
                 fn_tbl.push(function);
                 loc_tbl.push(loc);
