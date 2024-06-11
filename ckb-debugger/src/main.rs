@@ -178,14 +178,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .get_matches();
 
-    let matches_decode = matches.value_of_lossy("decode");
-    if matches_decode.is_some() {
-        return decode_instruction(&matches_decode.unwrap());
-    }
-
     let matches_bin = matches.value_of("bin");
     let matches_cell_index = matches.value_of("cell-index");
     let matches_cell_type = matches.value_of("cell-type");
+    let matches_decode = matches.value_of_lossy("decode");
     let matches_pprof = matches.value_of("pprof");
     let matches_dump_file = matches.value_of("dump-file");
     let matches_gdb_listen = matches.value_of("gdb-listen");
@@ -202,11 +198,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_args = matches.values_of("args").unwrap_or_default();
     let matches_read_file_name = matches.value_of("read-file");
 
+    if matches_decode.is_some() {
+        decode_instruction(&matches_decode.unwrap())?;
+        return Ok(());
+    }
+
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.into()).collect();
     let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
-
-    let fs_syscall = if let Some(file_name) = matches_read_file_name { Some(FileStream::new(file_name)) } else { None };
-
     let verifier_max_cycles: u64 = matches_max_cycles.parse()?;
     let verifier_mock_tx: MockTransaction = {
         let mock_tx = if matches_tx_file.is_none() {
@@ -322,8 +320,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             verifier.generate_syscalls(verifier_script_version, verifier_script_group, machine_context.clone());
         machine_builder =
             machine_syscalls.into_iter().fold(machine_builder, |builder, syscall| builder.syscall(syscall));
-        let machine_builder =
-            if let Some(fs) = fs_syscall.clone() { machine_builder.syscall(Box::new(fs)) } else { machine_builder };
+        if let Some(file_name) = matches_read_file_name {
+            machine_builder = machine_builder.syscall(Box::new(FileStream::new(file_name)));
+        }
         let machine_builder = machine_builder.syscall(Box::new(TimeNow::new()));
         let machine_builder = machine_builder.syscall(Box::new(Random::new()));
         let machine_builder = machine_builder.syscall(Box::new(FileOperation::new()));
