@@ -205,11 +205,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let verifier_args: Vec<String> = matches_args.into_iter().map(|s| s.into()).collect();
     let verifier_args_byte: Vec<Bytes> = verifier_args.into_iter().map(|s| s.into()).collect();
 
-    let fs_syscall = if let Some(file_name) = matches_read_file_name {
-        Some(FileStream::new(file_name))
-    } else {
-        None
-    };
+    let fs_syscall = if let Some(file_name) = matches_read_file_name { Some(FileStream::new(file_name)) } else { None };
 
     let verifier_max_cycles: u64 = matches_max_cycles.parse()?;
     let verifier_mock_tx: MockTransaction = {
@@ -235,11 +231,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         repr_mock_tx.into()
     };
     let verifier_script_group_type = {
-        let script_group_type = if matches_tx_file.is_none() {
-            "type"
-        } else {
-            matches_script_group_type.unwrap()
-        };
+        let script_group_type = if matches_tx_file.is_none() { "type" } else { matches_script_group_type.unwrap() };
         from_plain_str(script_group_type)?
     };
     let verifier_script_hash = if matches_tx_file.is_none() {
@@ -330,11 +322,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             verifier.generate_syscalls(verifier_script_version, verifier_script_group, machine_context.clone());
         machine_builder =
             machine_syscalls.into_iter().fold(machine_builder, |builder, syscall| builder.syscall(syscall));
-        let machine_builder = if let Some(fs) = fs_syscall.clone() {
-            machine_builder.syscall(Box::new(fs))
-        } else {
-            machine_builder
-        };
+        let machine_builder =
+            if let Some(fs) = fs_syscall.clone() { machine_builder.syscall(Box::new(fs)) } else { machine_builder };
         let machine_builder = machine_builder.syscall(Box::new(TimeNow::new()));
         let machine_builder = machine_builder.syscall(Box::new(Random::new()));
         let machine_builder = machine_builder.syscall(Box::new(FileOperation::new()));
@@ -386,18 +375,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let bytes = machine.load_program(&verifier_program, &verifier_args_byte)?;
         let transferred_cycles = transferred_byte_cycles(bytes);
         machine.machine.add_cycles(transferred_cycles)?;
-        let result = if matches_step > 0 {
-            machine_step(&mut machine)
-        } else {
-            machine.run()
-        };
+        let result = if matches_step > 0 { machine_step(&mut machine) } else { machine.run() };
         match result {
             Ok(data) => {
                 println!("Run result: {:?}", data);
-                println!(
-                    "Total cycles consumed: {}",
-                    HumanReadableCycles(machine.machine.cycles())
-                );
+                println!("Total cycles consumed: {}", HumanReadableCycles(machine.machine.cycles()));
                 println!(
                     "Transfer cycles: {}, running cycles: {}",
                     HumanReadableCycles(transferred_cycles),
@@ -555,16 +537,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         probe!(ckb_vm, execute_inst, pc, cycles, inst, regs, memory);
                         let r = execute(inst, &mut machine);
                         let cycles = machine.cycles();
-                        probe!(
-                            ckb_vm,
-                            execute_inst_end,
-                            pc,
-                            cycles,
-                            inst,
-                            regs,
-                            memory,
-                            if r.is_ok() { 0 } else { 1 }
-                        );
+                        probe!(ckb_vm, execute_inst_end, pc, cycles, inst, regs, memory, if r.is_ok() { 0 } else { 1 });
                         r
                     });
             }

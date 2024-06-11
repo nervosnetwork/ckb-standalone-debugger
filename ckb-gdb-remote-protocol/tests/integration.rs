@@ -25,10 +25,7 @@ struct TestHandler {
 
 impl Default for TestHandler {
     fn default() -> TestHandler {
-        TestHandler {
-            process_type: ProcessType::Created,
-            stop_reason: StopReason::Exited(23, 0),
-        }
+        TestHandler { process_type: ProcessType::Created, stop_reason: StopReason::Exited(23, 0) }
     }
 }
 
@@ -55,16 +52,8 @@ impl GDBTestBuilder {
     where
         T: AsRef<str>,
     {
-        let GDBTestBuilder {
-            assert,
-            handler,
-            listener,
-        } = self;
-        GDBTestBuilder {
-            assert: assert.with_args(&["-ex", cmd.as_ref()]),
-            handler,
-            listener,
-        }
+        let GDBTestBuilder { assert, handler, listener } = self;
+        GDBTestBuilder { assert: assert.with_args(&["-ex", cmd.as_ref()]), handler, listener }
     }
 
     /// Add assertions for the GDB process. `f` will receive an `Assert` that can
@@ -73,17 +62,9 @@ impl GDBTestBuilder {
     where
         F: FnOnce(Assert) -> Assert,
     {
-        let GDBTestBuilder {
-            assert,
-            handler,
-            listener,
-        } = self;
+        let GDBTestBuilder { assert, handler, listener } = self;
         let assert = f(assert);
-        GDBTestBuilder {
-            assert,
-            handler,
-            listener,
-        }
+        GDBTestBuilder { assert, handler, listener }
     }
 
     /// Change the behavior of the `TestHandler`. `f` will receive a `&mut TestHandler` argument
@@ -92,35 +73,19 @@ impl GDBTestBuilder {
     where
         F: FnOnce(&mut TestHandler),
     {
-        let GDBTestBuilder {
-            assert,
-            mut handler,
-            listener,
-        } = self;
+        let GDBTestBuilder { assert, mut handler, listener } = self;
         f(&mut handler);
-        GDBTestBuilder {
-            assert,
-            handler,
-            listener,
-        }
+        GDBTestBuilder { assert, handler, listener }
     }
 
     /// Run the prepared test, panicing on failure.
     fn execute(self) {
-        let GDBTestBuilder {
-            assert,
-            handler,
-            listener,
-        } = self;
+        let GDBTestBuilder { assert, handler, listener } = self;
         let assert = assert.with_args(&["-ex", "quit"]);
         // Run the server on a background thread.
         let handle = thread::spawn(move || {
             let (stream, _) = listener.accept().expect("Listener's accept failed!");
-            process_packets_from(
-                stream.try_clone().expect("TCPStream::try_clone failed!"),
-                stream,
-                handler,
-            );
+            process_packets_from(stream.try_clone().expect("TCPStream::try_clone failed!"), stream, handler);
         });
         debug!("Running GDB as {:?}", assert);
         assert.unwrap();
@@ -140,11 +105,7 @@ fn gdb_test() -> GDBTestBuilder {
     let remote_cmd = format!("target remote {}", addr);
     let assert = Assert::command(&[&gdb_s, "-nx", "-batch", "-ex", &remote_cmd]);
     let handler = Default::default();
-    GDBTestBuilder {
-        assert,
-        handler,
-        listener,
-    }
+    GDBTestBuilder { assert, handler, listener }
 }
 
 #[test]

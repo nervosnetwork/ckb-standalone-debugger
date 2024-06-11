@@ -27,15 +27,7 @@ fn create_mock_cell_dep(data: Bytes, lock: Option<Script>) -> (Byte32, MockCellD
         .capacity(Capacity::bytes(data.len() + 200).unwrap().pack())
         .lock(lock.unwrap_or_else(Script::default))
         .build();
-    (
-        hash,
-        MockCellDep {
-            cell_dep,
-            output: cell_output,
-            data,
-            header: None,
-        },
-    )
+    (hash, MockCellDep { cell_dep, output: cell_output, data, header: None })
 }
 
 #[test]
@@ -68,29 +60,15 @@ pub fn test_bench() {
         .cell_dep(data_dep.cell_dep.clone())
         .cell_dep(code_dep.cell_dep.clone())
         .build();
-    let mock_input = MockInput {
-        input: cell_input,
-        output: input_dep.output,
-        data: input_dep.data,
-        header: None,
-    };
+    let mock_input = MockInput { input: cell_input, output: input_dep.output, data: input_dep.data, header: None };
     let mock_info = MockInfo {
         inputs: vec![mock_input],
         cell_deps: vec![data_dep, code_dep],
         header_deps: vec![],
         extensions: vec![],
     };
-    let mock_transaction = MockTransaction {
-        mock_info,
-        tx: transaction.data(),
-    };
+    let mock_transaction = MockTransaction { mock_info, tx: transaction.data() };
 
-    let result = run(
-        &mock_transaction,
-        &ScriptGroupType::Lock,
-        &script_hash,
-        20_000_000,
-        None,
-    );
+    let result = run(&mock_transaction, &ScriptGroupType::Lock, &script_hash, 20_000_000, None);
     assert_eq!(result.unwrap(), 58897);
 }

@@ -255,12 +255,7 @@ pub struct Breakpoint {
 
 impl Breakpoint {
     fn new(addr: u64, kind: u64, conditions: Option<Vec<Bytecode>>, commands: Option<Vec<Bytecode>>) -> Breakpoint {
-        Breakpoint {
-            addr,
-            kind,
-            conditions,
-            commands,
-        }
+        Breakpoint { addr, kind, conditions, commands }
     }
 }
 
@@ -414,14 +409,8 @@ fn gdbfeaturesupported<'a>(i: &'a [u8]) -> IResult<&'a [u8], GDBFeatureSupported
     flat_map!(i, is_not!(";"), |f: &'a [u8]| {
         match f.split_last() {
             None => IResult::Incomplete(Needed::Size(2)),
-            Some((&b'+', first)) => map!(first, gdbfeature, |feat| GDBFeatureSupported(
-                feat,
-                FeatureSupported::Yes
-            )),
-            Some((&b'-', first)) => map!(first, gdbfeature, |feat| GDBFeatureSupported(
-                feat,
-                FeatureSupported::No
-            )),
+            Some((&b'+', first)) => map!(first, gdbfeature, |feat| GDBFeatureSupported(feat, FeatureSupported::Yes)),
+            Some((&b'-', first)) => map!(first, gdbfeature, |feat| GDBFeatureSupported(feat, FeatureSupported::No)),
             Some((_, _)) => map!(
                 f,
                 separated_pair!(gdbfeature, tag!("="), map_res!(is_not!(";"), str::from_utf8)),
@@ -1765,12 +1754,9 @@ where
             Command::Query(Query::ProgramSignals(signals)) => handler.set_program_signals(signals).into(),
             Command::Query(Query::ThreadInfo(thread_info)) => handler.thread_info(thread_info).into(),
             Command::Query(Query::ThreadList(reset)) => handler.thread_list(reset).into(),
-            Command::Query(Query::ReadBytes {
-                object,
-                annex,
-                offset,
-                length,
-            }) => handler.read_bytes(object, annex, offset, length).into(),
+            Command::Query(Query::ReadBytes { object, annex, offset, length }) => {
+                handler.read_bytes(object, annex, offset, length).into()
+            }
             #[cfg(feature = "lldb")]
             Command::Query(Query::RegisterInfo(reg)) => handler.register_info(reg).into(),
             #[cfg(feature = "lldb")]
@@ -1882,10 +1868,7 @@ where
 #[test]
 fn test_compute_checksum() {
     assert_eq!(compute_checksum_incremental(&b""[..], 0), 0);
-    assert_eq!(
-        compute_checksum_incremental(&b"qSupported:multiprocess+;xmlRegisters=i386;qRelocInsn+"[..], 0),
-        0xb5
-    );
+    assert_eq!(compute_checksum_incremental(&b"qSupported:multiprocess+;xmlRegisters=i386;qRelocInsn+"[..], 0), 0xb5);
 }
 
 #[test]
@@ -1902,19 +1885,10 @@ fn test_packet() {
     assert_eq!(packet(&b"$#00"[..]), Done(&b""[..], (b""[..].to_vec(), 0)));
     assert_eq!(packet(&b"$xyz#00"[..]), Done(&b""[..], (b"xyz"[..].to_vec(), 0)));
     assert_eq!(packet(&b"$a#a1"[..]), Done(&b""[..], (b"a"[..].to_vec(), 0xa1)));
-    assert_eq!(
-        packet(&b"$foo#ffxyz"[..]),
-        Done(&b"xyz"[..], (b"foo"[..].to_vec(), 0xff))
-    );
+    assert_eq!(packet(&b"$foo#ffxyz"[..]), Done(&b"xyz"[..], (b"foo"[..].to_vec(), 0xff)));
     assert_eq!(
         packet(&b"$qSupported:multiprocess+;xmlRegisters=i386;qRelocInsn+#b5"[..]),
-        Done(
-            &b""[..],
-            (
-                b"qSupported:multiprocess+;xmlRegisters=i386;qRelocInsn+"[..].to_vec(),
-                0xb5
-            )
-        )
+        Done(&b""[..], (b"qSupported:multiprocess+;xmlRegisters=i386;qRelocInsn+"[..].to_vec(), 0xb5))
     );
     assert_eq!(packet(&b"$"[..]), Incomplete(Needed::Size(2)));
     assert_eq!(packet(&b"$#"[..]), Incomplete(Needed::Size(4)));
@@ -1925,10 +1899,7 @@ fn test_packet() {
 
 #[test]
 fn test_packet_or_response() {
-    assert_eq!(
-        packet_or_response(&b"$#00"[..]),
-        Done(&b""[..], Packet::Data(b""[..].to_vec(), 0))
-    );
+    assert_eq!(packet_or_response(&b"$#00"[..]), Done(&b""[..], Packet::Data(b""[..].to_vec(), 0)));
     assert_eq!(packet_or_response(&b"+"[..]), Done(&b""[..], Packet::Ack));
     assert_eq!(packet_or_response(&b"-"[..]), Done(&b""[..], Packet::Nack));
 }
@@ -1937,69 +1908,39 @@ fn test_packet_or_response() {
 fn test_gdbfeaturesupported() {
     assert_eq!(
         gdbfeaturesupported(&b"multiprocess+"[..]),
-        Done(
-            &b""[..],
-            GDBFeatureSupported(Known::Yes(GDBFeature::multiprocess), FeatureSupported::Yes)
-        )
+        Done(&b""[..], GDBFeatureSupported(Known::Yes(GDBFeature::multiprocess), FeatureSupported::Yes))
     );
     assert_eq!(
         gdbfeaturesupported(&b"xmlRegisters=i386"[..]),
-        Done(
-            &b""[..],
-            GDBFeatureSupported(Known::Yes(GDBFeature::xmlRegisters), FeatureSupported::Value("i386"))
-        )
+        Done(&b""[..], GDBFeatureSupported(Known::Yes(GDBFeature::xmlRegisters), FeatureSupported::Value("i386")))
     );
     assert_eq!(
         gdbfeaturesupported(&b"qRelocInsn-"[..]),
-        Done(
-            &b""[..],
-            GDBFeatureSupported(Known::Yes(GDBFeature::qRelocInsn), FeatureSupported::No)
-        )
+        Done(&b""[..], GDBFeatureSupported(Known::Yes(GDBFeature::qRelocInsn), FeatureSupported::No))
     );
     assert_eq!(
         gdbfeaturesupported(&b"vfork-events+"[..]),
-        Done(
-            &b""[..],
-            GDBFeatureSupported(Known::Yes(GDBFeature::vfork_events), FeatureSupported::Yes)
-        )
+        Done(&b""[..], GDBFeatureSupported(Known::Yes(GDBFeature::vfork_events), FeatureSupported::Yes))
     );
     assert_eq!(
         gdbfeaturesupported(&b"vfork-events-"[..]),
-        Done(
-            &b""[..],
-            GDBFeatureSupported(Known::Yes(GDBFeature::vfork_events), FeatureSupported::No)
-        )
+        Done(&b""[..], GDBFeatureSupported(Known::Yes(GDBFeature::vfork_events), FeatureSupported::No))
     );
     assert_eq!(
         gdbfeaturesupported(&b"unknown-feature+"[..]),
-        Done(
-            &b""[..],
-            GDBFeatureSupported(Known::No("unknown-feature"), FeatureSupported::Yes)
-        )
+        Done(&b""[..], GDBFeatureSupported(Known::No("unknown-feature"), FeatureSupported::Yes))
     );
     assert_eq!(
         gdbfeaturesupported(&b"unknown-feature-"[..]),
-        Done(
-            &b""[..],
-            GDBFeatureSupported(Known::No("unknown-feature"), FeatureSupported::No)
-        )
+        Done(&b""[..], GDBFeatureSupported(Known::No("unknown-feature"), FeatureSupported::No))
     );
 }
 
 #[test]
 fn test_gdbfeature() {
-    assert_eq!(
-        gdbfeature(&b"multiprocess"[..]),
-        Done(&b""[..], Known::Yes(GDBFeature::multiprocess))
-    );
-    assert_eq!(
-        gdbfeature(&b"fork-events"[..]),
-        Done(&b""[..], Known::Yes(GDBFeature::fork_events))
-    );
-    assert_eq!(
-        gdbfeature(&b"some-unknown-feature"[..]),
-        Done(&b""[..], Known::No("some-unknown-feature"))
-    );
+    assert_eq!(gdbfeature(&b"multiprocess"[..]), Done(&b""[..], Known::Yes(GDBFeature::multiprocess)));
+    assert_eq!(gdbfeature(&b"fork-events"[..]), Done(&b""[..], Known::Yes(GDBFeature::fork_events)));
+    assert_eq!(gdbfeature(&b"some-unknown-feature"[..]), Done(&b""[..], Known::No("some-unknown-feature")));
 }
 
 #[test]
@@ -2049,114 +1990,33 @@ fn test_parse_thread_id_element() {
 
 #[test]
 fn test_parse_thread_id() {
-    assert_eq!(
-        parse_thread_id(&b"0"[..]),
-        Done(
-            &b""[..],
-            ThreadId {
-                pid: Id::Any,
-                tid: Id::Any
-            }
-        )
-    );
-    assert_eq!(
-        parse_thread_id(&b"-1"[..]),
-        Done(
-            &b""[..],
-            ThreadId {
-                pid: Id::All,
-                tid: Id::Any
-            }
-        )
-    );
-    assert_eq!(
-        parse_thread_id(&b"23"[..]),
-        Done(
-            &b""[..],
-            ThreadId {
-                pid: Id::Id(0x23),
-                tid: Id::Any
-            }
-        )
-    );
+    assert_eq!(parse_thread_id(&b"0"[..]), Done(&b""[..], ThreadId { pid: Id::Any, tid: Id::Any }));
+    assert_eq!(parse_thread_id(&b"-1"[..]), Done(&b""[..], ThreadId { pid: Id::All, tid: Id::Any }));
+    assert_eq!(parse_thread_id(&b"23"[..]), Done(&b""[..], ThreadId { pid: Id::Id(0x23), tid: Id::Any }));
 
-    assert_eq!(
-        parse_thread_id(&b"p23"[..]),
-        Done(
-            &b""[..],
-            ThreadId {
-                pid: Id::Id(0x23),
-                tid: Id::All
-            }
-        )
-    );
+    assert_eq!(parse_thread_id(&b"p23"[..]), Done(&b""[..], ThreadId { pid: Id::Id(0x23), tid: Id::All }));
 
-    assert_eq!(
-        parse_thread_id(&b"p0.0"[..]),
-        Done(
-            &b""[..],
-            ThreadId {
-                pid: Id::Any,
-                tid: Id::Any
-            }
-        )
-    );
-    assert_eq!(
-        parse_thread_id(&b"p-1.23"[..]),
-        Done(
-            &b""[..],
-            ThreadId {
-                pid: Id::All,
-                tid: Id::Id(0x23)
-            }
-        )
-    );
-    assert_eq!(
-        parse_thread_id(&b"pff.23"[..]),
-        Done(
-            &b""[..],
-            ThreadId {
-                pid: Id::Id(0xff),
-                tid: Id::Id(0x23)
-            }
-        )
-    );
+    assert_eq!(parse_thread_id(&b"p0.0"[..]), Done(&b""[..], ThreadId { pid: Id::Any, tid: Id::Any }));
+    assert_eq!(parse_thread_id(&b"p-1.23"[..]), Done(&b""[..], ThreadId { pid: Id::All, tid: Id::Id(0x23) }));
+    assert_eq!(parse_thread_id(&b"pff.23"[..]), Done(&b""[..], ThreadId { pid: Id::Id(0xff), tid: Id::Id(0x23) }));
 }
 
 #[test]
 fn test_parse_v_commands() {
     assert_eq!(v_command(&b"vKill;33"[..]), Done(&b""[..], Command::Kill(Some(0x33))));
     assert_eq!(v_command(&b"vCtrlC"[..]), Done(&b""[..], Command::CtrlC));
-    assert_eq!(
-        v_command(&b"vMustReplyEmpty"[..]),
-        Done(&b""[..], Command::UnknownVCommand)
-    );
+    assert_eq!(v_command(&b"vMustReplyEmpty"[..]), Done(&b""[..], Command::UnknownVCommand));
 
     assert_eq!(v_command(&b"vCont?"[..]), Done(&b""[..], Command::VContSupported));
     assert_eq!(v_command(&b"vCont"[..]), Done(&b""[..], Command::VCont(Vec::new())));
-    assert_eq!(
-        v_command(&b"vCont;c"[..]),
-        Done(&b""[..], Command::VCont(vec![(VCont::Continue, None)]))
-    );
+    assert_eq!(v_command(&b"vCont;c"[..]), Done(&b""[..], Command::VCont(vec![(VCont::Continue, None)])));
     assert_eq!(
         v_command(&b"vCont;r1,2:p34.56;SAD:-1;c"[..]),
         Done(
             &b""[..],
             Command::VCont(vec![
-                (
-                    VCont::RangeStep(1..2),
-                    Some(ThreadId {
-                        pid: Id::Id(0x34),
-                        tid: Id::Id(0x56)
-                    })
-                ),
-                (
-                    VCont::StepWithSignal(0xAD),
-                    Some(ThreadId {
-                        pid: Id::All,
-                        tid: Id::Any
-                    })
-                ),
+                (VCont::RangeStep(1..2), Some(ThreadId { pid: Id::Id(0x34), tid: Id::Id(0x56) })),
+                (VCont::StepWithSignal(0xAD), Some(ThreadId { pid: Id::All, tid: Id::Any })),
                 (VCont::Continue, None)
             ])
         )
@@ -2164,50 +2024,23 @@ fn test_parse_v_commands() {
 
     assert_eq!(
         v_command(&b"vFile:open:2f766d6c696e757a,0,0"[..]),
-        Done(
-            &b""[..],
-            Command::HostOpen(vec!(47, 118, 109, 108, 105, 110, 117, 122), 0, 0)
-        )
+        Done(&b""[..], Command::HostOpen(vec!(47, 118, 109, 108, 105, 110, 117, 122), 0, 0))
     );
-    assert_eq!(
-        v_command(&b"vFile:close:85"[..]),
-        Done(&b""[..], Command::HostClose(0x85))
-    );
-    assert_eq!(
-        v_command(&b"vFile:pread:5,96,327"[..]),
-        Done(&b""[..], Command::HostPRead(5, 0x96, 0x327))
-    );
-    assert_eq!(
-        v_command(&b"vFile:pwrite:6,83,\x00"[..]),
-        Done(&b""[..], Command::HostPWrite(6, 0x83, vec![0]))
-    );
-    assert_eq!(
-        v_command(&b"vFile:pwrite:6,83,\x7d\x5d"[..]),
-        Done(&b""[..], Command::HostPWrite(6, 0x83, vec![0x7d]))
-    );
-    assert_eq!(
-        v_command(&b"vFile:fstat:32"[..]),
-        Done(&b""[..], Command::HostFStat(0x32))
-    );
+    assert_eq!(v_command(&b"vFile:close:85"[..]), Done(&b""[..], Command::HostClose(0x85)));
+    assert_eq!(v_command(&b"vFile:pread:5,96,327"[..]), Done(&b""[..], Command::HostPRead(5, 0x96, 0x327)));
+    assert_eq!(v_command(&b"vFile:pwrite:6,83,\x00"[..]), Done(&b""[..], Command::HostPWrite(6, 0x83, vec![0])));
+    assert_eq!(v_command(&b"vFile:pwrite:6,83,\x7d\x5d"[..]), Done(&b""[..], Command::HostPWrite(6, 0x83, vec![0x7d])));
+    assert_eq!(v_command(&b"vFile:fstat:32"[..]), Done(&b""[..], Command::HostFStat(0x32)));
     assert_eq!(
         v_command(&b"vFile:unlink:2f766d6c696e757a"[..]),
-        Done(
-            &b""[..],
-            Command::HostUnlink(vec!(47, 118, 109, 108, 105, 110, 117, 122))
-        )
+        Done(&b""[..], Command::HostUnlink(vec!(47, 118, 109, 108, 105, 110, 117, 122)))
     );
     assert_eq!(
         v_command(&b"vFile:readlink:2f766d6c696e757a"[..]),
-        Done(
-            &b""[..],
-            Command::HostReadlink(vec!(47, 118, 109, 108, 105, 110, 117, 122))
-        )
+        Done(&b""[..], Command::HostReadlink(vec!(47, 118, 109, 108, 105, 110, 117, 122)))
     );
     assert_eq!(v_command(&b"vFile:setfs:0"[..]), Done(&b""[..], Command::HostSetFS(0)));
-    assert_eq!(
-        v_command(&b"vFile:fdopen:0"[..]),
-        Done(&b""[..], Command::UnknownVCommand)
-    );
+    assert_eq!(v_command(&b"vFile:fdopen:0"[..]), Done(&b""[..], Command::UnknownVCommand));
 }
 
 #[test]
@@ -2218,104 +2051,50 @@ fn test_parse_d_packets() {
 
 #[test]
 fn test_parse_write_memory() {
-    assert_eq!(
-        write_memory(&b"Mf0,3:ff0102"[..]),
-        Done(&b""[..], (240, 3, vec!(255, 1, 2)))
-    );
+    assert_eq!(write_memory(&b"Mf0,3:ff0102"[..]), Done(&b""[..], (240, 3, vec!(255, 1, 2))));
 }
 
 #[test]
 fn test_parse_write_memory_binary() {
-    assert_eq!(
-        write_memory_binary(&b"Xf0,1: "[..]),
-        Done(&b""[..], (240, 1, vec!(0x20)))
-    );
-    assert_eq!(
-        write_memory_binary(&b"X90,10:}\x5d"[..]),
-        Done(&b""[..], (144, 16, vec!(0x7d)))
-    );
-    assert_eq!(
-        write_memory_binary(&b"X5,100:}\x5d}\x03"[..]),
-        Done(&b""[..], (5, 256, vec!(0x7d, 0x23)))
-    );
-    assert_eq!(
-        write_memory_binary(&b"Xff,2:}\x04\x9a"[..]),
-        Done(&b""[..], (255, 2, vec!(0x24, 0x9a)))
-    );
-    assert_eq!(
-        write_memory_binary(&b"Xff,2:\xce}\x0a\x9a"[..]),
-        Done(&b""[..], (255, 2, vec!(0xce, 0x2a, 0x9a)))
-    );
+    assert_eq!(write_memory_binary(&b"Xf0,1: "[..]), Done(&b""[..], (240, 1, vec!(0x20))));
+    assert_eq!(write_memory_binary(&b"X90,10:}\x5d"[..]), Done(&b""[..], (144, 16, vec!(0x7d))));
+    assert_eq!(write_memory_binary(&b"X5,100:}\x5d}\x03"[..]), Done(&b""[..], (5, 256, vec!(0x7d, 0x23))));
+    assert_eq!(write_memory_binary(&b"Xff,2:}\x04\x9a"[..]), Done(&b""[..], (255, 2, vec!(0x24, 0x9a))));
+    assert_eq!(write_memory_binary(&b"Xff,2:\xce}\x0a\x9a"[..]), Done(&b""[..], (255, 2, vec!(0xce, 0x2a, 0x9a))));
 }
 
 #[test]
 fn test_parse_qrcmd() {
-    assert_eq!(
-        query(&b"qRcmd,736f6d657468696e67"[..]),
-        Done(&b""[..], Query::Invoke(b"something".to_vec()))
-    );
+    assert_eq!(query(&b"qRcmd,736f6d657468696e67"[..]), Done(&b""[..], Query::Invoke(b"something".to_vec())));
 }
 
 #[test]
 fn test_parse_randomization() {
-    assert_eq!(
-        query(&b"QDisableRandomization:0"[..]),
-        Done(&b""[..], Query::AddressRandomization(true))
-    );
-    assert_eq!(
-        query(&b"QDisableRandomization:1"[..]),
-        Done(&b""[..], Query::AddressRandomization(false))
-    );
+    assert_eq!(query(&b"QDisableRandomization:0"[..]), Done(&b""[..], Query::AddressRandomization(true)));
+    assert_eq!(query(&b"QDisableRandomization:1"[..]), Done(&b""[..], Query::AddressRandomization(false)));
 }
 
 #[test]
 fn test_parse_syscalls() {
-    assert_eq!(
-        query(&b"QCatchSyscalls:0"[..]),
-        Done(&b""[..], Query::CatchSyscalls(None))
-    );
-    assert_eq!(
-        query(&b"QCatchSyscalls:1"[..]),
-        Done(&b""[..], Query::CatchSyscalls(Some(vec!())))
-    );
-    assert_eq!(
-        query(&b"QCatchSyscalls:1;0;1;ff"[..]),
-        Done(&b""[..], Query::CatchSyscalls(Some(vec!(0, 1, 255))))
-    );
+    assert_eq!(query(&b"QCatchSyscalls:0"[..]), Done(&b""[..], Query::CatchSyscalls(None)));
+    assert_eq!(query(&b"QCatchSyscalls:1"[..]), Done(&b""[..], Query::CatchSyscalls(Some(vec!()))));
+    assert_eq!(query(&b"QCatchSyscalls:1;0;1;ff"[..]), Done(&b""[..], Query::CatchSyscalls(Some(vec!(0, 1, 255)))));
 }
 
 #[test]
 fn test_parse_signals() {
     assert_eq!(query(&b"QPassSignals:"[..]), Done(&b""[..], Query::PassSignals(vec!())));
-    assert_eq!(
-        query(&b"QPassSignals:0"[..]),
-        Done(&b""[..], Query::PassSignals(vec!(0)))
-    );
-    assert_eq!(
-        query(&b"QPassSignals:1;2;ff"[..]),
-        Done(&b""[..], Query::PassSignals(vec!(1, 2, 255)))
-    );
-    assert_eq!(
-        query(&b"QProgramSignals:0"[..]),
-        Done(&b""[..], Query::ProgramSignals(vec!(0)))
-    );
-    assert_eq!(
-        query(&b"QProgramSignals:1;2;ff"[..]),
-        Done(&b""[..], Query::ProgramSignals(vec!(1, 2, 255)))
-    );
+    assert_eq!(query(&b"QPassSignals:0"[..]), Done(&b""[..], Query::PassSignals(vec!(0))));
+    assert_eq!(query(&b"QPassSignals:1;2;ff"[..]), Done(&b""[..], Query::PassSignals(vec!(1, 2, 255))));
+    assert_eq!(query(&b"QProgramSignals:0"[..]), Done(&b""[..], Query::ProgramSignals(vec!(0))));
+    assert_eq!(query(&b"QProgramSignals:1;2;ff"[..]), Done(&b""[..], Query::ProgramSignals(vec!(1, 2, 255))));
 }
 
 #[test]
 fn test_thread_info() {
     assert_eq!(
         query(&b"qThreadExtraInfo,ffff"[..]),
-        Done(
-            &b""[..],
-            Query::ThreadInfo(ThreadId {
-                pid: Id::Id(65535),
-                tid: Id::Any
-            })
-        )
+        Done(&b""[..], Query::ThreadInfo(ThreadId { pid: Id::Id(65535), tid: Id::Any }))
     );
 }
 
@@ -2332,10 +2111,7 @@ fn test_parse_write_register() {
 
 #[test]
 fn test_parse_write_general_registers() {
-    assert_eq!(
-        write_general_registers(&b"G0001020304"[..]),
-        Done(&b""[..], vec!(0, 1, 2, 3, 4))
-    );
+    assert_eq!(write_general_registers(&b"G0001020304"[..]), Done(&b""[..], vec!(0, 1, 2, 3, 4)));
 }
 
 #[test]
@@ -2351,42 +2127,24 @@ fn test_write_response() {
     assert_eq!(write_one(Response::Error(1)).unwrap(), "$E01#a6");
 
     assert_eq!(
-        write_one(Response::CurrentThread(Some(ThreadId {
-            pid: Id::Id(255),
-            tid: Id::Id(1)
-        })))
-        .unwrap(),
+        write_one(Response::CurrentThread(Some(ThreadId { pid: Id::Id(255), tid: Id::Id(1) }))).unwrap(),
         "$QCpff.1#2f"
     );
     assert_eq!(
         write_one(Response::ThreadList(vec!(
-            ThreadId {
-                pid: Id::Id(123),
-                tid: Id::Id(123)
-            },
-            ThreadId {
-                pid: Id::Id(456),
-                tid: Id::Any
-            },
+            ThreadId { pid: Id::Id(123), tid: Id::Id(123) },
+            ThreadId { pid: Id::Id(456), tid: Id::Any },
         )))
         .unwrap(),
         "$mp7b.7b,p1c8.0#03"
     );
     assert_eq!(write_one(Response::ThreadList(vec!())).unwrap(), "$l#6c");
     assert_eq!(
-        write_one(Response::BytesOrEof(
-            Vec::from(&b"{Hello * World} #yee $999.99"[..]),
-            false
-        ))
-        .unwrap(),
+        write_one(Response::BytesOrEof(Vec::from(&b"{Hello * World} #yee $999.99"[..]), false)).unwrap(),
         "$m{Hello }\n World}] }\x03yee }\x04999.99#54"
     );
     assert_eq!(
-        write_one(Response::BytesOrEof(
-            Vec::from(&b"does not need to be escaped"[..]),
-            true
-        ))
-        .unwrap(),
+        write_one(Response::BytesOrEof(Vec::from(&b"does not need to be escaped"[..]), true)).unwrap(),
         "$ldoes not need to be escaped#23"
     );
 }
@@ -2401,31 +2159,19 @@ macro_rules! bytecode {
 fn test_breakpoints() {
     assert_eq!(
         parse_z_packet(&b"Z0,1ff,0"[..]),
-        Done(
-            &b""[..],
-            Command::InsertSoftwareBreakpoint(Breakpoint::new(0x1ff, 0, None, None))
-        )
+        Done(&b""[..], Command::InsertSoftwareBreakpoint(Breakpoint::new(0x1ff, 0, None, None)))
     );
     assert_eq!(
         parse_z_packet(&b"z0,1fff,0"[..]),
-        Done(
-            &b""[..],
-            Command::RemoveSoftwareBreakpoint(Breakpoint::new(0x1fff, 0, None, None))
-        )
+        Done(&b""[..], Command::RemoveSoftwareBreakpoint(Breakpoint::new(0x1fff, 0, None, None)))
     );
     assert_eq!(
         parse_z_packet(&b"Z1,ae,0"[..]),
-        Done(
-            &b""[..],
-            Command::InsertHardwareBreakpoint(Breakpoint::new(0xae, 0, None, None))
-        )
+        Done(&b""[..], Command::InsertHardwareBreakpoint(Breakpoint::new(0xae, 0, None, None)))
     );
     assert_eq!(
         parse_z_packet(&b"z1,aec,0"[..]),
-        Done(
-            &b""[..],
-            Command::RemoveHardwareBreakpoint(Breakpoint::new(0xaec, 0, None, None))
-        )
+        Done(&b""[..], Command::RemoveHardwareBreakpoint(Breakpoint::new(0xaec, 0, None, None)))
     );
     assert_eq!(
         parse_z_packet(&b"Z2,4cc,2"[..]),
@@ -2510,14 +2256,8 @@ fn test_breakpoints() {
 
 #[test]
 fn test_cond_or_command_list() {
-    assert_eq!(
-        parse_condition_list(&b";X1,a"[..]),
-        Done(&b""[..], vec!(bytecode!('a' as u8)))
-    );
-    assert_eq!(
-        parse_condition_list(&b";X2,ab"[..]),
-        Done(&b""[..], vec!(bytecode!('a' as u8, 'b' as u8)))
-    );
+    assert_eq!(parse_condition_list(&b";X1,a"[..]), Done(&b""[..], vec!(bytecode!('a' as u8))));
+    assert_eq!(parse_condition_list(&b";X2,ab"[..]), Done(&b""[..], vec!(bytecode!('a' as u8, 'b' as u8))));
     assert_eq!(
         parse_condition_list(&b";X1,zX1,y"[..]),
         Done(&b""[..], vec!(bytecode!('z' as u8), bytecode!('y' as u8)))
@@ -2527,14 +2267,8 @@ fn test_cond_or_command_list() {
         Done(&b""[..], vec!(bytecode!('z' as u8), bytecode!['y' as u8; 16]))
     );
 
-    assert_eq!(
-        parse_command_list(&b";cmdsX1,a"[..]),
-        Done(&b""[..], vec!(bytecode!('a' as u8)))
-    );
-    assert_eq!(
-        parse_command_list(&b";cmdsX2,ab"[..]),
-        Done(&b""[..], vec!(bytecode!('a' as u8, 'b' as u8)))
-    );
+    assert_eq!(parse_command_list(&b";cmdsX1,a"[..]), Done(&b""[..], vec!(bytecode!('a' as u8))));
+    assert_eq!(parse_command_list(&b";cmdsX2,ab"[..]), Done(&b""[..], vec!(bytecode!('a' as u8, 'b' as u8))));
     assert_eq!(
         parse_command_list(&b";cmdsX1,zX1,y"[..]),
         Done(&b""[..], vec!(bytecode!('z' as u8), bytecode!('y' as u8)))

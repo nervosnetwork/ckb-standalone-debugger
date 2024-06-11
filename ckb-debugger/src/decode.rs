@@ -1,9 +1,6 @@
 pub fn decode_instruction(data: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let instruction = if data.starts_with("0x") {
-        u32::from_str_radix(&data[2..], 16)?
-    } else {
-        u32::from_str_radix(data, 10)?
-    };
+    let instruction =
+        if data.starts_with("0x") { u32::from_str_radix(&data[2..], 16)? } else { u32::from_str_radix(data, 10)? };
 
     use ckb_vm::instructions::*;
     use ckb_vm::machine::VERSION2;

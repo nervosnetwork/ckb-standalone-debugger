@@ -23,10 +23,7 @@ fn sprint_fun(frame_iter: &mut Addr2LineFrameIter) -> String {
     loop {
         if let Some(data) = frame_iter.next().unwrap() {
             if let Some(function) = data.function {
-                s = String::from(addr2line::demangle_auto(
-                    Cow::from(function.raw_name().unwrap()),
-                    function.language,
-                ));
+                s = String::from(addr2line::demangle_auto(Cow::from(function.raw_name().unwrap()), function.language));
                 continue;
             }
             continue;
@@ -72,15 +69,7 @@ struct TrieNode {
 
 impl TrieNode {
     fn root() -> Self {
-        Self {
-            addr: 0,
-            link: 0,
-            pc: 0,
-            parent: None,
-            childs: vec![],
-            cycles: 0,
-            regs: [[0; 32]; 2],
-        }
+        Self { addr: 0, link: 0, pc: 0, parent: None, childs: vec![], cycles: 0, regs: [[0; 32]; 2] }
     }
 }
 
@@ -94,12 +83,7 @@ pub struct Tags {
 
 impl Tags {
     fn new(addr: u64) -> Self {
-        Tags {
-            addr,
-            file: String::from("??"),
-            line: 0xffffffff,
-            func: String::from("??"),
-        }
+        Tags { addr, file: String::from("??"), line: 0xffffffff, func: String::from("??") }
     }
 
     pub fn func(&self) -> String {
@@ -217,10 +201,7 @@ impl Profile {
         if !self.disable_overlapping_detection {
             let sp = machine.registers()[SP].to_u64();
             if sp < self.sbrk_heap {
-                return Err(Error::External(format!(
-                    "Heap and stack overlapping sp={} heap={}",
-                    sp, self.sbrk_heap
-                )));
+                return Err(Error::External(format!("Heap and stack overlapping sp={} heap={}", sp, self.sbrk_heap)));
             }
         }
         let inst = decoder.decode(machine.memory_mut(), pc)?;

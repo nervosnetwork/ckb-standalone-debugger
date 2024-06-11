@@ -298,12 +298,7 @@ impl<
         let value = match reg_id {
             RiscvRegId::Pc => self.machine.pc(),
             RiscvRegId::Gpr(idx) => &self.machine.registers()[idx as usize],
-            _ => {
-                return Err(TargetError::Fatal(Error::External(format!(
-                    "Invalid register id: {:?}",
-                    reg_id
-                ))))
-            }
+            _ => return Err(TargetError::Fatal(Error::External(format!("Invalid register id: {:?}", reg_id)))),
         };
         buf.copy_from_slice(&value.to_u64().to_le_bytes()[0..(R::BITS as usize / 8)]);
         Ok(buf.len())
@@ -321,12 +316,7 @@ impl<
             RiscvRegId::Gpr(idx) => {
                 self.machine.set_register(idx as usize, v);
             }
-            _ => {
-                return Err(TargetError::Fatal(Error::External(format!(
-                    "Invalid register id: {:?}",
-                    reg_id
-                ))))
-            }
+            _ => return Err(TargetError::Fatal(Error::External(format!("Invalid register id: {:?}", reg_id)))),
         };
 
         Ok(())
@@ -527,16 +517,12 @@ impl<
             VmEvent::DoneStep => Event::TargetStopped(SingleThreadStopReason::DoneStep),
             VmEvent::Exited(code) => Event::TargetStopped(SingleThreadStopReason::Exited(code)),
             VmEvent::Break => Event::TargetStopped(SingleThreadStopReason::SwBreak(())),
-            VmEvent::WatchRead(addr) => Event::TargetStopped(SingleThreadStopReason::Watch {
-                tid: (),
-                kind: WatchKind::Read,
-                addr,
-            }),
-            VmEvent::WatchWrite(addr) => Event::TargetStopped(SingleThreadStopReason::Watch {
-                tid: (),
-                kind: WatchKind::Write,
-                addr,
-            }),
+            VmEvent::WatchRead(addr) => {
+                Event::TargetStopped(SingleThreadStopReason::Watch { tid: (), kind: WatchKind::Read, addr })
+            }
+            VmEvent::WatchWrite(addr) => {
+                Event::TargetStopped(SingleThreadStopReason::Watch { tid: (), kind: WatchKind::Write, addr })
+            }
             VmEvent::CatchSyscall(number) => Event::TargetStopped(SingleThreadStopReason::CatchSyscall {
                 tid: None,
                 number,

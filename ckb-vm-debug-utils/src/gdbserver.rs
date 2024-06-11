@@ -12,10 +12,7 @@ use std::borrow::Cow;
 use std::cell::RefCell;
 
 fn show_warning(e: &CkbError) {
-    println!(
-        "Fatal error in ckb-vm occurred: {:?}. Press Ctrl+C to quit or use gdb to attach it.",
-        e
-    );
+    println!("Fatal error in ckb-vm occurred: {:?}. Press Ctrl+C to quit or use gdb to attach it.", e);
     println!("Note: it doesn't mean any coding error in ckb-vm.");
     println!("This session can't be re-used. It is paused for post-mortem.")
 }
@@ -36,19 +33,12 @@ impl WatchPointStatus {
     fn new(wp: Watchpoint) -> Self {
         let mut data = Vec::<u8>::new();
         data.resize(wp.n_bytes as usize, 0);
-        WatchPointStatus {
-            watchpoint: wp,
-            data,
-            has_data: false,
-        }
+        WatchPointStatus { watchpoint: wp, data, has_data: false }
     }
     fn has_change<H: Handler>(&mut self, handler: &H) -> Result<bool, Error> {
         let has_data = self.has_data;
 
-        let mem = MemoryRegion {
-            address: self.watchpoint.addr,
-            length: self.watchpoint.n_bytes,
-        };
+        let mem = MemoryRegion { address: self.watchpoint.addr, length: self.watchpoint.n_bytes };
         let new_content = handler.read_memory(mem)?;
         let result = if new_content == self.data {
             Ok(false)
@@ -275,10 +265,7 @@ impl<M: Memory<REG = u64>> Handler for GdbHandler<M> {
     fn insert_write_watchpoint(&self, watchpoint: Watchpoint) -> Result<(), Error> {
         let wp = WatchPointStatus::new(watchpoint);
         self.watchpoints.borrow_mut().push(wp);
-        debug!(
-            "insert watch point at {:x} with length {}",
-            watchpoint.addr, watchpoint.n_bytes
-        );
+        debug!("insert watch point at {:x} with length {}", watchpoint.addr, watchpoint.n_bytes);
         Ok(())
     }
     fn remove_write_watchpoint(&self, wp: Watchpoint) -> Result<(), Error> {

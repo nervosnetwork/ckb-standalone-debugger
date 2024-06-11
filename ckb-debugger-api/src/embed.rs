@@ -16,11 +16,7 @@ pub struct Embed {
 
 impl Embed {
     pub fn new(path: PathBuf, data: String) -> Self {
-        Self {
-            data,
-            path,
-            type_id_dict: HashMap::new(),
-        }
+        Self { data, path, type_id_dict: HashMap::new() }
     }
 
     pub fn replace_data(&mut self) -> &mut Self {
