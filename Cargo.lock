@@ -316,6 +316,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "ckb-chain-spec"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "cacache",
  "ckb-constant",
@@ -337,6 +338,7 @@ dependencies = [
 [[package]]
 name = "ckb-channel"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "crossbeam-channel",
 ]
@@ -344,10 +346,12 @@ dependencies = [
 [[package]]
 name = "ckb-constant"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 
 [[package]]
 name = "ckb-crypto"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb-fixed-hash",
  "faster-hex",
@@ -360,6 +364,7 @@ dependencies = [
 [[package]]
 name = "ckb-dao-utils"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "byteorder",
  "ckb-error",
@@ -420,6 +425,7 @@ dependencies = [
 [[package]]
 name = "ckb-error"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "anyhow",
  "ckb-occupied-capacity",
@@ -430,6 +436,7 @@ dependencies = [
 [[package]]
 name = "ckb-fixed-hash"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb-fixed-hash-core",
  "ckb-fixed-hash-macros",
@@ -438,6 +445,7 @@ dependencies = [
 [[package]]
 name = "ckb-fixed-hash-core"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb_schemars",
  "faster-hex",
@@ -448,6 +456,7 @@ dependencies = [
 [[package]]
 name = "ckb-fixed-hash-macros"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb-fixed-hash-core",
  "proc-macro2",
@@ -477,6 +486,7 @@ dependencies = [
 [[package]]
 name = "ckb-gen-types"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "cfg-if 1.0.0",
  "ckb-error",
@@ -490,6 +500,7 @@ dependencies = [
 [[package]]
 name = "ckb-hash"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "blake2b-ref",
  "blake2b-rs",
@@ -498,6 +509,7 @@ dependencies = [
 [[package]]
 name = "ckb-jsonrpc-types"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb-types",
  "ckb_schemars",
@@ -509,6 +521,7 @@ dependencies = [
 [[package]]
 name = "ckb-logger"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "log 0.4.20",
 ]
@@ -535,6 +548,7 @@ dependencies = [
 [[package]]
 name = "ckb-occupied-capacity"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb-occupied-capacity-core",
  "ckb-occupied-capacity-macros",
@@ -543,6 +557,7 @@ dependencies = [
 [[package]]
 name = "ckb-occupied-capacity-core"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "serde",
 ]
@@ -550,6 +565,7 @@ dependencies = [
 [[package]]
 name = "ckb-occupied-capacity-macros"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb-occupied-capacity-core",
  "quote 1.0.33",
@@ -559,6 +575,7 @@ dependencies = [
 [[package]]
 name = "ckb-pow"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "byteorder",
  "ckb-hash",
@@ -571,6 +588,7 @@ dependencies = [
 [[package]]
 name = "ckb-rational"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "numext-fixed-uint",
  "serde",
@@ -579,6 +597,7 @@ dependencies = [
 [[package]]
 name = "ckb-resource"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb-system-scripts",
  "ckb-types",
@@ -592,6 +611,7 @@ dependencies = [
 [[package]]
 name = "ckb-script"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "byteorder",
  "ckb-chain-spec",
@@ -621,6 +641,7 @@ dependencies = [
 [[package]]
 name = "ckb-traits"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "ckb-types",
 ]
@@ -628,6 +649,7 @@ dependencies = [
 [[package]]
 name = "ckb-types"
 version = "0.116.0-pre"
+source = "git+https://github.com/libraries/ckb?branch=new_spawn#4003f032954c6c9226535a666993a48036c886fa"
 dependencies = [
  "bit-vec",
  "bytes",
@@ -652,6 +674,7 @@ dependencies = [
 [[package]]
 name = "ckb-vm"
 version = "0.24.11"
+source = "git+https://github.com/libraries/ckb-vm?branch=spawn-debugger-3#2b738a4170e453871136cc76df11807c7e1293a2"
 dependencies = [
  "byteorder",
  "bytes",
@@ -683,6 +706,7 @@ dependencies = [
 [[package]]
 name = "ckb-vm-definitions"
 version = "0.24.11"
+source = "git+https://github.com/libraries/ckb-vm?branch=spawn-debugger-3#2b738a4170e453871136cc76df11807c7e1293a2"
 dependencies = [
  "paste",
 ]

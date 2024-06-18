@@ -14,18 +14,17 @@ probes = ["probe", "ckb-script/flatmemory"]
 [dependencies]
 addr2line = "0.17"
 clap = "2.33.0"
-ckb-chain-spec = { path = "/home/ubuntu/src/ckb/spec" }
-ckb-debugger-api = { path = "../ckb-debugger-api", version = "0.116.1" }
-ckb-hash = { path = "/home/ubuntu/src/ckb/util/hash" }
-ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.116.1" }
-ckb-script = { path = "/home/ubuntu/src/ckb/script", default-features = false }
-ckb-traits = { path = "/home/ubuntu/src/ckb/traits" }
-ckb-types = { path = "/home/ubuntu/src/ckb/util/types" }
-# ckb-vm = "0.24.11"
-ckb-vm = { path = "/home/ubuntu/src/ckb-vm" }
-ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils", version = "0.116.1" }
-ckb-vm-pprof = { path = "../ckb-vm-pprof", version = "0.116.1" }
-ckb-gdb-remote-protocol = { path = "../ckb-gdb-remote-protocol", version = "0.116.1" }
+ckb-chain-spec = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
+ckb-debugger-api = { path = "../ckb-debugger-api", version = "=0.116.1" }
+ckb-hash = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
+ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "=0.116.1" }
+ckb-script = { git = "https://github.com/libraries/ckb", branch = "new_spawn", default-features = false }
+ckb-traits = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
+ckb-types = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
+ckb-vm = { git = "https://github.com/libraries/ckb-vm", branch = "spawn-debugger-3", default-features = false }
+ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils", version = "=0.116.1" }
+ckb-vm-pprof = { path = "../ckb-vm-pprof", version = "=0.116.1" }
+ckb-gdb-remote-protocol = { path = "../ckb-gdb-remote-protocol", version = "=0.116.1" }
 env_logger = "0.4.3"
 gdbstub = "0.6.6"
 gdbstub_arch = "0.2.4"

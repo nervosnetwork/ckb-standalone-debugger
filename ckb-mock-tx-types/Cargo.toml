@@ -9,7 +9,7 @@ authors = ["Nervos Core Dev <dev@nervos.org>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ckb-types = { path = "/home/ubuntu/src/ckb/util/types" }
-ckb-jsonrpc-types = { path = "/home/ubuntu/src/ckb/util/jsonrpc-types" }
-ckb-traits = { path = "/home/ubuntu/src/ckb/traits" }
+ckb-types = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
+ckb-jsonrpc-types = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
+ckb-traits = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
 serde = { version = "1.0", features = ["derive"] }

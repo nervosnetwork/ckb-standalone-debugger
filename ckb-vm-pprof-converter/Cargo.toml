@@ -11,4 +11,4 @@ authors = ["Nervos Core Dev <dev@nervos.org>"]
 [dependencies]
 clap = { version = "4.0.27", features = ["cargo"] }
 protobuf = { version = "2.25.1", features = ["with-bytes", "with-serde"] }
-ckb-vm-pprof-protos = { path = "../ckb-vm-pprof-protos", version = "0.116.1" }
+ckb-vm-pprof-protos = { path = "../ckb-vm-pprof-protos", version = "=0.116.1" }
