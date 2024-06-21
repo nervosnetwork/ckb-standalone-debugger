@@ -21,7 +21,7 @@ ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "=0.116.1" }
 ckb-script = { git = "https://github.com/libraries/ckb", branch = "new_spawn", default-features = false }
 ckb-traits = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
 ckb-types = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
-ckb-vm = { git = "https://github.com/libraries/ckb-vm", branch = "spawn-debugger-3", default-features = false }
+ckb-vm = { version = "= 0.24.12", default-features = false }
 ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils", version = "=0.116.1" }
 ckb-vm-pprof = { path = "../ckb-vm-pprof", version = "=0.116.1" }
 ckb-gdb-remote-protocol = { path = "../ckb-gdb-remote-protocol", version = "=0.116.1" }

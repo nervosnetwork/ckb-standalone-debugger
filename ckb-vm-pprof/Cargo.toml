@@ -9,5 +9,5 @@ license = "MIT"
 [dependencies]
 addr2line = "0.17.0"
 clap = "2.33"
-ckb-vm = { git = "https://github.com/libraries/ckb-vm", branch = "spawn-debugger-3", features = ["pprof"] }
+ckb-vm = { version = "= 0.24.12", default-features = false, features = ["pprof"] }
 goblin = "0.4"
