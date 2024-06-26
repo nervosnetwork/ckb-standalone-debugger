@@ -1,7 +1,9 @@
 use ckb_chain_spec::consensus::ConsensusBuilder;
+#[cfg(feature = "syscall_stdio")]
+use ckb_debugger::Stdio;
 use ckb_debugger::{
-    FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile,
-    MachineStepLog, Random, TimeNow,
+    ElfDumper, FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap,
+    MachineProfile, MachineStepLog, Random, TimeNow,
 };
 use ckb_debugger::{GdbStubHandler, GdbStubHandlerEventLoop};
 use ckb_debugger_api::embed::Embed;
@@ -15,18 +17,17 @@ use ckb_types::prelude::{Builder, Entity, Pack};
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::build_decoder;
 use ckb_vm::error::Error;
+use ckb_vm::instructions::execute;
 use ckb_vm::machine::VERSION2;
 use ckb_vm::{Bytes, CoreMachine, Register, SupportMachine};
-use ckb_vm_debug_utils::ElfDumper;
-#[cfg(feature = "stdio")]
-use ckb_vm_debug_utils::Stdio;
 use clap::{crate_version, App, Arg};
 use gdbstub::{
     conn::ConnectionExt,
     stub::{DisconnectReason, GdbStub, GdbStubError},
 };
+use probe::probe;
 use std::collections::HashSet;
-use std::io::Read;
+use std::io::{BufRead, Read};
 use std::net::TcpListener;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -376,7 +377,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             machine_assign.expand_syscalls.push(Box::new(FileStream::new(name)));
         }
         machine_assign.expand_syscalls.push(Box::new(Random::new()));
-        #[cfg(feature = "stdio")]
+        #[cfg(feature = "syscall_stdio")]
         machine_assign.expand_syscalls.push(Box::new(Stdio::new(false)));
         machine_assign.expand_syscalls.push(Box::new(TimeNow::new()));
         machine_assign.wait()?;
@@ -472,52 +473,38 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     if matches_mode == "probe" {
-        #[cfg(not(feature = "probes"))]
-        {
-            println!("To use probe mode, feature probes must be enabled!");
-            return Ok(());
+        if matches_prompt {
+            println!("Enter to start executing:");
+            let mut line = String::new();
+            std::io::stdin().lock().read_line(&mut line).expect("read");
         }
 
-        #[cfg(feature = "probes")]
-        {
-            use ckb_vm::instructions::execute;
-            use probe::probe;
-            use std::io::BufRead;
-
-            if matches_prompt {
-                println!("Enter to start executing:");
-                let mut line = String::new();
-                std::io::stdin().lock().read_line(&mut line).expect("read");
-            }
-
-            let mut machine = machine_assign_init()?;
-            machine.set_running(true);
-            let mut decoder =
-                build_decoder::<u64>(verifier_script_version.vm_isa(), verifier_script_version.vm_version());
-            let mut step_result = Ok(());
-            while machine.running() && step_result.is_ok() {
-                let pc = machine.pc().to_u64();
-                step_result = decoder
-                    .decode(machine.memory_mut(), pc)
-                    .and_then(|inst| {
-                        let cycles = estimate_cycles(inst);
-                        machine.add_cycles(cycles).map(|_| inst)
-                    })
-                    .and_then(|inst| {
-                        let regs = machine.registers().as_ptr();
-                        let memory = (&mut machine.memory_mut().inner_mut()).as_ptr();
-                        let cycles = machine.cycles();
-                        probe!(ckb_vm, execute_inst, pc, cycles, inst, regs, memory);
-                        let r = execute(inst, &mut machine);
-                        let cycles = machine.cycles();
-                        probe!(ckb_vm, execute_inst_end, pc, cycles, inst, regs, memory, if r.is_ok() { 0 } else { 1 });
-                        r
-                    });
-            }
-            let result = step_result.map(|_| machine.exit_code());
-            println!("Run result: {:?}", result);
-            println!("Total cycles consumed: {}", HumanReadableCycles(machine.scheduler.consumed_cycles()));
+        let mut machine = machine_assign_init()?;
+        machine.set_running(true);
+        let mut decoder = build_decoder::<u64>(verifier_script_version.vm_isa(), verifier_script_version.vm_version());
+        let mut step_result = Ok(());
+        while machine.running() && step_result.is_ok() {
+            let pc = machine.pc().to_u64();
+            step_result = decoder
+                .decode(machine.memory_mut(), pc)
+                .and_then(|inst| {
+                    let cycles = estimate_cycles(inst);
+                    machine.add_cycles(cycles).map(|_| inst)
+                })
+                .and_then(|inst| {
+                    let regs = machine.registers().as_ptr();
+                    let memory = (&mut machine.memory_mut().inner_mut()).as_ptr();
+                    let cycles = machine.cycles();
+                    probe!(ckb_vm, execute_inst, pc, cycles, inst, regs, memory);
+                    let r = execute(inst, &mut machine);
+                    let cycles = machine.cycles();
+                    probe!(ckb_vm, execute_inst_end, pc, cycles, inst, regs, memory, if r.is_ok() { 0 } else { 1 });
+                    r
+                });
         }
+        let result = step_result.map(|_| machine.exit_code());
+        println!("Run result: {:?}", result);
+        println!("Total cycles consumed: {}", HumanReadableCycles(machine.scheduler.consumed_cycles()));
     }
 
     Ok(())

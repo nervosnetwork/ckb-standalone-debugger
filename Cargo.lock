@@ -374,6 +374,7 @@ name = "ckb-debugger"
 version = "0.116.1"
 dependencies = [
  "addr2line 0.17.0",
+ "byteorder",
  "ckb-chain-spec",
  "ckb-debugger-api",
  "ckb-hash",
@@ -382,7 +383,6 @@ dependencies = [
  "ckb-traits",
  "ckb-types",
  "ckb-vm",
- "ckb-vm-debug-utils",
  "clap 2.34.0",
  "env_logger 0.4.3",
  "gdbstub",
@@ -391,6 +391,7 @@ dependencies = [
  "hex",
  "libc",
  "log 0.4.21",
+ "nix 0.26.4",
  "probe",
  "rand 0.8.5",
  "serde_json",

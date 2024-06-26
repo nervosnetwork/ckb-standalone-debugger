@@ -7,22 +7,21 @@ authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2021"
 
 [features]
-default = ["probes"]
-stdio = ["ckb-vm-debug-utils/stdio"]
-probes = ["probe", "ckb-script/flatmemory"]
+default = []
+syscall_stdio = ["nix"]
 
 [dependencies]
 addr2line = "0.17"
+byteorder = "1"
 clap = "2.33.0"
 ckb-chain-spec = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
 ckb-debugger-api = { path = "../ckb-debugger-api", version = "=0.116.1" }
 ckb-hash = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
 ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "=0.116.1" }
-ckb-script = { git = "https://github.com/libraries/ckb", branch = "new_spawn", default-features = false }
+ckb-script = { git = "https://github.com/libraries/ckb", branch = "new_spawn", default-features = false, features = ["flatmemory"] }
 ckb-traits = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
 ckb-types = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
 ckb-vm = { version = "= 0.24.12", default-features = false, features = ["pprof"] }
-ckb-vm-debug-utils = { path = "../ckb-vm-debug-utils", version = "=0.116.1" }
 env_logger = "0.4.3"
 gdbstub = "0.6.6"
 gdbstub_arch = "0.2.4"
@@ -30,7 +29,8 @@ goblin = "0.4"
 hex = "0.4"
 libc = "0.2.132"
 log = "0.4.0"
+nix = { version = "0.26.2", optional = true }
+probe = "0.5"
 rand = "0.8.5"
 serde_json = "1.0"
 serde_plain = "1.0"
-probe = { version = "0.5.0", optional = true }
