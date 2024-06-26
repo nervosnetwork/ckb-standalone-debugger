@@ -1,5 +1,9 @@
 use ckb_chain_spec::consensus::ConsensusBuilder;
-use ckb_debugger::{MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile, MachineStepLog};
+use ckb_debugger::{
+    FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile,
+    MachineStepLog, Random, TimeNow,
+};
+use ckb_debugger::{GdbStubHandler, GdbStubHandlerEventLoop};
 use ckb_debugger_api::embed::Embed;
 use ckb_debugger_api::{check, get_script_hash_by_index, DummyResourceLoader};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
@@ -17,18 +21,15 @@ use ckb_vm_debug_utils::ElfDumper;
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
 use clap::{crate_version, App, Arg};
+use gdbstub::{
+    conn::ConnectionExt,
+    stub::{DisconnectReason, GdbStub, GdbStubError},
+};
 use std::collections::HashSet;
 use std::io::Read;
 use std::net::TcpListener;
 use std::path::PathBuf;
 use std::sync::Arc;
-mod misc;
-use ckb_debugger::{GdbStubHandler, GdbStubHandlerEventLoop};
-use gdbstub::{
-    conn::ConnectionExt,
-    stub::{DisconnectReason, GdbStub, GdbStubError},
-};
-use misc::{FileOperation, FileStream, HumanReadableCycles, Random, TimeNow};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
@@ -452,9 +453,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         DisconnectReason::Kill => Err(Error::External("GDB sent a kill command!".to_string())),
                     },
                     Err(GdbStubError::TargetError(e)) => {
-                        Err(Error::External(format!("target encountered a fatal error: {}", e)))
+                        Err(Error::External(format!("Target encountered a fatal error: {}", e)))
                     }
-                    Err(e) => Err(Error::External(format!("gdbstub encountered a fatal error: {}", e))),
+                    Err(e) => Err(Error::External(format!("Gdbstub encountered a fatal error: {}", e))),
                 };
                 match result {
                     Ok((exit_code, cycles)) => {
