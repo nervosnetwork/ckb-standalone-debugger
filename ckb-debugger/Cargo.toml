@@ -15,8 +15,8 @@ addr2line = "0.17"
 byteorder = "1"
 clap = "2.33.0"
 ckb-chain-spec = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
-ckb-debugger-api = { path = "../ckb-debugger-api", version = "=0.116.1" }
 ckb-hash = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
+ckb-jsonrpc-types = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
 ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "=0.116.1" }
 ckb-script = { git = "https://github.com/libraries/ckb", branch = "new_spawn", default-features = false, features = ["flatmemory"] }
 ckb-traits = { git = "https://github.com/libraries/ckb", branch = "new_spawn" }
@@ -32,5 +32,6 @@ log = "0.4.0"
 nix = { version = "0.26.2", optional = true }
 probe = "0.5"
 rand = "0.8.5"
+regex = "1"
 serde_json = "1.0"
 serde_plain = "1.0"

@@ -2,12 +2,11 @@ use ckb_chain_spec::consensus::ConsensusBuilder;
 #[cfg(feature = "syscall_stdio")]
 use ckb_debugger::Stdio;
 use ckb_debugger::{
-    ElfDumper, FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap,
-    MachineProfile, MachineStepLog, Random, TimeNow,
+    get_script_hash_by_index, pre_check, DummyResourceLoader, ElfDumper, FileOperation, FileStream,
+    HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile, MachineStepLog, Random,
+    TimeNow,
 };
-use ckb_debugger::{GdbStubHandler, GdbStubHandlerEventLoop};
-use ckb_debugger_api::embed::Embed;
-use ckb_debugger_api::{check, get_script_hash_by_index, DummyResourceLoader};
+use ckb_debugger::{Embed, GdbStubHandler, GdbStubHandlerEventLoop};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv, ROOT_VM_ID};
 use ckb_types::core::cell::{resolve_transaction, CellMetaBuilder};
@@ -217,7 +216,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut buf = String::new();
             std::io::stdin().read_to_string(&mut buf)?;
             let repr_mock_tx: ReprMockTransaction = serde_json::from_str(&buf)?;
-            if let Err(msg) = check(&repr_mock_tx) {
+            if let Err(msg) = pre_check(&repr_mock_tx) {
                 println!("Potential format error found: {}", msg);
             }
             repr_mock_tx.into()
@@ -227,7 +226,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut mock_tx_embed = Embed::new(PathBuf::from(doc.to_string()), buf.clone());
             let buf = mock_tx_embed.replace_all();
             let repr_mock_tx: ReprMockTransaction = serde_json::from_str(&buf)?;
-            if let Err(msg) = check(&repr_mock_tx) {
+            if let Err(msg) = pre_check(&repr_mock_tx) {
                 println!("Potential format error found: {}", msg);
             }
             repr_mock_tx.into()
