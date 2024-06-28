@@ -10,6 +10,6 @@ uint64_t time() {
 
 int main() {
     uint64_t tic = time();
-    printf("%lld\n", tic);
+    printf("%lu\n", tic);
     return 0;
 }

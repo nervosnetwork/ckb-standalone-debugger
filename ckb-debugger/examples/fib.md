@@ -2,26 +2,26 @@
 
 This project profiling data in the format expected by the flamegraph visualization tool.
 
-# Usage
+# Gdb debugging
 
-Suppose the program to be tested is:
+This article introduces debugging programs by using gdb.
 
-```c
-int fib(int n) {
-    if (n == 0 || n == 1) {
-        return n;
-    } else {
-        return fib(n-1) + fib(n-2);
-    }
-}
+For example, we want to know the parameters passed in to a function at runtime:
 
-int main() {
-    if (fib(10) != 55) {
-        return 1;
-    }
-    return 0;
-}
+```sh
+$ ckb-debugger --mode gdb --gdb-listen 127.0.0.1:9999 --bin fib
+$ riscv64-unknown-elf-gdb fib
+
+$ (gdb) target remote 127.0.0.1:9999
+$ (gdb) b fib
+$ (gdb) c
+    Breakpoint 1, fib (n=5) at fib.c:2
 ```
+
+At the Breakpoint 1, we learn that fib (n=5) at fib.c:2.
+
+
+# Get flamegraph
 
 We should take the `-g` option on compiling for saving the debugging information:
 

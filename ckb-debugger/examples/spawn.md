@@ -3,7 +3,7 @@
 syscall spawn is a new interface added since ckb2023.
 
 ```sh
-$ ckb-debugger --mode fast --tx-file examples/spawn.json --cell-index 0 --cell-type input --script-group-type lock
+$ ckb-debugger --mode fast --tx-file spawn.json --cell-index 0 --cell-type input --script-group-type lock
 ```
 
 In order to simplify the writing of tx.json, we designed a simple DSL to assist you in writing tx.json.
