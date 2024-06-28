@@ -5,8 +5,10 @@ all: ckb-c-stdlib \
 	 exec_callee \
 	 exec_caller \
 	 fib \
+	 file_operations \
 	 out_of_memory \
 	 print_log \
+	 read_file \
 	 spawn_callee_strcat \
 	 spawn_caller_strcat \
 	 timenow
@@ -29,10 +31,16 @@ exec_caller:
 fib:
 	$(CC) -o $@ $@.c
 
+file_operations:
+	$(CC) -Wno-builtin-requires-header -o $@ $@.c
+
 out_of_memory:
 	$(CC) -o $@ $@.c
 
 print_log:
+	$(CC) -o $@ $@.c
+
+read_file:
 	$(CC) -o $@ $@.c
 
 spawn_callee_strcat:
@@ -41,8 +49,8 @@ spawn_callee_strcat:
 spawn_caller_strcat:
 	$(CC) -o $@ $@.c
 
-timenow:
-	$(CC) -o $@ $@.c
-
 test:
 	bash MakefileTest.sh
+
+timenow:
+	$(CC) -o $@ $@.c
