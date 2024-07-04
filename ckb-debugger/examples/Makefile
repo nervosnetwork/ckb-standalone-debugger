@@ -13,14 +13,17 @@ all: ckb-c-stdlib \
 	 spawn_caller_strcat \
 	 timenow
 
+all-via-docker:
+	docker run --rm -v `pwd`:/code cryptape/llvm-n-rust:20240630 bash -c "cd /code && make"
+
+always_failure:
+	$(CC) -o $@ $@.c
+
 ckb-c-stdlib:
 	git clone https://github.com/nervosnetwork/ckb-c-stdlib
 	cd ckb-c-stdlib
 	git checkout d7dc1e3
 	cd ..
-
-always_failure:
-	$(CC) -o $@ $@.c
 
 exec_callee:
 	$(CC) -o $@ $@.c
