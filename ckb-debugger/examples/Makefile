@@ -14,7 +14,7 @@ all: ckb-c-stdlib \
 	 timenow
 
 all-via-docker:
-	docker run --rm -v `pwd`:/code cryptape/llvm-n-rust:20240630 bash -c "cd /code && make"
+	docker run -e UID=`id -u` -e GID=`id -g` --rm -v `pwd`:/code cryptape/llvm-n-rust:20240630 bash -c "cd /code && make"
 
 always_failure:
 	$(CC) -o $@ $@.c
