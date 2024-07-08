@@ -1,5 +1,5 @@
 use ckb_chain_spec::consensus::ConsensusBuilder;
-#[cfg(feature = "syscall_stdio")]
+#[cfg(target_family = "unix")]
 use ckb_debugger::Stdio;
 use ckb_debugger::{
     get_script_hash_by_index, pre_check, DummyResourceLoader, ElfDumper, FileOperation, FileStream,
@@ -376,7 +376,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             machine_assign.expand_syscalls.push(Box::new(FileStream::new(name)));
         }
         machine_assign.expand_syscalls.push(Box::new(Random::new()));
-        #[cfg(feature = "syscall_stdio")]
+        #[cfg(target_family = "unix")]
         machine_assign.expand_syscalls.push(Box::new(Stdio::new(false)));
         machine_assign.expand_syscalls.push(Box::new(TimeNow::new()));
         machine_assign.wait()?;

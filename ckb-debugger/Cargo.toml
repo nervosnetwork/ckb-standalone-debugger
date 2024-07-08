@@ -8,7 +8,6 @@ edition = "2021"
 
 [features]
 default = []
-syscall_stdio = ["nix"]
 
 [dependencies]
 addr2line = "0.17"
@@ -29,7 +28,7 @@ goblin = "0.4"
 hex = "0.4"
 libc = "0.2.132"
 log = "0.4.0"
-nix = { version = "0.26.2", optional = true }
+nix = "0.26.2"
 probe = "0.5"
 rand = "0.8.5"
 regex = "1"
