@@ -333,13 +333,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
         let consensus = Arc::new(ConsensusBuilder::default().hardfork_switch(hardforks).build());
         let epoch = match verifier_script_version {
-            ScriptVersion::V0 => (15, 0, 1),
-            ScriptVersion::V1 => (25, 0, 1),
-            ScriptVersion::V2 => (35, 0, 1),
+            ScriptVersion::V0 => ckb_types::core::EpochNumberWithFraction::new(15, 0, 1),
+            ScriptVersion::V1 => ckb_types::core::EpochNumberWithFraction::new(25, 0, 1),
+            ScriptVersion::V2 => ckb_types::core::EpochNumberWithFraction::new(35, 0, 1),
         };
-        let header_view = HeaderView::new_advanced_builder()
-            .epoch(ckb_types::core::EpochNumberWithFraction::new(epoch.0, epoch.1, epoch.2).pack())
-            .build();
+        let header_view = HeaderView::new_advanced_builder().epoch(epoch.pack()).build();
         let tx_env = Arc::new(TxVerifyEnv::new_commit(&header_view));
         TransactionScriptsVerifier::new(
             Arc::new(verifier_resolve_transaction.clone()),

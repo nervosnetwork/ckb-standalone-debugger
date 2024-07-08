@@ -1,3 +1,4 @@
+mod api;
 mod machine_analyzer;
 mod machine_assign;
 mod machine_gdb;
@@ -7,6 +8,7 @@ mod syscall_elf_dumper;
 #[cfg(target_family = "unix")]
 mod syscall_stdio;
 
+pub use api::{run, run_json};
 pub use machine_analyzer::{MachineAnalyzer, MachineOverlap, MachineProfile, MachineStepLog};
 pub use machine_assign::MachineAssign;
 pub use machine_gdb::{GdbStubHandler, GdbStubHandlerEventLoop};

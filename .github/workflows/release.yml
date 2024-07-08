@@ -84,7 +84,6 @@ jobs:
         cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
         cd ckb-mock-tx-types && cargo publish && cd ..
         cd ckb-vm-pprof && cargo publish && cd ..
-        cd ckb-debugger-api && cargo publish && cd ..
         cd ckb-vm-debug-utils && cargo publish && cd ..
         cd ckb-debugger && cargo publish && cd ..
         cd ckb-vm-pprof-protos && cargo publish --no-verify && cd ..

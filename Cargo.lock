@@ -344,24 +344,6 @@ dependencies = [
  "probe",
  "rand 0.8.5",
  "regex 1.10.5",
- "serde_json",
- "serde_plain",
-]
-
-[[package]]
-name = "ckb-debugger-api"
-version = "0.116.1"
-dependencies = [
- "byteorder",
- "ckb-chain-spec",
- "ckb-hash",
- "ckb-jsonrpc-types",
- "ckb-mock-tx-types",
- "ckb-script",
- "ckb-types",
- "ckb-vm",
- "hex",
- "regex 1.10.5",
  "serde",
  "serde_json",
  "serde_plain",
