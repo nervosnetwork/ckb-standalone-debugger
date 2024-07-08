@@ -1,5 +1,3 @@
-// Originally modified from https://github.com/nervosnetwork/ckb-cli/blob/d6eceb3f9f108a17bcae0b1d760023e5da1e6e6a/ckb-sdk-types/src/transaction.rs
-// Current version modified(just fix clippy) from https://github.com/nervosnetwork/ckb-standalone-debugger/blob/5c0490cb8279f7c7860c403b9f1773b65403e57a/src/transaction.rs
 use ckb_jsonrpc_types as json_types;
 use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_types::{
@@ -228,6 +226,7 @@ pub struct ReprMockCellDep {
     pub data: json_types::JsonBytes,
     pub header: Option<H256>,
 }
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ReprMockInput {
     pub input: json_types::CellInput,
@@ -235,6 +234,7 @@ pub struct ReprMockInput {
     pub data: json_types::JsonBytes,
     pub header: Option<H256>,
 }
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ReprMockInfo {
     pub inputs: Vec<ReprMockInput>,
@@ -243,6 +243,7 @@ pub struct ReprMockInfo {
     #[serde(default)]
     pub extensions: Vec<(H256, json_types::JsonBytes)>,
 }
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ReprMockTransaction {
     pub mock_info: ReprMockInfo,
@@ -259,6 +260,7 @@ impl From<MockCellDep> for ReprMockCellDep {
         }
     }
 }
+
 impl From<ReprMockCellDep> for MockCellDep {
     fn from(dep: ReprMockCellDep) -> MockCellDep {
         MockCellDep {
@@ -280,6 +282,7 @@ impl From<MockInput> for ReprMockInput {
         }
     }
 }
+
 impl From<ReprMockInput> for MockInput {
     fn from(input: ReprMockInput) -> MockInput {
         MockInput {
@@ -340,6 +343,7 @@ impl From<MockTransaction> for ReprMockTransaction {
         ReprMockTransaction { mock_info: tx.mock_info.into(), tx: tx.tx.into() }
     }
 }
+
 impl From<ReprMockTransaction> for MockTransaction {
     fn from(tx: ReprMockTransaction) -> MockTransaction {
         MockTransaction { mock_info: tx.mock_info.into(), tx: tx.tx.into() }
