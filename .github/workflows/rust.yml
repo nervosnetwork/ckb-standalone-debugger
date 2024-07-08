@@ -24,6 +24,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build
-    - name: Build ckb-vm-signal-profiler example
-      run: cargo build --examples --package ckb-vm-signal-profiler
+      run: cd ckb-debugger && cargo build
