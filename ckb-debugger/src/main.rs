@@ -2,9 +2,8 @@ use ckb_chain_spec::consensus::ConsensusBuilder;
 #[cfg(target_family = "unix")]
 use ckb_debugger::Stdio;
 use ckb_debugger::{
-    get_script_hash_by_index, pre_check, DummyResourceLoader, ElfDumper, FileOperation, FileStream,
-    HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile, MachineStepLog, Random,
-    TimeNow,
+    get_script_hash_by_index, pre_check, ElfDumper, FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer,
+    MachineAssign, MachineOverlap, MachineProfile, MachineStepLog, Random, TimeNow,
 };
 use ckb_debugger::{Embed, GdbStubHandler, GdbStubHandlerEventLoop};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
@@ -319,7 +318,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "2" => ScriptVersion::V2,
         _ => panic!("Wrong script version"),
     };
-    let verifier_resource = Resource::from_both(&verifier_mock_tx, DummyResourceLoader {})?;
+    let verifier_resource = Resource::from_mock_tx(&verifier_mock_tx)?;
     let verifier_resolve_transaction = resolve_transaction(
         verifier_mock_tx.core_transaction(),
         &mut HashSet::new(),

@@ -1,4 +1,3 @@
-use crate::misc::DummyResourceLoader;
 use ckb_chain_spec::consensus::ConsensusBuilder;
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, TransactionScriptsVerifier, TxVerifyEnv};
@@ -20,7 +19,7 @@ pub fn run(
     script_hash: &Byte32,
     max_cycle: Cycle,
 ) -> Result<Cycle, Box<dyn std::error::Error>> {
-    let resource = Resource::from_both(mock_tx, DummyResourceLoader {})?;
+    let resource = Resource::from_mock_tx(mock_tx)?;
     let resolve_transaction =
         resolve_transaction(mock_tx.core_transaction(), &mut HashSet::new(), &resource, &resource)?;
     let hardforks = HardForks { ckb2021: CKB2021::new_dev_default(), ckb2023: CKB2023::new_dev_default() };
