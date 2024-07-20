@@ -147,6 +147,31 @@ impl Stdio {
         machine.set_register(A0, Mac::REG::from_u64(ret as u64));
         Ok(())
     }
+
+    fn writev<Mac: SupportMachine>(&mut self, machine: &mut Mac) -> Result<(), Error> {
+        let fd = machine.registers()[A0].to_i32();
+        let iov = machine.registers()[A1].to_u64();
+        let iovcnt = machine.registers()[A2].to_u64();
+
+        let mut written = 0;
+        for i in 0..iovcnt {
+            let base = machine.memory_mut().load64(&Mac::REG::from_u64(iov + i * 16))?.to_u64();
+            let len = machine.memory_mut().load64(&Mac::REG::from_u64(iov + i * 16 + 8))?.to_u64();
+
+            let buf = machine.memory_mut().load_bytes(base, len)?;
+
+            written += match write(fd, &buf) {
+                Ok(w) => w as u64,
+                Err(e) => {
+                    println!("Error: {:?}", e);
+                    machine.set_register(A0, Mac::REG::from_i64(-1));
+                    return Ok(());
+                }
+            };
+        }
+        machine.set_register(A0, Mac::REG::from_u64(written));
+        Ok(())
+    }
 }
 
 impl<Mac: SupportMachine> Syscalls<Mac> for Stdio {
@@ -160,6 +185,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for Stdio {
             62 => self.lseek(machine)?,
             63 => self.read(machine)?,
             64 => self.write(machine)?,
+            66 => self.writev(machine)?,
             80 => self.fstat(machine)?,
             _ => return Ok(false),
         };
