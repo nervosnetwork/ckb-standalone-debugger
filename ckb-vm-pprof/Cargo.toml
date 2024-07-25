@@ -1,6 +1,6 @@
 [package]
 name = "ckb-vm-pprof"
-version = "0.116.1"
+version = "0.117.0"
 authors = ["mohanson <mohanson@outlook.com>"]
 edition = "2021"
 description = "Statistical CKB script cycles consumption flame graph"
