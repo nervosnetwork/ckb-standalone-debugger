@@ -361,9 +361,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let machine_assign_init = || -> Result<_, Box<dyn std::error::Error>> {
+        let args: Vec<String> = matches_args.clone().into_iter().map(|s| s.into()).collect();
+        let args: Vec<Bytes> = args.into_iter().map(|s| s.into()).collect();
         let mut scheduler = verifier.create_scheduler(&verifier_script_group).unwrap();
         scheduler.tx_data.program = verifier_program.clone();
-        let mut machine_assign = MachineAssign::new(matches_pid, scheduler)?;
+        let mut machine_assign = MachineAssign::new(matches_pid, &args, scheduler)?;
         machine_assign.expand_cycles = verifier_max_cycles;
         if let Some(data) = matches_dump_file {
             machine_assign.expand_syscalls.push(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));

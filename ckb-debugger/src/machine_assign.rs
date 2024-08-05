@@ -170,10 +170,10 @@ impl<DL> MachineAssign<DL>
 where
     DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
 {
-    pub fn new(id: u64, scheduler: Scheduler<DL>) -> Result<Self, Error> {
+    pub fn new(id: u64, args: &[Bytes], scheduler: Scheduler<DL>) -> Result<Self, Error> {
         let mut r = Self { id: id, scheduler: scheduler, expand_cycles: u64::MAX, expand_syscalls: vec![] };
         if r.scheduler.states.is_empty() {
-            assert_eq!(r.scheduler.boot_vm(&DataPieceId::Program, 0, u64::MAX, &[])?, ROOT_VM_ID);
+            assert_eq!(r.scheduler.boot_vm(&DataPieceId::Program, 0, u64::MAX, args)?, ROOT_VM_ID);
         }
         Ok(r)
     }
