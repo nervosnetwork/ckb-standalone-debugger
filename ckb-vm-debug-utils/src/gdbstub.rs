@@ -179,7 +179,18 @@ impl<R: Register + Debug + Eq + StdHash, M: SupportMachine + CoreMachine<REG = R
                 let mut executed_cycles = 0;
                 loop {
                     if let Some(event) = self.step() {
-                        break event;
+                        let mut continue_step = true;
+
+                        match event {
+                            VmEvent::DoneStep | VmEvent::Exited(_) | VmEvent::Break | VmEvent::Error(_) => {
+                                continue_step = false;
+                            }
+                            _ => {}
+                        };
+
+                        if !continue_step {
+                            break event;
+                        }
                     }
 
                     executed_cycles += 1;
