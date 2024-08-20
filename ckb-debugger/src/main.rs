@@ -1,4 +1,4 @@
-use ckb_chain_spec::consensus::ConsensusBuilder;
+use ckb_chain_spec::consensus::{ConsensusBuilder, TYPE_ID_CODE_HASH};
 #[cfg(target_family = "unix")]
 use ckb_debugger::Stdio;
 use ckb_debugger::{
@@ -10,7 +10,7 @@ use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprM
 use ckb_script::{ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv, ROOT_VM_ID};
 use ckb_types::core::cell::{resolve_transaction, CellMetaBuilder};
 use ckb_types::core::{hardfork, Capacity, DepType, HeaderView, ScriptHashType, TransactionBuilder};
-use ckb_types::packed::{Byte32, CellDep, CellInput, CellOutput, OutPoint, Script};
+use ckb_types::packed::{Byte32, CellDep, CellInput, CellOutput, OutPoint, Script, ScriptOpt};
 use ckb_types::prelude::{Builder, Entity, Pack};
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::build_decoder;
@@ -233,13 +233,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => {
             let bin_path = matches_bin.unwrap();
             let bin_data = std::fs::read(bin_path)?;
-            let bin_cell_meta = {
-                let cell_data = Bytes::copy_from_slice(&bin_data);
-                let cell_output =
-                    CellOutput::new_builder().capacity(Capacity::bytes(cell_data.len()).unwrap().pack()).build();
-                CellMetaBuilder::from_cell_output(cell_output, cell_data).build()
-            };
-            let bin_cell_hash = bin_cell_meta.mem_cell_data_hash.as_ref().unwrap().to_owned();
+            let bin_cell_data = Bytes::copy_from_slice(&bin_data);
+            let bin_cell_type_script = Script::new_builder()
+                .code_hash(TYPE_ID_CODE_HASH.pack())
+                .hash_type(ScriptHashType::Type.into())
+                .args([0; 20].pack())
+                .build();
+            let bin_cell_output = CellOutput::new_builder()
+                .capacity(Capacity::bytes(bin_cell_data.len()).unwrap().pack())
+                .type_(ScriptOpt::new_builder().set(Some(bin_cell_type_script)).build())
+                .build();
+            let bin_cell_meta = CellMetaBuilder::from_cell_output(bin_cell_output.clone(), bin_cell_data).build();
+            let bin_cell_hash = bin_cell_meta.cell_output.type_().to_opt().unwrap().calc_script_hash();
 
             let mut mock_info = MockInfo::default();
             mock_info.cell_deps.push(MockCellDep {
@@ -247,16 +252,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .out_point(OutPoint::new(Byte32::from_slice(vec![0x00; 32].as_slice()).unwrap(), 0))
                     .dep_type(DepType::Code.into())
                     .build(),
-                output: CellOutput::new_builder().build(),
+                output: bin_cell_output,
                 data: Bytes::from(bin_data.clone()),
                 header: None,
             });
             mock_info.inputs.push(MockInput {
                 input: CellInput::new(OutPoint::new(Byte32::from_slice(vec![0x00; 32].as_slice()).unwrap(), 1), 0),
                 output: CellOutput::new_builder()
-                    .lock(
-                        Script::new_builder().code_hash(bin_cell_hash).hash_type(ScriptHashType::Data2.into()).build(),
-                    )
+                    .lock(Script::new_builder().code_hash(bin_cell_hash).hash_type(ScriptHashType::Type.into()).build())
                     .build_exact_capacity(Capacity::bytes(bin_data.len()).unwrap())
                     .unwrap(),
                 data: Bytes::new(),
