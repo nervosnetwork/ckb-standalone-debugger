@@ -18,5 +18,6 @@ ckb-gdb-remote-protocol = { path = "../ckb-gdb-remote-protocol", version = "0.11
 libc = { version = "0.2.47", optional = true }
 log = "0.4.0"
 nix = { version = "0.26.2", optional = true }
-gdbstub = "0.6.6"
-gdbstub_arch = "0.2.4"
+gdbstub = "0.7"
+gdbstub_arch = "0.3"
+env_logger = "0.4.3"

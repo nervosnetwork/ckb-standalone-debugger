@@ -447,7 +447,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     use ckb_vm_debug_utils::{GdbStubHandler, GdbStubHandlerEventLoop};
                     use gdbstub::{
                         conn::ConnectionExt,
-                        stub::{DisconnectReason, GdbStub, GdbStubError},
+                        stub::{DisconnectReason, GdbStub},
                     };
                     use gdbstub_arch::riscv::Riscv64;
                     let mut h: GdbStubHandler<_, Riscv64> = GdbStubHandler::new(machine);
@@ -466,9 +466,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             }
                             DisconnectReason::Kill => Err(Error::External("GDB sent a kill command!".to_string())),
                         },
-                        Err(GdbStubError::TargetError(e)) => {
-                            Err(Error::External(format!("target encountered a fatal error: {}", e)))
-                        }
                         Err(e) => Err(Error::External(format!("gdbstub encountered a fatal error: {}", e))),
                     };
                     match result {

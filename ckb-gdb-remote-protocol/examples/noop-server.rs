@@ -1,4 +1,4 @@
-use gdb_remote_protocol::{process_packets_from, Error, Handler, ProcessType, StopReason};
+use ckb_gdb_remote_protocol::{process_packets_from, Error, Handler, ProcessType, StopReason};
 use std::net::TcpListener;
 
 struct NoopHandler;

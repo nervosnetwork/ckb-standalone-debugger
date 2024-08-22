@@ -10,7 +10,7 @@ use ckb_vm::{
 use ckb_vm_debug_utils::GdbHandler;
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
-use gdb_remote_protocol::process_packets_from;
+use ckb_gdb_remote_protocol::process_packets_from;
 use std::env;
 use std::fs::File;
 use std::io::Read;

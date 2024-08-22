@@ -6,7 +6,7 @@ use ckb_vm::{
     Bytes, Error, Memory, Register,
 };
 use gdbstub::{
-    arch::{Arch, SingleStepGdbBehavior},
+    arch::Arch,
     common::Signal,
     conn::{Connection, ConnectionExt},
     stub::{
@@ -179,7 +179,18 @@ impl<R: Register + Debug + Eq + StdHash, M: SupportMachine + CoreMachine<REG = R
                 let mut executed_cycles = 0;
                 loop {
                     if let Some(event) = self.step() {
-                        break event;
+                        let mut continue_step = true;
+
+                        match event {
+                            VmEvent::DoneStep | VmEvent::Exited(_) | VmEvent::Break | VmEvent::Error(_) => {
+                                continue_step = false;
+                            }
+                            _ => {}
+                        };
+
+                        if !continue_step {
+                            break event;
+                        }
                     }
 
                     executed_cycles += 1;
@@ -229,10 +240,6 @@ impl<
     fn support_catch_syscalls(&mut self) -> Option<CatchSyscallsOps<'_, Self>> {
         Some(self)
     }
-
-    fn guard_rail_single_step_gdb_behavior(&self) -> SingleStepGdbBehavior {
-        SingleStepGdbBehavior::Optional
-    }
 }
 
 impl<
@@ -258,7 +265,7 @@ impl<
         Ok(())
     }
 
-    fn read_addrs(&mut self, start_addr: <Self::Arch as Arch>::Usize, data: &mut [u8]) -> TargetResult<(), Self> {
+    fn read_addrs(&mut self, start_addr: <Self::Arch as Arch>::Usize, data: &mut [u8]) -> TargetResult<usize, Self> {
         for i in 0..data.len() {
             data[i] = self
                 .machine
@@ -267,7 +274,7 @@ impl<
                 .map_err(TargetError::Fatal)?
                 .to_u8();
         }
-        Ok(())
+        Ok(data.len())
     }
 
     fn write_addrs(&mut self, start_addr: <Self::Arch as Arch>::Usize, data: &[u8]) -> TargetResult<(), Self> {
