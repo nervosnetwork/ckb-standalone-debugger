@@ -1,28 +1,28 @@
-??:?? 33
-??:??; ??:?? 455
-??:??; /source/riscv-newlib/newlib/libc/stdlib/atexit.c:atexit 7
-??:??; /source/riscv-newlib/newlib/libc/stdlib/atexit.c:atexit; /source/riscv-newlib/newlib/libc/stdlib/__atexit.c:__register_exitproc 35
-??:??; /source/riscv-newlib/newlib/libc/misc/init.c:__libc_init_array 69
-??:??; /source/riscv-newlib/newlib/libc/misc/init.c:__libc_init_array; /source/riscv-newlib/newlib/libc/stdlib/__call_atexit.c:register_fini 7
-??:??; /source/riscv-newlib/newlib/libc/misc/init.c:__libc_init_array; ??:?? 7
-??:??; /code/fib.c:main 26
-??:??; /code/fib.c:main; /code/fib.c:fib 61
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib 61
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 61
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 61
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 36
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 61
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 36
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib 61
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 61
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 36
-??:??; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
-??:??; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit 21
-??:??; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit; /source/riscv-newlib/newlib/libc/stdlib/__call_atexit.c:__call_exitprocs 112
-??:??; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit; /source/riscv-newlib/newlib/libc/stdlib/__call_atexit.c:__call_exitprocs; /source/riscv-newlib/newlib/libc/misc/fini.c:__libc_fini_array 41
-??:??; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit; /source/riscv-newlib/newlib/libc/stdlib/__call_atexit.c:__call_exitprocs; /source/riscv-newlib/newlib/libc/misc/fini.c:__libc_fini_array; ??:?? 27
-??:??; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit; /source/riscv-newlib/libgloss/riscv/internal_syscall.h:_exit 501
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0 30
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/machine/riscv/memset.S:func_0x10248 455
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/stdlib/atexit.c:atexit 7
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/stdlib/atexit.c:atexit; /source/riscv-newlib/newlib/libc/stdlib/__atexit.c:__register_exitproc 35
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/misc/init.c:__libc_init_array 69
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/misc/init.c:__libc_init_array; /source/riscv-newlib/newlib/libc/stdlib/__call_atexit.c:register_fini 7
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/misc/init.c:__libc_init_array; ??:func_0x1012c 7
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main 26
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib 61
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib 61
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 61
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 61
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 36
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 61
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 36
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib 61
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 61
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 36
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 44
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit 21
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit; /source/riscv-newlib/newlib/libc/stdlib/__call_atexit.c:__call_exitprocs 112
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit; /source/riscv-newlib/newlib/libc/stdlib/__call_atexit.c:__call_exitprocs; /source/riscv-newlib/newlib/libc/misc/fini.c:__libc_fini_array 41
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit; /source/riscv-newlib/newlib/libc/stdlib/__call_atexit.c:__call_exitprocs; /source/riscv-newlib/newlib/libc/misc/fini.c:__libc_fini_array; ??:func_0x100fe 27
+/source/riscv-newlib/libgloss/riscv/crt0.S:func_0x100c0; /source/riscv-newlib/newlib/libc/stdlib/exit.c:exit; /source/riscv-newlib/libgloss/riscv/internal_syscall.h:_exit 501

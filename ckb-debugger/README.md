@@ -9,29 +9,32 @@ For Rust library usage, refer to the included tests, they are quite self-explana
 See the command line help part for usage on the binary debugger:
 
 ```text
-ckb-debugger 0.113.0
+ckb-debugger 0.116.1
 
 USAGE:
-    ckb-debugger [FLAGS] [OPTIONS] --mode <mode> --tx-file <tx-file> [args]...
+    ckb-debugger [FLAGS] [OPTIONS] --mode <mode> [args]...
 
 FLAGS:
-    -h, --help       Prints help information
-        --prompt     Set to true to prompt for stdin input before executing
-        --step       Set to true to enable step mode, where we print PC address for each instruction
-    -V, --version    Prints version information
+        --enable-overlapping-detection    Set to true to enable overlapping detection between stack and heap
+        --enable-steplog                  Set to true to enable step mode, where we print PC address for each
+                                          instruction
+    -h, --help                            Prints help information
+        --prompt                          Set to true to prompt for stdin input before executing
+    -V, --version                         Prints version information
 
 OPTIONS:
         --bin <bin>                                File used to replace the binary denoted in the script
     -i, --cell-index <cell-index>                  Index of cell to run
     -t, --cell-type <cell-type>                    Type of cell to run [possible values: input, output]
-        --decode <decode>                          Decode RISC-V instruction
         --dump-file <dump-file>                    Dump file name
-        --gdb-listen <gdb-listen>                  Address to listen for GDB remote debugging server
-        --gdb-specify-depth <gdb-specify-depth>    Specifies the depth of the exec/spawn stack [default: 0]
+        --gdb-listen <gdb-listen>
+            Address to listen for GDB remote debugging server [default: 127.0.0.1:9999]
+
         --max-cycles <max-cycles>                  Max cycles [default: 70000000]
         --mode <mode>
-            Execution mode of debugger [default: full]  [possible values: full, fast, gdb, probe, gdb_gdbstub]
+            Execution mode of debugger [default: full]  [possible values: decode-instruction, fast, full, gdb, probe]
 
+        --pid <pid>                                Process ID [default: 0]
         --pprof <pprof>                            Performance profiling, specify output file for further use
         --read-file <read-file>
             Read content from local file or stdin. Then feed the content to syscall in scripts
@@ -39,8 +42,6 @@ OPTIONS:
     -s, --script-group-type <script-group-type>    Script group type [possible values: lock, type]
         --script-hash <script-hash>                Script hash
         --script-version <script-version>          Script version [default: 2]
-        --skip-end <skip-end>                      End address to skip printing debug info
-        --skip-start <skip-start>                  Start address to skip printing debug info
     -f, --tx-file <tx-file>                        Filename containing JSON formatted transaction dump
 
 ARGS:

@@ -10,7 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -18,3 +18,10 @@ jobs:
       run: cargo build
     - name: Build ckb-vm-signal-profiler example
       run: cargo build --examples --package ckb-vm-signal-profiler
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cd ckb-debugger && cargo build

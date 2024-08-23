@@ -1,103 +1,133 @@
-use std::io::Read;
-use std::time::SystemTime;
-use std::{cmp::min, fmt, fs, io};
+use ckb_chain_spec::consensus::TYPE_ID_CODE_HASH;
+use ckb_hash::blake2b_256;
+use ckb_mock_tx_types::{MockResourceLoader, MockTransaction, ReprMockTransaction};
+use ckb_script::ScriptGroupType;
+use ckb_types::core::{HeaderView, ScriptHashType};
+use ckb_types::packed::{Byte32, CellOutput, OutPoint, OutPointVec, Script};
+use ckb_types::prelude::{Builder, Entity, Pack};
+use ckb_types::H256;
+use ckb_vm::Bytes;
+use regex::{Captures, Regex};
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
-use lazy_static::lazy_static;
-use libc::{
-    c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell, size_t, FILE,
-};
-use rand::prelude::*;
+pub struct DummyResourceLoader {}
 
-use ckb_vm::{
-    registers::{A0, A1, A2, A3, A7},
-    Error, Memory, Register, SupportMachine, Syscalls,
-};
+impl MockResourceLoader for DummyResourceLoader {
+    fn get_header(&mut self, hash: H256) -> Result<Option<HeaderView>, String> {
+        return Err(format!("Header {:x} is missing!", hash));
+    }
 
-pub const READ_SYSCALL_NUMBER: u64 = 9000;
-pub const NOW_SYSCALL_NUMBER: u64 = 9001;
-pub const RANDOM_SYSCALL_NUMBER: u64 = 9002;
-pub const FOPEN_SYSCALL_NUMBER: u64 = 9003;
-pub const FREOPEN_SYSCALL_NUMBER: u64 = 9004;
-pub const FREAD_SYSCALL_NUMBER: u64 = 9005;
-pub const FEOF_SYSCALL_NUMBER: u64 = 9006;
-pub const FERROR_SYSCALL_NUMBER: u64 = 9007;
-pub const FGETC_SYSCALL_NUMBER: u64 = 9008;
-pub const FCLOSE_SYSCALL_NUMBER: u64 = 9009;
-pub const FTELL_SYSCALL_NUMBER: u64 = 9010;
-pub const FSEEK_SYSCALL_NUMBER: u64 = 9011;
-
-// TODO: fprintf, fwrite
-
-#[derive(Clone)]
-pub struct FileStream {
-    content: Vec<u8>,
-    offset: usize,
-}
-
-lazy_static! {
-    static ref STREAM: FileStream = Default::default();
-}
-
-impl Default for FileStream {
-    fn default() -> Self {
-        Self { content: Default::default(), offset: 0 }
+    fn get_live_cell(&mut self, out_point: OutPoint) -> Result<Option<(CellOutput, Bytes, Option<Byte32>)>, String> {
+        return Err(format!("Cell: {:?} is missing!", out_point));
     }
 }
 
-impl FileStream {
-    pub fn new(file_name: &str) -> Self {
-        let content = if file_name == "-" {
-            let mut v = Vec::<u8>::new();
-            let mut stdin = io::stdin();
-            stdin.read_to_end(&mut v).expect("should read from stdin");
-            v
-        } else {
-            fs::read(file_name).expect("should read the file")
-        };
-        FileStream { content, offset: 0 }
+pub struct Embed {
+    pub data: String,
+    pub path: PathBuf,
+    pub type_id_dict: HashMap<String, String>,
+}
+
+impl Embed {
+    pub fn new(path: PathBuf, data: String) -> Self {
+        Self { data, path, type_id_dict: HashMap::new() }
     }
-    // mimic:  ssize_t read(int fd, void *buf, size_t count);
-    fn read(&mut self, buf: &mut [u8]) -> isize {
-        if self.offset >= self.content.len() {
-            return -1;
+
+    pub fn replace_data(&mut self) -> &mut Self {
+        let regex = Regex::new(r"\{\{ ?data (.+?) ?\}\}").unwrap();
+        self.data = regex
+            .replace_all(&self.data, |caps: &Captures| -> String {
+                let cap1 = &caps[1];
+                let path = if !Path::new(cap1).is_absolute() {
+                    let root = self.path.parent().unwrap();
+                    root.join(cap1)
+                } else {
+                    Path::new(cap1).to_path_buf()
+                };
+                let data = std::fs::read(&path);
+                if data.is_err() {
+                    panic!("Read {:?} failed : {:?}", path, data);
+                }
+                let data = data.unwrap();
+                hex::encode(data)
+            })
+            .to_string();
+        self
+    }
+
+    pub fn replace_hash(&mut self) -> &mut Self {
+        let regex = Regex::new(r"\{\{ ?hash (.+?) ?\}\}").unwrap();
+        self.data = regex
+            .replace_all(&self.data, |caps: &Captures| -> String {
+                let cap1 = &caps[1];
+                let path = if !Path::new(cap1).is_absolute() {
+                    let root = self.path.parent().unwrap();
+                    root.join(cap1)
+                } else {
+                    Path::new(cap1).to_path_buf()
+                };
+                let data = std::fs::read(path).unwrap();
+                hex::encode(blake2b_256(data))
+            })
+            .to_string();
+        self
+    }
+
+    pub fn prelude_type_id(&mut self) -> &mut Self {
+        let rule = Regex::new(r"\{\{ ?def_type (.+?) ?\}\}").unwrap();
+        for caps in rule.captures_iter(&self.data) {
+            let type_id_name = &caps[1];
+            assert!(!self.type_id_dict.contains_key(type_id_name));
+            let type_id_script = Script::new_builder()
+                .args(Bytes::from(type_id_name.to_string()).pack())
+                .code_hash(TYPE_ID_CODE_HASH.pack())
+                .hash_type(ScriptHashType::Type.into())
+                .build();
+            let type_id_script_hash = type_id_script.calc_script_hash();
+            let type_id_script_hash = format!("{:x}", type_id_script_hash);
+            self.type_id_dict.insert(type_id_name.to_string(), type_id_script_hash);
         }
-        let remaining_size = self.content.len() - self.offset;
-        let read_size = min(buf.len(), remaining_size);
-        buf[0..read_size].copy_from_slice(&self.content[self.offset..self.offset + read_size]);
-
-        self.offset += read_size;
-        read_size as isize
-    }
-}
-
-impl<Mac: SupportMachine> Syscalls<Mac> for FileStream {
-    fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
-        Ok(())
+        self
     }
 
-    fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
-        let id = machine.registers()[A7].to_u64();
-        if id != READ_SYSCALL_NUMBER {
-            return Ok(false);
-        }
-        let arg_buf = machine.registers()[A0].to_u64();
-        let arg_count = machine.registers()[A1].to_u64();
-        let mut buf = vec![0u8; arg_count as usize];
-        let read_size = self.read(&mut buf);
-        if read_size > 0 {
-            machine.memory_mut().store_bytes(arg_buf, &buf[0..read_size as usize])?;
-            machine.set_register(A0, Mac::REG::from_u64(read_size as u64));
-        } else {
-            machine.set_register(A0, Mac::REG::from_i64(-1));
-        }
-        return Ok(true);
+    pub fn replace_def_type(&mut self) -> &mut Self {
+        let regex = Regex::new(r#""?\{\{ ?def_type (.+?) ?\}\}"?"#).unwrap();
+        self.data = regex
+            .replace_all(&self.data, |caps: &Captures| -> String {
+                let cap1 = &caps[1];
+                let type_id_script_json = ckb_jsonrpc_types::Script {
+                    code_hash: TYPE_ID_CODE_HASH,
+                    hash_type: ckb_jsonrpc_types::ScriptHashType::Type,
+                    args: ckb_jsonrpc_types::JsonBytes::from_vec(cap1.as_bytes().to_vec()),
+                };
+                return serde_json::to_string_pretty(&type_id_script_json).unwrap();
+            })
+            .to_string();
+        self
+    }
+
+    pub fn replace_ref_type(&mut self) -> &mut Self {
+        let regex = Regex::new(r"\{\{ ?ref_type (.+?) ?\}\}").unwrap();
+        self.data = regex
+            .replace_all(&self.data, |caps: &Captures| -> String {
+                let cap1 = &caps[1];
+                return self.type_id_dict[&cap1.to_string()].clone();
+            })
+            .to_string();
+        self
+    }
+
+    pub fn replace_all(&mut self) -> String {
+        self.replace_data().replace_hash().prelude_type_id().replace_def_type().replace_ref_type();
+        self.data.clone()
     }
 }
 
 pub struct HumanReadableCycles(pub u64);
 
-impl fmt::Display for HumanReadableCycles {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Display for HumanReadableCycles {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)?;
         if self.0 >= 1024 * 1024 {
             write!(f, "({:.1}M)", self.0 as f64 / 1024. / 1024.)?;
@@ -109,166 +139,70 @@ impl fmt::Display for HumanReadableCycles {
     }
 }
 
-pub struct TimeNow {}
-
-impl TimeNow {
-    pub fn new() -> Self {
-        Self {}
+// Get script hash by give group type, cell type and cell index.
+// Note cell_type should be a string, in the range ["input", "output"].
+pub fn get_script_hash_by_index(
+    mock_tx: &MockTransaction,
+    script_group_type: &ScriptGroupType,
+    cell_type: &str,
+    cell_index: usize,
+) -> Byte32 {
+    match (&script_group_type, cell_type) {
+        (ScriptGroupType::Lock, "input") => mock_tx.mock_info.inputs[cell_index].output.calc_lock_hash(),
+        (ScriptGroupType::Type, "input") => mock_tx.mock_info.inputs[cell_index]
+            .output
+            .type_()
+            .to_opt()
+            .expect("cell should have type script")
+            .calc_script_hash(),
+        (ScriptGroupType::Type, "output") => mock_tx
+            .tx
+            .raw()
+            .outputs()
+            .get(cell_index)
+            .expect("index out of bound")
+            .type_()
+            .to_opt()
+            .expect("cell should have type script")
+            .calc_script_hash(),
+        _ => panic!("Invalid specified script: {:?} {} {}", script_group_type, cell_type, cell_index),
     }
 }
 
-impl<Mac: SupportMachine> Syscalls<Mac> for TimeNow {
-    fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
-        Ok(())
-    }
-
-    fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
-        let id = machine.registers()[A7].to_u64();
-        if id != NOW_SYSCALL_NUMBER {
-            return Ok(false);
+// Check transactions before executing them to avoid obvious mistakes.
+pub fn pre_check(tx: &ReprMockTransaction) -> Result<(), String> {
+    let mut mock_cell_deps: Vec<_> = tx.mock_info.cell_deps.iter().map(|c| c.cell_dep.clone()).collect();
+    let mut real_cell_deps: Vec<_> = tx.tx.cell_deps.iter().map(|c| c.clone()).collect();
+    for dep in &tx.mock_info.cell_deps {
+        if dep.cell_dep.dep_type == ckb_jsonrpc_types::DepType::DepGroup {
+            let outpoints = OutPointVec::from_slice(dep.data.as_bytes()).unwrap();
+            let outpoints: Vec<OutPoint> = outpoints.into_iter().collect();
+            let resolved_cell_deps: Vec<_> = outpoints
+                .into_iter()
+                .map(|o| ckb_jsonrpc_types::CellDep { out_point: o.into(), dep_type: ckb_jsonrpc_types::DepType::Code })
+                .collect();
+            real_cell_deps.extend(resolved_cell_deps);
         }
-        let duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
-        let now = duration.as_nanos();
-        machine.set_register(A0, Mac::REG::from_u64(now as u64));
-        return Ok(true);
     }
-}
-
-pub struct Random {}
-
-impl Random {
-    pub fn new() -> Self {
-        Self {}
+    let compare = |a: &ckb_jsonrpc_types::CellDep, b: &ckb_jsonrpc_types::CellDep| {
+        let l = serde_json::to_string(a).unwrap();
+        let r = serde_json::to_string(b).unwrap();
+        l.cmp(&r)
+    };
+    mock_cell_deps.sort_by(compare);
+    real_cell_deps.sort_by(compare);
+    if mock_cell_deps != real_cell_deps {
+        return Err(String::from("Precheck: celldeps is mismatched"));
     }
-}
-
-impl<Mac: SupportMachine> Syscalls<Mac> for Random {
-    fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
-        Ok(())
+    let mock_inputs: Vec<_> = tx.mock_info.inputs.iter().map(|i| i.input.clone()).collect();
+    let real_inputs: Vec<_> = tx.tx.inputs.clone();
+    if mock_inputs != real_inputs {
+        return Err(String::from("Precheck: inputs is mismatched"));
     }
-
-    fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
-        let id = machine.registers()[A7].to_u64();
-        if id != RANDOM_SYSCALL_NUMBER {
-            return Ok(false);
-        }
-        let r: u64 = random();
-        machine.set_register(A0, Mac::REG::from_u64(r));
-        return Ok(true);
+    let mock_header_deps: Vec<_> = tx.mock_info.header_deps.iter().map(|h| h.hash.clone()).collect();
+    let read_header_deps: Vec<_> = tx.tx.header_deps.clone();
+    if mock_header_deps != read_header_deps {
+        return Err(String::from("Precheck: header deps is mismatched"));
     }
-}
-
-pub struct FileOperation {}
-
-impl FileOperation {
-    pub fn new() -> Self {
-        Self {}
-    }
-    fn fetch_string<Mac: SupportMachine>(machine: &mut Mac, addr: u64) -> Result<String, Error> {
-        let mut res = Vec::<u8>::new();
-        let mut done = false;
-        let mut count = 0;
-        let mut addr = addr;
-        while !done {
-            let reg = Mac::REG::from_u64(addr);
-            let eight_bytes = machine.memory_mut().load64(&reg)?;
-            let buf = eight_bytes.to_u64().to_le_bytes();
-            for c in buf {
-                if c != 0 {
-                    res.push(c);
-                } else {
-                    res.push(c);
-                    done = true;
-                    break;
-                }
-            }
-            count += 1;
-            if count > 1024 {
-                panic!("too long string");
-            }
-            addr += 8;
-        }
-        Ok(String::from_utf8(res).expect("A valid UTF-8 string"))
-    }
-}
-
-impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
-    fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
-        Ok(())
-    }
-    fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
-        let id = machine.registers()[A7].to_u64();
-        let arg0 = machine.registers()[A0].to_u64();
-        let arg1 = machine.registers()[A1].to_u64();
-        let arg2 = machine.registers()[A2].to_u64();
-        let arg3 = machine.registers()[A3].to_u64();
-
-        match id {
-            FOPEN_SYSCALL_NUMBER => {
-                let path = Self::fetch_string(machine, arg0)?;
-                let mode = Self::fetch_string(machine, arg1)?;
-                let handler = unsafe {
-                    fopen(path.as_bytes().as_ptr() as *const c_char, mode.as_bytes().as_ptr() as *const c_char)
-                };
-                machine.set_register(A0, Mac::REG::from_u64(handler as u64));
-            }
-            FREOPEN_SYSCALL_NUMBER => {
-                let path = Self::fetch_string(machine, arg0)?;
-                let mode = Self::fetch_string(machine, arg1)?;
-                let stream = arg2;
-                let handler = unsafe {
-                    freopen(
-                        path.as_bytes().as_ptr() as *const c_char,
-                        mode.as_bytes().as_ptr() as *const c_char,
-                        stream as *mut FILE,
-                    )
-                };
-                machine.set_register(A0, Mac::REG::from_u64(handler as u64));
-            }
-            FREAD_SYSCALL_NUMBER => {
-                let ptr = arg0;
-                let size = arg1;
-                let nitems = arg2;
-                let stream = arg3;
-                let total_size = nitems * size;
-                if total_size > 3 * 1024 * 1024 {
-                    panic!("too much memory to read");
-                }
-                let buf = vec![0u8; total_size as usize];
-                let read_count = unsafe {
-                    fread(buf.as_ptr() as *mut c_void, size as size_t, nitems as size_t, stream as *mut FILE)
-                };
-                machine.memory_mut().store_bytes(ptr, &buf[0..read_count * size as usize])?;
-                machine.set_register(A0, Mac::REG::from_u64(read_count as u64));
-            }
-            FEOF_SYSCALL_NUMBER => {
-                let eof = unsafe { feof(arg0 as *mut FILE) };
-                machine.set_register(A0, Mac::REG::from_i32(eof));
-            }
-            FERROR_SYSCALL_NUMBER => {
-                let error = unsafe { ferror(arg0 as *mut FILE) };
-                machine.set_register(A0, Mac::REG::from_i32(error));
-            }
-            FGETC_SYSCALL_NUMBER => {
-                let ch = unsafe { fgetc(arg0 as *mut FILE) };
-                machine.set_register(A0, Mac::REG::from_i32(ch));
-            }
-            FCLOSE_SYSCALL_NUMBER => {
-                let ret = unsafe { fclose(arg0 as *mut FILE) };
-                machine.set_register(A0, Mac::REG::from_i32(ret));
-            }
-            FTELL_SYSCALL_NUMBER => {
-                let pos = unsafe { ftell(arg0 as *mut FILE) };
-                machine.set_register(A0, Mac::REG::from_i64(pos.into()));
-            }
-            FSEEK_SYSCALL_NUMBER => {
-                let ret = unsafe { fseek(arg0 as *mut FILE, arg1 as c_long, arg2 as c_int) };
-                machine.set_register(A0, Mac::REG::from_i32(ret));
-            }
-            _ => {
-                return Ok(false);
-            }
-        }
-        Ok(true)
-    }
+    Ok(())
 }

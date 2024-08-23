@@ -3,30 +3,57 @@
 
 #include "ckb_syscalls.h"
 
+// Mimic stdio fds on linux
+int create_std_fds(uint64_t* fds, uint64_t* inherited_fds) {
+    int err = 0;
+
+    uint64_t to_child[2] = {0};
+    uint64_t to_parent[2] = {0};
+    err = ckb_pipe(to_child);
+    if (err != 0) {
+        return err;
+    }
+    err = ckb_pipe(to_parent);
+    if (err != 0) {
+        return err;
+    }
+    inherited_fds[0] = to_child[0];
+    inherited_fds[1] = to_parent[1];
+    inherited_fds[2] = 0;
+    fds[0] = to_parent[0];
+    fds[1] = to_child[1];
+    return 0;
+}
+
 int main() {
-  const char*  argv[] = {"hello", "world"};
-  int8_t       spgs_exit_code = 255;
-  uint8_t      spgs_content[80] = {};
-  uint64_t     spgs_content_length = 80;
-  spawn_args_t spgs = {
-    .memory_limit = 8,
-    .exit_code = &spgs_exit_code,
-    .content = &spgs_content[0],
-    .content_length = &spgs_content_length,
-  };
-  int success =
-      ckb_spawn(1, 3, 0, 2, argv, &spgs);
-  if (success != 0) {
-    return 1;
-  }
-  if (spgs_exit_code != 0) {
-    return 1;
-  }
-  if (strlen((char *)spgs_content) != 10) {
-    return 1;
-  }
-  if (strcmp((char *)spgs_content, "helloworld") != 0) {
-    return 1;
-  }
-  return 0;
+    int err = 0;
+    const char *argv[] = {"hello", "world"};
+    uint64_t pid = 0;
+    uint64_t fds[2] = {0};
+    uint64_t inherited_fds[3] = {0};
+    err = create_std_fds(fds, inherited_fds);
+    if (err != 0) {
+        return err;
+    }
+    spawn_args_t spgs = {
+        .argc = 2,
+        .argv = argv,
+        .process_id = &pid,
+        .inherited_fds = inherited_fds,
+    };
+    err = ckb_spawn(1, CKB_SOURCE_CELL_DEP, 0, 0, &spgs);
+    if (err != 0) {
+        return err;
+    }
+    uint8_t buffer[1024] = {0};
+    size_t length = 1024;
+    err = ckb_read(fds[0], buffer, &length);
+    if (err != 0) {
+        return err;
+    }
+    err = memcmp("helloworld", buffer, length);
+    if (err != 0) {
+        return err;
+    }
+    return 0;
 }

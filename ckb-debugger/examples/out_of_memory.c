@@ -1,3 +1,5 @@
+#include "entry.h"
+
 const int n = 2;
 
 int a() {
