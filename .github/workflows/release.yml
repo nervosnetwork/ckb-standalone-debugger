@@ -12,7 +12,7 @@ jobs:
     name: Publish binary on Linux
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -24,7 +24,7 @@ jobs:
     - name: Generate checksum
       run: cd dist && sha256sum ckb-debugger-linux-x64.tar.gz > ckb-debugger-linux-x64-sha256.txt
     - name: Upload
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           dist/ckb-debugger-linux-x64.tar.gz
@@ -34,7 +34,7 @@ jobs:
     name: Publish binary on macOS
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -46,7 +46,7 @@ jobs:
     - name: Generate checksum
       run: cd dist && shasum -a 256 ckb-debugger-macos-x64.tar.gz > ckb-debugger-macos-x64-sha256.txt
     - name: Upload
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           dist/ckb-debugger-macos-x64.tar.gz
@@ -56,7 +56,7 @@ jobs:
     name: Publish binary on Windows
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -68,7 +68,7 @@ jobs:
     - name: Generate checksum
       run: cd dist && Get-FileHash ckb-debugger-windows-x64.tar.gz > ckb-debugger-windows-x64-sha256.txt
     - name: Upload
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           dist/ckb-debugger-windows-x64.tar.gz
@@ -78,7 +78,7 @@ jobs:
     name: Publish crates to crates.io
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Publish
       run: |
         cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
