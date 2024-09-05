@@ -1,7 +1,7 @@
 [package]
 name = "ckb-debugger"
 description = "Standalone debugger for Nervos CKB"
-version = "0.118.0-rc1"
+version = "0.118.0-rc2"
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2021"
@@ -13,13 +13,13 @@ default = []
 addr2line = "0.17"
 byteorder = "1"
 clap = "2.33.0"
-ckb-chain-spec = "=0.118.0-rc1"
-ckb-hash = "=0.118.0-rc1"
-ckb-jsonrpc-types = "=0.118.0-rc1"
-ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.118.0-rc1" }
-ckb-script = { version = "=0.118.0-rc1", default-features = false, features = ["flatmemory"] }
-ckb-traits = "=0.118.0-rc1"
-ckb-types = "=0.118.0-rc1"
+ckb-chain-spec = "=0.118.0-rc2"
+ckb-hash = "=0.118.0-rc2"
+ckb-jsonrpc-types = "=0.118.0-rc2"
+ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.118.0-rc2" }
+ckb-script = { version = "=0.118.0-rc2", default-features = false, features = ["flatmemory"] }
+ckb-traits = "=0.118.0-rc2"
+ckb-types = "=0.118.0-rc2"
 ckb-vm = { version = "=0.24.12", default-features = false, features = ["pprof"] }
 env_logger = "0.4.3"
 gdbstub = "0.7"
