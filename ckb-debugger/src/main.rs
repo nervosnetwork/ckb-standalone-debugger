@@ -387,7 +387,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if matches_mode == "fast" {
         let cycles = verifier.verify_single(verifier_script_group_type, &verifier_script_hash, verifier_max_cycles)?;
-        println!("Total cycles consumed: {}", HumanReadableCycles(cycles));
+        println!("All cycles: {}", HumanReadableCycles(cycles));
         return Ok(());
     }
 
@@ -411,7 +411,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         match result {
             Ok(data) => {
                 println!("Run result: {:?}", data);
-                println!("Total cycles consumed: {}", HumanReadableCycles(cycles));
+                println!("All cycles: {}", HumanReadableCycles(cycles));
                 if let Some(fp) = matches_pprof {
                     let mut output = std::fs::File::create(&fp)?;
                     machine.profile.display_flamegraph(&mut output);
@@ -459,7 +459,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 match result {
                     Ok((exit_code, cycles)) => {
                         println!("Exit code: {:?}", exit_code);
-                        println!("Total cycles consumed: {}", HumanReadableCycles(cycles));
+                        println!("All cycles: {}", HumanReadableCycles(cycles));
                     }
                     Err(e) => {
                         println!("Error: {}", e);
@@ -502,7 +502,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         let result = step_result.map(|_| machine.exit_code());
         println!("Run result: {:?}", result);
-        println!("Total cycles consumed: {}", HumanReadableCycles(machine.scheduler.consumed_cycles()));
+        println!("All cycles: {}", HumanReadableCycles(machine.scheduler.consumed_cycles()));
     }
 
     Ok(())
