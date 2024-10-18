@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     drop(env_logger::init());
 
     let default_gdb_listen = "127.0.0.1:9999";
-    let default_max_cycles = format!("{}", 70_000_000u64);
+    let default_max_cycles = format!("{}", 3_500_000_000u64);
     let default_mode = "full";
     let default_pid = ROOT_VM_ID.to_string();
     let default_script_version = "2";
