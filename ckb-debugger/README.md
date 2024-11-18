@@ -9,7 +9,7 @@ For Rust library usage, refer to the included tests, they are quite self-explana
 See the command line help part for usage on the binary debugger:
 
 ```text
-ckb-debugger 0.116.1
+ckb-debugger 0.119.0
 
 USAGE:
     ckb-debugger [FLAGS] [OPTIONS] --mode <mode> [args]...
@@ -30,7 +30,7 @@ OPTIONS:
         --gdb-listen <gdb-listen>
             Address to listen for GDB remote debugging server [default: 127.0.0.1:9999]
 
-        --max-cycles <max-cycles>                  Max cycles [default: 70000000]
+        --max-cycles <max-cycles>                  Max cycles [default: 3500000000]
         --mode <mode>
             Execution mode of debugger [default: full]  [possible values: decode-instruction, fast, full, gdb, probe]
 
@@ -48,7 +48,7 @@ ARGS:
     <args>...
 ```
 
-[ckb-transaction-dumper](https://github.com/xxuejie/ckb-transaction-dumper) can be used to dump the full mocked transaction used in the debugger from CKB.
+[ckb-cli](https://github.com/nervosnetwork/ckb-cli) can be used to dump the full mocked transaction used in the debugger from CKB. This [example](./examples/mock_tx.md) shows how to use it.
 
 # FAQ
 
