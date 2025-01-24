@@ -111,12 +111,12 @@ impl Report {
             samples.push(sample);
         }
         let samples_value = protos::ValueType {
-            field_type: strings[SAMPLES] as i64,
+            type_: strings[SAMPLES] as i64,
             unit: strings[COUNT] as i64,
             ..Default::default()
         };
         let time_value = protos::ValueType {
-            field_type: strings[CPU] as i64,
+            type_: strings[CPU] as i64,
             unit: strings[NANOSECONDS] as i64,
             ..Default::default()
         };

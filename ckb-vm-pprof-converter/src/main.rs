@@ -133,9 +133,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         samples.push(sample);
     }
     let samples_value =
-        profile::ValueType { field_type: strings[CYCLES] as i64, unit: strings[COUNT] as i64, ..Default::default() };
+        profile::ValueType { type_: strings[CYCLES] as i64, unit: strings[COUNT] as i64, ..Default::default() };
     let time_value =
-        profile::ValueType { field_type: strings[CPU] as i64, unit: strings[NANOSECONDS] as i64, ..Default::default() };
+        profile::ValueType { type_: strings[CPU] as i64, unit: strings[NANOSECONDS] as i64, ..Default::default() };
     let profile = profile::Profile {
         sample_type: vec![samples_value, time_value.clone()].into(),
         sample: samples.into(),
