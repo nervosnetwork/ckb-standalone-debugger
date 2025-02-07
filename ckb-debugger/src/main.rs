@@ -2,7 +2,7 @@ use ckb_chain_spec::consensus::{ConsensusBuilder, TYPE_ID_CODE_HASH};
 #[cfg(target_family = "unix")]
 use ckb_debugger::Stdio;
 use ckb_debugger::{
-    get_script_hash_by_index, pre_check, ElfDumper, FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer,
+    analyze, get_script_hash_by_index, ElfDumper, FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer,
     MachineAssign, MachineOverlap, MachineProfile, MachineStepLog, Random, TimeNow,
 };
 use ckb_debugger::{Embed, GdbStubHandler, GdbStubHandlerEventLoop};
@@ -214,20 +214,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("-") => {
             let mut buf = String::new();
             std::io::stdin().read_to_string(&mut buf)?;
+            analyze(&buf);
             let repr_mock_tx: ReprMockTransaction = serde_json::from_str(&buf)?;
-            if let Err(msg) = pre_check(&repr_mock_tx) {
-                println!("Potential format error found: {}", msg);
-            }
             repr_mock_tx.into()
         }
         Some(doc) => {
             let buf = std::fs::read_to_string(doc)?;
             let mut mock_tx_embed = Embed::new(PathBuf::from(doc.to_string()), buf.clone());
             let buf = mock_tx_embed.replace_all();
+            analyze(&buf);
             let repr_mock_tx: ReprMockTransaction = serde_json::from_str(&buf)?;
-            if let Err(msg) = pre_check(&repr_mock_tx) {
-                println!("Potential format error found: {}", msg);
-            }
             repr_mock_tx.into()
         }
         None => {

@@ -1,9 +1,9 @@
 use ckb_chain_spec::consensus::TYPE_ID_CODE_HASH;
 use ckb_hash::blake2b_256;
-use ckb_mock_tx_types::{MockResourceLoader, MockTransaction, ReprMockTransaction};
+use ckb_mock_tx_types::{MockResourceLoader, MockTransaction};
 use ckb_script::ScriptGroupType;
 use ckb_types::core::{HeaderView, ScriptHashType};
-use ckb_types::packed::{Byte32, CellOutput, OutPoint, OutPointVec, Script};
+use ckb_types::packed::{Byte32, CellOutput, OutPoint, Script};
 use ckb_types::prelude::{Builder, Entity, Pack};
 use ckb_types::H256;
 use ckb_vm::Bytes;
@@ -167,42 +167,4 @@ pub fn get_script_hash_by_index(
             .calc_script_hash(),
         _ => panic!("Invalid specified script: {:?} {} {}", script_group_type, cell_type, cell_index),
     }
-}
-
-// Check transactions before executing them to avoid obvious mistakes.
-pub fn pre_check(tx: &ReprMockTransaction) -> Result<(), String> {
-    let mut mock_cell_deps: Vec<_> = tx.mock_info.cell_deps.iter().map(|c| c.cell_dep.clone()).collect();
-    let mut real_cell_deps: Vec<_> = tx.tx.cell_deps.iter().map(|c| c.clone()).collect();
-    for dep in &tx.mock_info.cell_deps {
-        if dep.cell_dep.dep_type == ckb_jsonrpc_types::DepType::DepGroup {
-            let outpoints = OutPointVec::from_slice(dep.data.as_bytes()).unwrap();
-            let outpoints: Vec<OutPoint> = outpoints.into_iter().collect();
-            let resolved_cell_deps: Vec<_> = outpoints
-                .into_iter()
-                .map(|o| ckb_jsonrpc_types::CellDep { out_point: o.into(), dep_type: ckb_jsonrpc_types::DepType::Code })
-                .collect();
-            real_cell_deps.extend(resolved_cell_deps);
-        }
-    }
-    let compare = |a: &ckb_jsonrpc_types::CellDep, b: &ckb_jsonrpc_types::CellDep| {
-        let l = serde_json::to_string(a).unwrap();
-        let r = serde_json::to_string(b).unwrap();
-        l.cmp(&r)
-    };
-    mock_cell_deps.sort_by(compare);
-    real_cell_deps.sort_by(compare);
-    if mock_cell_deps != real_cell_deps {
-        return Err(String::from("Precheck: celldeps is mismatched"));
-    }
-    let mock_inputs: Vec<_> = tx.mock_info.inputs.iter().map(|i| i.input.clone()).collect();
-    let real_inputs: Vec<_> = tx.tx.inputs.clone();
-    if mock_inputs != real_inputs {
-        return Err(String::from("Precheck: inputs is mismatched"));
-    }
-    let mock_header_deps: Vec<_> = tx.mock_info.header_deps.iter().map(|h| h.hash.clone()).collect();
-    let read_header_deps: Vec<_> = tx.tx.header_deps.clone();
-    if mock_header_deps != read_header_deps {
-        return Err(String::from("Precheck: header deps is mismatched"));
-    }
-    Ok(())
 }
