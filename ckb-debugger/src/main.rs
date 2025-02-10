@@ -214,7 +214,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("-") => {
             let mut buf = String::new();
             std::io::stdin().read_to_string(&mut buf)?;
-            analyze(&buf);
+            analyze(&buf)?;
             let repr_mock_tx: ReprMockTransaction = serde_json::from_str(&buf)?;
             repr_mock_tx.into()
         }
@@ -222,7 +222,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let buf = std::fs::read_to_string(doc)?;
             let mut mock_tx_embed = Embed::new(PathBuf::from(doc.to_string()), buf.clone());
             let buf = mock_tx_embed.replace_all();
-            analyze(&buf);
+            analyze(&buf)?;
             let repr_mock_tx: ReprMockTransaction = serde_json::from_str(&buf)?;
             repr_mock_tx.into()
         }
