@@ -3,7 +3,8 @@ use ckb_vm::{
     Error, Memory, Register, SupportMachine, Syscalls,
 };
 use libc::{
-    c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell, size_t, FILE,
+    c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell, fwrite, size_t,
+    FILE,
 };
 use rand::prelude::*;
 use std::io::Read;
@@ -22,6 +23,7 @@ pub const SYSCALL_NUMBER_FGETC: u64 = 9008;
 pub const SYSCALL_NUMBER_FCLOSE: u64 = 9009;
 pub const SYSCALL_NUMBER_FTELL: u64 = 9010;
 pub const SYSCALL_NUMBER_FSEEK: u64 = 9011;
+pub const SYSCALL_NUMBER_FWRITE: u64 = 9012;
 
 pub struct FileOperation {}
 
@@ -129,6 +131,21 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
             SYSCALL_NUMBER_FSEEK => {
                 let ret = unsafe { fseek(arg0 as *mut FILE, arg1 as c_long, arg2 as c_int) };
                 machine.set_register(A0, Mac::REG::from_i32(ret));
+            }
+            SYSCALL_NUMBER_FWRITE => {
+                let ptr = arg0;
+                let size = arg1;
+                let nitems = arg2;
+                let stream = arg3;
+                let total_size = nitems * size;
+                if total_size > 3 * 1024 * 1024 {
+                    panic!("Too much memory to write");
+                }
+                let buf = machine.memory_mut().load_bytes(ptr, total_size)?;
+                let write_count = unsafe {
+                    fwrite(buf.as_ptr() as *mut c_void, size as size_t, nitems as size_t, stream as *mut FILE)
+                };
+                machine.set_register(A0, Mac::REG::from_u64(write_count as u64));
             }
             _ => {
                 return Ok(false);
