@@ -7,6 +7,7 @@ use libc::{
     FILE,
 };
 use rand::prelude::*;
+use std::ffi::CString;
 use std::io::Read;
 use std::time::SystemTime;
 use std::{cmp::min, fs, io};
@@ -31,9 +32,9 @@ impl FileOperation {
     pub fn new() -> Self {
         Self {}
     }
-    fn fetch_string<Mac: SupportMachine>(machine: &mut Mac, addr: u64) -> Result<String, Error> {
+    fn fetch_string<Mac: SupportMachine>(machine: &mut Mac, addr: u64) -> Result<CString, Error> {
         let mut buffer = Vec::new();
-        let mut addr = addr.clone();
+        let mut addr = addr;
         loop {
             let byte = machine.memory_mut().load8(&Mac::REG::from_u64(addr))?;
             if byte.to_u8() == 0 {
@@ -42,7 +43,7 @@ impl FileOperation {
             buffer.push(byte.to_u8());
             addr += 1;
         }
-        Ok(String::from_utf8(buffer).expect("A valid UTF-8 string"))
+        Ok(CString::new(buffer).expect("Invalid C string"))
     }
 }
 
@@ -62,7 +63,10 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
                 let path = Self::fetch_string(machine, arg0)?;
                 let mode = Self::fetch_string(machine, arg1)?;
                 let handler = unsafe {
-                    fopen(path.as_bytes().as_ptr() as *const c_char, mode.as_bytes().as_ptr() as *const c_char)
+                    fopen(
+                        path.as_bytes_with_nul().as_ptr() as *const c_char,
+                        mode.as_bytes_with_nul().as_ptr() as *const c_char,
+                    )
                 };
                 machine.set_register(A0, Mac::REG::from_u64(handler as u64));
             }
@@ -72,8 +76,8 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
                 let stream = arg2;
                 let handler = unsafe {
                     freopen(
-                        path.as_bytes().as_ptr() as *const c_char,
-                        mode.as_bytes().as_ptr() as *const c_char,
+                        path.as_bytes_with_nul().as_ptr() as *const c_char,
+                        mode.as_bytes_with_nul().as_ptr() as *const c_char,
                         stream as *mut FILE,
                     )
                 };
