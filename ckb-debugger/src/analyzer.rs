@@ -177,22 +177,24 @@ pub fn prelude_mock_info(path: Vec<Key>, data: &serde_json::Value) -> Result<(),
         prelude_contains_key(path.clone(), e, "input")?;
         prelude_contains_key(path.clone(), e, "output")?;
         prelude_contains_key(path.clone(), e, "data")?;
-        prelude_contains_key(path.clone(), e, "header")?;
         prelude_input(keyadd_table(path.clone(), "input"), e.as_object().unwrap().get("input").unwrap())?;
         prelude_output(keyadd_table(path.clone(), "output"), e.as_object().unwrap().get("output").unwrap())?;
         prelude_hex(keyadd_table(path.clone(), "data"), e.as_object().unwrap().get("data").unwrap())?;
-        prelude_hash(keyadd_table(path.clone(), "header"), e.as_object().unwrap().get("header").unwrap())?;
+        if e.as_object().unwrap().contains_key("header") && !e.as_object().unwrap().get("header").unwrap().is_null() {
+            prelude_hash(keyadd_table(path.clone(), "header"), e.as_object().unwrap().get("header").unwrap())?;
+        }
     }
     for (i, e) in data.as_object().unwrap().get("cell_deps").unwrap().as_array().unwrap().iter().enumerate() {
         let path = keyadd_index(keyadd_table(path.clone(), "cell_deps"), i);
         prelude_contains_key(path.clone(), e, "cell_dep")?;
         prelude_contains_key(path.clone(), e, "output")?;
         prelude_contains_key(path.clone(), e, "data")?;
-        prelude_contains_key(path.clone(), e, "header")?;
         prelude_cell_dep(keyadd_table(path.clone(), "cell_dep"), e.as_object().unwrap().get("cell_dep").unwrap())?;
         prelude_output(keyadd_table(path.clone(), "output"), e.as_object().unwrap().get("output").unwrap())?;
         prelude_hex(keyadd_table(path.clone(), "data"), e.as_object().unwrap().get("data").unwrap())?;
-        prelude_hash(keyadd_table(path.clone(), "header"), e.as_object().unwrap().get("header").unwrap())?;
+        if e.as_object().unwrap().contains_key("header") && !e.as_object().unwrap().get("header").unwrap().is_null() {
+            prelude_hash(keyadd_table(path.clone(), "header"), e.as_object().unwrap().get("header").unwrap())?;
+        }
     }
     for (i, e) in data.as_object().unwrap().get("header_deps").unwrap().as_array().unwrap().iter().enumerate() {
         let path = keyadd_index(keyadd_table(path.clone(), "header_deps"), i);

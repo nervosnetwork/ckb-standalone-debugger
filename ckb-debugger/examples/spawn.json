@@ -18,8 +18,7 @@
           },
           "type": null
         },
-        "data": "0x",
-        "header": "0x0000000000000000000000000000000000000000000000000000000000000000"
+        "data": "0x"
       }
     ],
     "cell_deps": [
@@ -40,8 +39,7 @@
           },
           "type": null
         },
-        "data": "0x{{ data spawn_caller_strcat }}",
-        "header": "0x0000000000000000000000000000000000000000000000000000000000000000"
+        "data": "0x{{ data spawn_caller_strcat }}"
       },
       {
         "cell_dep": {
@@ -60,8 +58,7 @@
           },
           "type": null
         },
-        "data": "0x{{ data spawn_callee_strcat }}",
-        "header": "0x0000000000000000000000000000000000000000000000000000000000000000"
+        "data": "0x{{ data spawn_callee_strcat }}"
       }
     ],
     "header_deps": []
