@@ -110,16 +110,10 @@ impl Report {
             };
             samples.push(sample);
         }
-        let samples_value = protos::ValueType {
-            type_: strings[SAMPLES] as i64,
-            unit: strings[COUNT] as i64,
-            ..Default::default()
-        };
-        let time_value = protos::ValueType {
-            type_: strings[CPU] as i64,
-            unit: strings[NANOSECONDS] as i64,
-            ..Default::default()
-        };
+        let samples_value =
+            protos::ValueType { type_: strings[SAMPLES] as i64, unit: strings[COUNT] as i64, ..Default::default() };
+        let time_value =
+            protos::ValueType { type_: strings[CPU] as i64, unit: strings[NANOSECONDS] as i64, ..Default::default() };
         let profile = protos::Profile {
             sample_type: vec![samples_value, time_value.clone()].into(),
             sample: samples.into(),
