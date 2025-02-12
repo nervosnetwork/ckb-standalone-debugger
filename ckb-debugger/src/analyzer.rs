@@ -5,82 +5,96 @@ use ckb_types::prelude::Entity;
 pub fn analyze(data: &str) -> Result<(), CheckError> {
     prelude(data)?;
     let mock: ckb_mock_tx_types::ReprMockTransaction = serde_json::from_str(&data).unwrap();
+    analyze_cell_dep(&mock)?;
+    analyze_header_dep(&mock)?;
+    analyze_input(&mock)?;
+    analyze_output(&mock)?;
+    Ok(())
+}
 
-    for (i, e) in mock.mock_info.cell_deps.iter().enumerate() {
-        if e.cell_dep.dep_type == ckb_jsonrpc_types::DepType::Code {
+pub fn analyze_cell_dep(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
+    let cset: Vec<ckb_jsonrpc_types::CellDep> = data.mock_info.cell_deps.iter().map(|e| e.cell_dep.clone()).collect();
+    for (i, e) in data.tx.cell_deps.iter().enumerate() {
+        if !cset.contains(&e) {
+            let path = vec![Key::Table(String::from("tx")), Key::Table(String::from("cell_deps")), Key::Index(i)];
+            return Err(CheckError(format!("Check Fail: {} used unprovided cell dep", keyfmt(&path))));
+        }
+    }
+    let mut ccnt = vec![0u8; cset.len()];
+    for (_, e) in data.tx.cell_deps.iter().enumerate() {
+        let i = cset.iter().position(|r| r == e).unwrap();
+        ccnt[i] += 1;
+        if data.mock_info.cell_deps[i].cell_dep.dep_type == ckb_jsonrpc_types::DepType::Code {
             continue;
         }
-        let outpoints = ckb_types::packed::OutPointVec::from_slice(e.data.as_bytes()).unwrap();
+        let outpoints =
+            ckb_types::packed::OutPointVec::from_slice(data.mock_info.cell_deps[i].data.as_bytes()).unwrap();
         let outpoints: Vec<ckb_types::packed::OutPoint> = outpoints.into_iter().collect();
         for (j, f) in outpoints.iter().enumerate() {
-            let path = vec![
-                Key::Table(String::from("mock_info")),
-                Key::Table(String::from("cell_deps")),
-                Key::Index(i),
-                Key::Table(String::from("data")),
-                Key::Index(j),
-            ];
-            analyze_cell_dep(
-                path,
-                &mock,
-                &ckb_jsonrpc_types::CellDep { out_point: f.clone().into(), dep_type: ckb_jsonrpc_types::DepType::Code },
-            )?;
+            let cdep =
+                ckb_jsonrpc_types::CellDep { out_point: f.clone().into(), dep_type: ckb_jsonrpc_types::DepType::Code };
+            if !cset.contains(&cdep) {
+                let path = vec![
+                    Key::Table(String::from("mock_info")),
+                    Key::Table(String::from("cell_deps")),
+                    Key::Index(i),
+                    Key::Table(String::from("data")),
+                    Key::Index(j),
+                ];
+                return Err(CheckError(format!("Check Fail: {} used unprovided cell dep", keyfmt(&path))));
+            }
+            let k = cset.iter().position(|r| r == &cdep).unwrap();
+            ccnt[k] += 1;
         }
     }
-    for (i, e) in mock.tx.cell_deps.iter().enumerate() {
-        let path = vec![Key::Table(String::from("tx")), Key::Table(String::from("cell_deps")), Key::Index(i)];
-        analyze_cell_dep(path, &mock, &e)?;
-    }
-    for (i, e) in mock.tx.header_deps.iter().enumerate() {
-        let path = vec![Key::Table(String::from("tx")), Key::Table(String::from("header_deps")), Key::Index(i)];
-        analyze_header_dep(path, &mock, e)?;
-    }
-    for (i, e) in mock.tx.inputs.iter().enumerate() {
-        let path = vec![Key::Table(String::from("tx")), Key::Table(String::from("inputs")), Key::Index(i)];
-        analyze_input(path, &mock, &e)?;
-    }
-    analyze_output(vec![Key::Table(String::from("tx")), Key::Table(String::from("outputs"))], &mock)?;
-    Ok(())
-}
-
-pub fn analyze_cell_dep(
-    path: Vec<Key>,
-    data: &ckb_mock_tx_types::ReprMockTransaction,
-    cell_dep: &ckb_jsonrpc_types::CellDep,
-) -> Result<(), CheckError> {
-    let cset: Vec<ckb_jsonrpc_types::CellDep> = data.mock_info.cell_deps.iter().map(|e| e.cell_dep.clone()).collect();
-    if !cset.contains(&cell_dep) {
-        return Err(CheckError(format!("Check Fail: {} used unprovided cell dep", keyfmt(&path))));
+    for (i, e) in ccnt.iter().enumerate() {
+        if *e != 0 {
+            continue;
+        }
+        let path = vec![Key::Table(String::from("mock_info")), Key::Table(String::from("cell_deps")), Key::Index(i)];
+        return Err(CheckError(format!("Check Fail: {} unused", keyfmt(&path))));
     }
     Ok(())
 }
 
-pub fn analyze_header_dep(
-    path: Vec<Key>,
-    data: &ckb_mock_tx_types::ReprMockTransaction,
-    header_dep: &ckb_types::H256,
-) -> Result<(), CheckError> {
+pub fn analyze_header_dep(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
     let hset: Vec<ckb_types::H256> = data.mock_info.header_deps.iter().map(|e| e.hash.clone()).collect();
-    if !hset.contains(&header_dep) {
-        return Err(CheckError(format!("Check Fail: {} used unprovided header dep", keyfmt(&path))));
+    for (i, e) in data.tx.header_deps.iter().enumerate() {
+        if !hset.contains(&e) {
+            let path = vec![Key::Table(String::from("tx")), Key::Table(String::from("header_deps")), Key::Index(i)];
+            return Err(CheckError(format!("Check Fail: {} used unprovided header dep", keyfmt(&path))));
+        }
+    }
+    for (i, e) in hset.iter().enumerate() {
+        if !data.tx.header_deps.contains(&e) {
+            let path =
+                vec![Key::Table(String::from("mock_info")), Key::Table(String::from("header_deps")), Key::Index(i)];
+            return Err(CheckError(format!("Check Fail: {} unused", keyfmt(&path))));
+        }
     }
     Ok(())
 }
 
-pub fn analyze_input(
-    path: Vec<Key>,
-    data: &ckb_mock_tx_types::ReprMockTransaction,
-    input: &ckb_jsonrpc_types::CellInput,
-) -> Result<(), CheckError> {
+pub fn analyze_input(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
     let iset: Vec<ckb_jsonrpc_types::CellInput> = data.mock_info.inputs.iter().map(|e| e.input.clone()).collect();
-    if !iset.contains(&input) {
-        return Err(CheckError(format!("Check Fail: {} used unprovided input", keyfmt(&path))));
+    for (i, e) in data.tx.inputs.iter().enumerate() {
+        if !iset.contains(&e) {
+            let path = vec![Key::Table(String::from("tx")), Key::Table(String::from("inputs")), Key::Index(i)];
+            return Err(CheckError(format!("Check Fail: {} used unprovided input", keyfmt(&path))));
+        }
+    }
+    for (i, e) in iset.iter().enumerate() {
+        if !data.tx.inputs.contains(&e) {
+            let path = vec![Key::Table(String::from("mock_info")), Key::Table(String::from("inputs")), Key::Index(i)];
+            return Err(CheckError(format!("Check Fail: {} unused", keyfmt(&path))));
+        }
     }
     Ok(())
 }
 
-pub fn analyze_output(path: Vec<Key>, data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
+pub fn analyze_output(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
     if data.tx.outputs.len() != data.tx.outputs_data.len() {
+        let path = vec![Key::Table(String::from("tx")), Key::Table(String::from("outputs"))];
         return Err(CheckError(format!(
             "Check Fail: {} outputs and outputs_data are not one-to-one correspondence",
             keyfmt(&path)
