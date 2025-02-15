@@ -118,6 +118,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .long("script-group-type")
                 .short("s")
                 .possible_values(&["lock", "type"])
+                .default_value("lock")
                 .help("Script group type")
                 .takes_value(true),
         )

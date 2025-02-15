@@ -260,10 +260,9 @@ pub fn prelude_out_point(path: Vec<Key>, data: &serde_json::Value) -> Result<(),
 pub fn prelude_output(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_contains_key(path.clone(), data, "capacity")?;
     prelude_contains_key(path.clone(), data, "lock")?;
-    prelude_contains_key(path.clone(), data, "type")?;
     prelude_u64(keyadd_table(path.clone(), "capacity"), data.as_object().unwrap().get("capacity").unwrap())?;
     prelude_script(keyadd_table(path.clone(), "lock"), data.as_object().unwrap().get("lock").unwrap())?;
-    if !data.as_object().unwrap().get("type").unwrap().is_null() {
+    if data.as_object().unwrap().contains_key("type") && !data.as_object().unwrap().get("type").unwrap().is_null() {
         prelude_script(keyadd_table(path.clone(), "type"), data.as_object().unwrap().get("type").unwrap())?;
     }
     Ok(())
