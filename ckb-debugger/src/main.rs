@@ -114,11 +114,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .takes_value(true),
         )
         .arg(
+            Arg::with_name("script")
+                .long("script")
+                .default_value("input.0.lock")
+                .help("A convenience method for setting cell-type, cell-index and script-group-type at the same time")
+                .takes_value(true),
+        )
+        .arg(
             Arg::with_name("script-group-type")
                 .long("script-group-type")
                 .short("s")
                 .possible_values(&["lock", "type"])
-                .default_value("lock")
                 .help("Script group type")
                 .takes_value(true),
         )
@@ -153,6 +159,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_pprof = matches.value_of("pprof");
     let matches_prompt = matches.is_present("prompt");
     let matches_read_file_name = matches.value_of("read-file");
+    let matches_script = matches.value_of("script");
     let matches_script_group_type = matches.value_of("script-group-type");
     let matches_script_hash = matches.value_of("script-hash");
     let matches_script_version = matches.value_of("script-version").unwrap();
@@ -277,41 +284,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             MockTransaction { mock_info: mock_info, tx: tx.data() }
         }
     };
-    let verifier_script_group_type = {
-        let script_group_type = if matches_tx_file.is_none() { "lock" } else { matches_script_group_type.unwrap() };
-        serde_plain::from_str(script_group_type)?
+    let verifier_cell_type = match matches_cell_type {
+        Some(data) => data,
+        None => matches_script.unwrap().split(".").collect::<Vec<&str>>()[0],
     };
-    let verifier_script_hash = if matches_tx_file.is_none() {
-        verifier_mock_tx.mock_info.inputs[0].output.calc_lock_hash()
-    } else if let Some(hex_script_hash) = matches_script_hash {
-        if hex_script_hash.len() != 66 || (!hex_script_hash.starts_with("0x")) {
-            panic!("Invalid script hash format!");
-        }
-        let b = hex::decode(&hex_script_hash.as_bytes()[2..])?;
-        Byte32::from_slice(b.as_slice())?
-    } else {
-        let mut cell_type = matches_cell_type;
-        let mut cell_index = matches_cell_index;
-        match verifier_script_group_type {
-            ScriptGroupType::Lock => {
-                if cell_type.is_none() {
-                    cell_type = Some("input");
-                }
-                if cell_index.is_none() {
-                    cell_index = Some("0");
-                    println!("The cell_index is not specified. Assume --cell-index = 0")
-                }
-            }
-            ScriptGroupType::Type => {
-                if cell_type.is_none() || cell_index.is_none() {
-                    panic!("You must provide either script hash, or cell type + cell index");
-                }
-            }
-        }
-        let cell_type = cell_type.unwrap();
-        let cell_index: usize = cell_index.unwrap().parse()?;
-        get_script_hash_by_index(&verifier_mock_tx, &verifier_script_group_type, cell_type, cell_index)
+    let verifier_cell_index: usize = match matches_cell_index {
+        Some(data) => data,
+        None => matches_script.unwrap().split(".").collect::<Vec<&str>>()[1],
+    }
+    .parse()?;
+    let verifier_script_group_type: ScriptGroupType = match matches_script_group_type {
+        Some(data) => serde_plain::from_str(data)?,
+        None => serde_plain::from_str(matches_script.unwrap().split(".").collect::<Vec<&str>>()[2])?,
     };
+    let verifier_script_hash = || -> Result<Byte32, Box<dyn std::error::Error>> {
+        if matches_tx_file.is_none() {
+            return Ok(verifier_mock_tx.mock_info.inputs[0].output.calc_lock_hash());
+        }
+        if let Some(hex_script_hash) = matches_script_hash {
+            return Ok(Byte32::from_slice(hex::decode(&hex_script_hash.as_bytes()[2..])?.as_slice())?);
+        }
+        Ok(get_script_hash_by_index(
+            &verifier_mock_tx,
+            &verifier_script_group_type,
+            verifier_cell_type,
+            verifier_cell_index,
+        ))
+    }()?;
     let verifier_script_version = match matches_script_version {
         "0" => ScriptVersion::V0,
         "1" => ScriptVersion::V1,
