@@ -377,7 +377,7 @@ impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> P
     }
 
     pub fn load_program(&mut self, program: &Bytes, args: &[Bytes]) -> Result<u64, Error> {
-        self.machine.load_program(program, args)
+        self.machine.load_program(program, args.iter().map(|e| Ok(e.clone())))
     }
 
     pub fn run(&mut self) -> Result<i8, Error> {

@@ -8,7 +8,7 @@ use ckb_debugger::{
 use ckb_debugger::{Embed, GdbStubHandler, GdbStubHandlerEventLoop};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv, ROOT_VM_ID};
-use ckb_types::core::cell::{resolve_transaction, CellMetaBuilder};
+use ckb_types::core::cell::{resolve_transaction, CellMeta};
 use ckb_types::core::{hardfork, Capacity, DepType, HeaderView, ScriptHashType, TransactionBuilder};
 use ckb_types::packed::{Byte32, CellDep, CellInput, CellOutput, OutPoint, Script, ScriptOpt};
 use ckb_types::prelude::{Builder, Entity, Pack};
@@ -235,37 +235,53 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             repr_mock_tx.into()
         }
         None => {
-            let bin_path = matches_bin.unwrap();
-            let bin_data = std::fs::read(bin_path)?;
-            let bin_cell_data = Bytes::copy_from_slice(&bin_data);
-            let bin_cell_type_script = Script::new_builder()
-                .code_hash(TYPE_ID_CODE_HASH.pack())
-                .hash_type(ScriptHashType::Type.into())
-                .args([0; 20].pack())
-                .build();
-            let bin_cell_output = CellOutput::new_builder()
-                .capacity(Capacity::bytes(bin_cell_data.len()).unwrap().pack())
-                .type_(ScriptOpt::new_builder().set(Some(bin_cell_type_script)).build())
-                .build();
-            let bin_cell_meta = CellMetaBuilder::from_cell_output(bin_cell_output.clone(), bin_cell_data).build();
-            let bin_cell_hash = bin_cell_meta.cell_output.type_().to_opt().unwrap().calc_script_hash();
+            let cell_meta_lock_data = Bytes::copy_from_slice(&std::fs::read(matches_bin.unwrap())?);
+            let cell_meta_lock = CellMeta {
+                cell_output: CellOutput::new_builder()
+                    .type_(
+                        ScriptOpt::new_builder()
+                            .set(Some(
+                                Script::new_builder()
+                                    .code_hash(Byte32::from_slice(TYPE_ID_CODE_HASH.as_bytes())?)
+                                    .hash_type(ScriptHashType::Type.into())
+                                    .args(Bytes::copy_from_slice(&vec![0u8; 32]).pack())
+                                    .build(),
+                            ))
+                            .build(),
+                    )
+                    .build_exact_capacity(Capacity::bytes(cell_meta_lock_data.len())?)?,
+                out_point: OutPoint::new(Byte32::from_slice(&vec![0x00; 32])?, 0),
+                data_bytes: cell_meta_lock_data.len() as u64,
+                mem_cell_data: Some(cell_meta_lock_data.clone()),
+                mem_cell_data_hash: Some(Byte32::from_slice(&ckb_hash::blake2b_256(&cell_meta_lock_data))?),
+                ..Default::default()
+            };
+            let cell_meta_i = CellMeta {
+                cell_output: CellOutput::new_builder()
+                    .lock(
+                        Script::new_builder()
+                            .code_hash(cell_meta_lock.cell_output.type_().to_opt().unwrap().calc_script_hash())
+                            .hash_type(ScriptHashType::Type.into())
+                            .build(),
+                    )
+                    .build_exact_capacity(Capacity::zero())?,
+                out_point: OutPoint::new(Byte32::from_slice(&vec![0x00; 32])?, 1),
+                ..Default::default()
+            };
 
             let mut mock_info = MockInfo::default();
             mock_info.cell_deps.push(MockCellDep {
                 cell_dep: CellDep::new_builder()
-                    .out_point(OutPoint::new(Byte32::from_slice(vec![0x00; 32].as_slice()).unwrap(), 0))
+                    .out_point(cell_meta_lock.out_point)
                     .dep_type(DepType::Code.into())
                     .build(),
-                output: bin_cell_output,
-                data: Bytes::from(bin_data.clone()),
+                output: cell_meta_lock.cell_output,
+                data: cell_meta_lock_data.clone(),
                 header: None,
             });
             mock_info.inputs.push(MockInput {
-                input: CellInput::new(OutPoint::new(Byte32::from_slice(vec![0x00; 32].as_slice()).unwrap(), 1), 0),
-                output: CellOutput::new_builder()
-                    .lock(Script::new_builder().code_hash(bin_cell_hash).hash_type(ScriptHashType::Type.into()).build())
-                    .build_exact_capacity(Capacity::bytes(bin_data.len()).unwrap())
-                    .unwrap(),
+                input: CellInput::new(cell_meta_i.out_point, 0),
+                output: cell_meta_i.cell_output,
                 data: Bytes::new(),
                 header: None,
             });
@@ -273,15 +289,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let tx = TransactionBuilder::default();
             let tx = tx.cell_dep(mock_info.cell_deps[0].cell_dep.clone());
             let tx = tx.input(mock_info.inputs[0].input.clone());
-            let tx = tx.output(
-                CellOutput::new_builder()
-                    .capacity(Capacity::zero().pack())
-                    .lock(mock_info.inputs[0].output.lock())
-                    .build(),
-            );
             let tx = tx.build();
 
-            MockTransaction { mock_info: mock_info, tx: tx.data() }
+            MockTransaction { mock_info, tx: tx.data() }
         }
     };
     let verifier_cell_type = match matches_cell_type {
@@ -289,10 +299,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => matches_script.unwrap().split(".").collect::<Vec<&str>>()[0],
     };
     let verifier_cell_index: usize = match matches_cell_index {
-        Some(data) => data,
-        None => matches_script.unwrap().split(".").collect::<Vec<&str>>()[1],
-    }
-    .parse()?;
+        Some(data) => data.parse()?,
+        None => matches_script.unwrap().split(".").collect::<Vec<&str>>()[1].parse()?,
+    };
     let verifier_script_group_type: ScriptGroupType = match matches_script_group_type {
         Some(data) => serde_plain::from_str(data)?,
         None => serde_plain::from_str(matches_script.unwrap().split(".").collect::<Vec<&str>>()[2])?,
@@ -351,19 +360,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }));
     let verifier_script_group = verifier.find_script_group(verifier_script_group_type, &verifier_script_hash).unwrap();
-    let verifier_program = match matches_bin {
-        Some(path) => {
-            let data = std::fs::read(path)?;
-            data.into()
-        }
-        None => verifier.extract_script(&verifier_script_group.script)?,
-    };
-
     let machine_assign_init = || -> Result<_, Box<dyn std::error::Error>> {
         let args: Vec<String> = matches_args.clone().into_iter().map(|s| s.into()).collect();
         let args: Vec<Bytes> = args.into_iter().map(|s| s.into()).collect();
-        let mut scheduler = verifier.create_scheduler(&verifier_script_group).unwrap();
-        scheduler.tx_data.program = verifier_program.clone();
+        let scheduler = verifier.create_scheduler(&verifier_script_group).unwrap();
         let mut machine_assign = MachineAssign::new(matches_pid, &args, scheduler)?;
         machine_assign.expand_cycles = verifier_max_cycles;
         if let Some(data) = matches_dump_file {

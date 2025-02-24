@@ -9,3 +9,11 @@ members = [
     "ckb-vm-pprof-protos",
     "ckb-vm-signal-profiler",
 ]
+
+[patch.crates-io]
+ckb-chain-spec = { path = "/home/ubuntu/src/ckb/spec" }
+ckb-hash = { path = "/home/ubuntu/src/ckb/util/hash" }
+ckb-jsonrpc-types = { path = "/home/ubuntu/src/ckb/util/jsonrpc-types" }
+ckb-script = { path = "/home/ubuntu/src/ckb/script", default-features = false, features = ["flatmemory"] }
+ckb-traits = { path = "/home/ubuntu/src/ckb/traits" }
+ckb-types = { path = "/home/ubuntu/src/ckb/util/types" }
