@@ -13,7 +13,7 @@ stdio = ["libc", "nix"]
 [dependencies]
 byteorder = "1"
 bytes = "1.0.0"
-ckb-vm = "=0.24.12"
+ckb-vm = "=0.24.13"
 libc = { version = "0.2.47", optional = true }
 log = "0.4.0"
 nix = { version = "0.26.2", optional = true }
