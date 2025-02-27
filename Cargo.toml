@@ -11,9 +11,9 @@ members = [
 ]
 
 [patch.crates-io]
-ckb-chain-spec = { path = "/home/ubuntu/src/ckb/spec" }
-ckb-hash = { path = "/home/ubuntu/src/ckb/util/hash" }
-ckb-jsonrpc-types = { path = "/home/ubuntu/src/ckb/util/jsonrpc-types" }
-ckb-script = { path = "/home/ubuntu/src/ckb/script", default-features = false, features = ["flatmemory"] }
-ckb-traits = { path = "/home/ubuntu/src/ckb/traits" }
-ckb-types = { path = "/home/ubuntu/src/ckb/util/types" }
+ckb-chain-spec = { git = "https://github.com/libraries/ckb", branch = "v0.200.0-rc2" }
+ckb-hash = { git = "https://github.com/libraries/ckb", branch = "v0.200.0-rc2" }
+ckb-jsonrpc-types = { git = "https://github.com/libraries/ckb", branch = "v0.200.0-rc2" }
+ckb-script = { git = "https://github.com/libraries/ckb", branch = "v0.200.0-rc2" }
+ckb-traits = { git = "https://github.com/libraries/ckb", branch = "v0.200.0-rc2" }
+ckb-types = { git = "https://github.com/libraries/ckb", branch = "v0.200.0-rc2" }

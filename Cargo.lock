@@ -282,6 +282,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "ckb-chain-spec"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "cacache",
  "ckb-constant",
@@ -303,6 +304,7 @@ dependencies = [
 [[package]]
 name = "ckb-channel"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "crossbeam-channel",
 ]
@@ -310,10 +312,12 @@ dependencies = [
 [[package]]
 name = "ckb-constant"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 
 [[package]]
 name = "ckb-crypto"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb-fixed-hash",
  "faster-hex",
@@ -325,6 +329,7 @@ dependencies = [
 [[package]]
 name = "ckb-dao-utils"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "byteorder",
  "ckb-error",
@@ -366,6 +371,7 @@ dependencies = [
 [[package]]
 name = "ckb-error"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "anyhow",
  "ckb-occupied-capacity",
@@ -376,6 +382,7 @@ dependencies = [
 [[package]]
 name = "ckb-fixed-hash"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb-fixed-hash-core",
  "ckb-fixed-hash-macros",
@@ -384,6 +391,7 @@ dependencies = [
 [[package]]
 name = "ckb-fixed-hash-core"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb_schemars",
  "faster-hex",
@@ -394,6 +402,7 @@ dependencies = [
 [[package]]
 name = "ckb-fixed-hash-macros"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb-fixed-hash-core",
  "proc-macro2",
@@ -404,6 +413,7 @@ dependencies = [
 [[package]]
 name = "ckb-gen-types"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "cfg-if",
  "ckb-error",
@@ -417,6 +427,7 @@ dependencies = [
 [[package]]
 name = "ckb-hash"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "blake2b-ref",
  "blake2b-rs",
@@ -425,6 +436,7 @@ dependencies = [
 [[package]]
 name = "ckb-jsonrpc-types"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb-types",
  "ckb_schemars",
@@ -436,6 +448,7 @@ dependencies = [
 [[package]]
 name = "ckb-logger"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "log 0.4.22",
 ]
@@ -462,6 +475,7 @@ dependencies = [
 [[package]]
 name = "ckb-occupied-capacity"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb-occupied-capacity-core",
  "ckb-occupied-capacity-macros",
@@ -470,6 +484,7 @@ dependencies = [
 [[package]]
 name = "ckb-occupied-capacity-core"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "serde",
 ]
@@ -477,6 +492,7 @@ dependencies = [
 [[package]]
 name = "ckb-occupied-capacity-macros"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb-occupied-capacity-core",
  "quote",
@@ -486,6 +502,7 @@ dependencies = [
 [[package]]
 name = "ckb-pow"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "byteorder",
  "ckb-hash",
@@ -498,6 +515,7 @@ dependencies = [
 [[package]]
 name = "ckb-rational"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "numext-fixed-uint",
  "serde",
@@ -506,6 +524,7 @@ dependencies = [
 [[package]]
 name = "ckb-resource"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb-system-scripts",
  "ckb-types",
@@ -519,6 +538,7 @@ dependencies = [
 [[package]]
 name = "ckb-script"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "byteorder",
  "ckb-chain-spec",
@@ -548,6 +568,7 @@ dependencies = [
 [[package]]
 name = "ckb-traits"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "ckb-types",
 ]
@@ -555,6 +576,7 @@ dependencies = [
 [[package]]
 name = "ckb-types"
 version = "0.200.0-rc1"
+source = "git+https://github.com/libraries/ckb?branch=v0.200.0-rc2#09b8cf8f100fc8ac700cbd57e7f174041a718051"
 dependencies = [
  "bit-vec",
  "bytes",
