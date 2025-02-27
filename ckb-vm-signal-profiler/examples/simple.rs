@@ -62,7 +62,7 @@ fn main() {
 
     ckb_vm_signal_profiler::start_profiler("simple.profile", &machine, &code, 99).expect("profiler start failure");
 
-    machine.load_program(&code, &args).unwrap();
+    machine.load_program(&code, args.into_iter().map(Ok)).unwrap();
     let result = machine.run();
     if result != Ok(0) {
         println!("Error result: {:?}", result);

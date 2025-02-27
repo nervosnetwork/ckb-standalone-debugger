@@ -1,9 +1,8 @@
-use ckb_script::{DataPieceId, RunMode, Scheduler, ROOT_VM_ID};
+use ckb_script::{DataLocation, RunMode, Scheduler, VmArgs, ROOT_VM_ID};
 use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::Decoder;
 use ckb_vm::instructions::execute;
-use ckb_vm::machine::Pause;
 use ckb_vm::registers::A7;
 use ckb_vm::{
     Bytes, CoreMachine, DefaultCoreMachine, Error, FlatMemory, Machine, SupportMachine, Syscalls, WXorXMemory,
@@ -137,14 +136,14 @@ where
         let cycles = dm.cycles();
         if result == Err(Error::Yield) {
             dm.set_cycles(0);
-            self.scheduler.iterate_process_results(self.id, Err(Error::Yield), cycles)?;
-            self.scheduler.consumed_cycles_add(self.scheduler.current_iteration_cycles)?;
+            self.scheduler.iterate_process_results(self.id, Err(Error::Yield))?;
+            self.consume_cycles(cycles)?;
             self.wait()?;
             return Ok(());
         }
         if dm.registers()[A7] == 93 {
             dm.set_cycles(0);
-            self.scheduler.consumed_cycles_add(cycles)?;
+            self.consume_cycles(cycles)?;
             return Ok(());
         }
         result
@@ -171,11 +170,22 @@ where
     DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
 {
     pub fn new(id: u64, args: &[Bytes], scheduler: Scheduler<DL>) -> Result<Self, Error> {
-        let mut r = Self { id: id, scheduler: scheduler, expand_cycles: u64::MAX, expand_syscalls: vec![] };
+        let mut r = Self { id, scheduler, expand_cycles: u64::MAX, expand_syscalls: vec![] };
         if r.scheduler.states.is_empty() {
-            assert_eq!(r.scheduler.boot_vm(&DataPieceId::Program, 0, u64::MAX, args)?, ROOT_VM_ID);
+            let location = DataLocation {
+                data_piece_id: r.scheduler.sg_data.sg_info.program_data_piece_id.clone(),
+                offset: 0,
+                length: u64::MAX,
+            };
+            assert_eq!(r.scheduler.boot_vm(&location, VmArgs::Vector(args.to_vec()))?, ROOT_VM_ID);
         }
         Ok(r)
+    }
+
+    pub fn consume_cycles(&mut self, cycles: u64) -> Result<(), Error> {
+        self.scheduler.consume_cycles(cycles)?;
+        self.expand_cycles = self.expand_cycles.checked_sub(cycles).ok_or(Error::CyclesExceeded)?;
+        Ok(())
     }
 
     pub fn exit_code(&self) -> i8 {
@@ -196,8 +206,7 @@ where
 
     pub fn wait(&mut self) -> Result<(), Error> {
         loop {
-            self.scheduler.current_iteration_cycles = 0;
-            let im = self.scheduler.iterate_prepare_machine(Pause::new(), self.expand_cycles)?;
+            let im = self.scheduler.iterate_prepare_machine()?;
             let id = im.0;
             let vm = im.1;
             if self.id == id {
@@ -206,9 +215,8 @@ where
             let result = vm.run();
             let cycles = vm.machine.cycles();
             vm.machine.set_cycles(0);
-            self.scheduler.iterate_process_results(id, result, cycles)?;
-            self.scheduler.consumed_cycles_add(self.scheduler.current_iteration_cycles)?;
-            self.expand_cycles = self.expand_cycles.checked_sub(self.scheduler.current_iteration_cycles).unwrap();
+            self.scheduler.iterate_process_results(id, result)?;
+            self.consume_cycles(cycles)?;
         }
         Ok(())
     }
@@ -216,8 +224,7 @@ where
     pub fn done(&mut self) -> Result<(), Error> {
         let dm = &mut self.scheduler.instantiated.get_mut(&self.id).unwrap().1.machine;
         let dmexit = dm.exit_code();
-        self.scheduler.iterate_process_results(self.id, Ok(dmexit), 0)?;
-        self.scheduler.consumed_cycles_add(self.scheduler.current_iteration_cycles)?;
+        self.scheduler.iterate_process_results(self.id, Ok(dmexit))?;
         self.scheduler.run(RunMode::LimitCycles(self.expand_cycles))?;
         return Ok(());
     }
