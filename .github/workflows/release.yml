@@ -42,15 +42,15 @@ jobs:
         mkdir dist
         cp target/release/ckb-debugger dist
         cp LICENSE dist
-        cd dist && tar -cvzf ckb-debugger-macos-x64.tar.gz ckb-debugger LICENSE
+        cd dist && tar -cvzf ckb-debugger-macos-arm64.tar.gz ckb-debugger LICENSE
     - name: Generate checksum
-      run: cd dist && shasum -a 256 ckb-debugger-macos-x64.tar.gz > ckb-debugger-macos-x64-sha256.txt
+      run: cd dist && shasum -a 256 ckb-debugger-macos-arm64.tar.gz > ckb-debugger-macos-arm64-sha256.txt
     - name: Upload
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          dist/ckb-debugger-macos-x64.tar.gz
-          dist/ckb-debugger-macos-x64-sha256.txt
+          dist/ckb-debugger-macos-arm64.tar.gz
+          dist/ckb-debugger-macos-arm64-sha256.txt
 
   publish-windows:
     name: Publish binary on Windows
