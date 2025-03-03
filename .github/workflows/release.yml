@@ -58,7 +58,7 @@ jobs:
 
   publish-macos-x64:
     name: Publish binary on macOS x64
-    runs-on: macos-14
+    runs-on: macos-13
     env:
       PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_x86_64-apple-darwin
     steps:
