@@ -8,9 +8,11 @@ permissions:
   contents: write
 
 jobs:
-  publish-linux:
-    name: Publish binary on Linux
+  publish-linux-x64:
+    name: Publish binary on Linux x64
     runs-on: ubuntu-latest
+    env:
+      PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_x86_64-unknown-linux-gnu
     steps:
     - uses: actions/checkout@v4
     - name: Build
@@ -20,19 +22,69 @@ jobs:
         mkdir dist
         cp target/release/ckb-debugger dist
         cp LICENSE dist
-        cd dist && tar -cvzf ckb-debugger-linux-x64.tar.gz ckb-debugger LICENSE
+        cd dist && tar -cvzf ${{ env.PACKAGE }}.tar.gz ckb-debugger LICENSE
     - name: Generate checksum
-      run: cd dist && sha256sum ckb-debugger-linux-x64.tar.gz > ckb-debugger-linux-x64-sha256.txt
+      run: cd dist && sha256sum ${{ env.PACKAGE }}.tar.gz > ${{ env.PACKAGE }}-sha256.txt
     - name: Upload
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          dist/ckb-debugger-linux-x64.tar.gz
-          dist/ckb-debugger-linux-x64-sha256.txt
+          dist/${{ env.PACKAGE }}.tar.gz
+          dist/${{ env.PACKAGE }}-sha256.txt
 
-  publish-macos:
-    name: Publish binary on macOS
+  publish-linux-aarch64:
+    name: Publish binary on Linux aarch64
+    runs-on: ubuntu-24.04-arm
+    env:
+      PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_aarch64-unknown-linux-gnu
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cd ckb-debugger && cargo build --release
+    - name: Archive files
+      run: |
+        mkdir dist
+        cp target/release/ckb-debugger dist
+        cp LICENSE dist
+        cd dist && tar -cvzf ${{ env.PACKAGE }}.tar.gz ckb-debugger LICENSE
+    - name: Generate checksum
+      run: cd dist && sha256sum ${{ env.PACKAGE }}.tar.gz > ${{ env.PACKAGE }}-sha256.txt
+    - name: Upload
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dist/${{ env.PACKAGE }}.tar.gz
+          dist/${{ env.PACKAGE }}-sha256.txt
+
+  publish-macos-x64:
+    name: Publish binary on macOS x64
+    runs-on: macos-13
+    env:
+      PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_x86_64-apple-darwin
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cd ckb-debugger && cargo build --release
+    - name: Archive files
+      run: |
+        mkdir dist
+        cp target/release/ckb-debugger dist
+        cp LICENSE dist
+        cd dist && tar -cvzf ${{ env.PACKAGE }}.tar.gz ckb-debugger LICENSE
+    - name: Generate checksum
+      run: cd dist && shasum -a 256 ${{ env.PACKAGE }}.tar.gz > ${{ env.PACKAGE }}-sha256.txt
+    - name: Upload
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dist/${{ env.PACKAGE }}.tar.gz
+          dist/${{ env.PACKAGE }}-sha256.txt
+
+  publish-macos-aarch64:
+    name: Publish binary on macOS aarch64
     runs-on: macos-latest
+    env:
+      PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_aarch64-apple-darwin
     steps:
     - uses: actions/checkout@v4
     - name: Build
@@ -42,19 +94,21 @@ jobs:
         mkdir dist
         cp target/release/ckb-debugger dist
         cp LICENSE dist
-        cd dist && tar -cvzf ckb-debugger-macos-arm64.tar.gz ckb-debugger LICENSE
+        cd dist && tar -cvzf ${{ env.PACKAGE }}.tar.gz ckb-debugger LICENSE
     - name: Generate checksum
-      run: cd dist && shasum -a 256 ckb-debugger-macos-arm64.tar.gz > ckb-debugger-macos-arm64-sha256.txt
+      run: cd dist && shasum -a 256 ${{ env.PACKAGE }}.tar.gz > ${{ env.PACKAGE }}-sha256.txt
     - name: Upload
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          dist/ckb-debugger-macos-arm64.tar.gz
-          dist/ckb-debugger-macos-arm64-sha256.txt
+          dist/${{ env.PACKAGE }}.tar.gz
+          dist/${{ env.PACKAGE }}-sha256.txt
 
-  publish-windows:
-    name: Publish binary on Windows
+  publish-windows-x64:
+    name: Publish binary on Windows x64
     runs-on: windows-latest
+    env:
+      PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_x86_64-pc-windows-msvc
     steps:
     - uses: actions/checkout@v4
     - name: Build
@@ -64,15 +118,15 @@ jobs:
         mkdir dist
         copy target/release/ckb-debugger.exe dist
         copy LICENSE dist
-        cd dist && tar -cvzf ckb-debugger-windows-x64.tar.gz ckb-debugger.exe LICENSE
+        cd dist && tar -cvzf ${{ env.PACKAGE }}.tar.gz ckb-debugger.exe LICENSE
     - name: Generate checksum
-      run: cd dist && Get-FileHash ckb-debugger-windows-x64.tar.gz > ckb-debugger-windows-x64-sha256.txt
+      run: cd dist && Get-FileHash ${{ env.PACKAGE }}.tar.gz > ${{ env.PACKAGE }}-sha256.txt
     - name: Upload
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          dist/ckb-debugger-windows-x64.tar.gz
-          dist/ckb-debugger-windows-x64-sha256.txt
+          dist/${{ env.PACKAGE }}.tar.gz
+          dist/${{ env.PACKAGE }}-sha256.txt
 
   publish-crates-io:
     name: Publish crates to crates.io
