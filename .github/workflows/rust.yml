@@ -19,6 +19,13 @@ jobs:
     - name: Build ckb-vm-signal-profiler example
       run: cargo build --examples --package ckb-vm-signal-profiler
 
+  build-linux-asm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --features=asm
+
   build-windows:
     runs-on: windows-latest
     steps:
