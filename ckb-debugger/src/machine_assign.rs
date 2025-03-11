@@ -1,12 +1,10 @@
-use ckb_script::{DataLocation, RunMode, Scheduler, VmArgs, ROOT_VM_ID};
+use ckb_script::{CoreMachine as CkbScriptCoreMachineType, DataLocation, RunMode, Scheduler, VmArgs, ROOT_VM_ID};
 use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::Decoder;
 use ckb_vm::instructions::execute;
 use ckb_vm::registers::A7;
-use ckb_vm::{
-    Bytes, CoreMachine, DefaultCoreMachine, Error, FlatMemory, Machine, SupportMachine, Syscalls, WXorXMemory,
-};
+use ckb_vm::{Bytes, CoreMachine, Error, Machine, SupportMachine, Syscalls};
 
 pub struct MachineAssign<DL>
 where
@@ -15,7 +13,7 @@ where
     pub id: u64,
     pub scheduler: Scheduler<DL>,
     pub expand_cycles: u64,
-    pub expand_syscalls: Vec<Box<(dyn Syscalls<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>)>>,
+    pub expand_syscalls: Vec<Box<(dyn Syscalls<CkbScriptCoreMachineType>)>>,
 }
 
 impl<DL> CoreMachine for MachineAssign<DL>
@@ -23,7 +21,7 @@ where
     DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
 {
     type REG = u64;
-    type MEM = WXorXMemory<FlatMemory<u64>>;
+    type MEM = <CkbScriptCoreMachineType as CoreMachine>::MEM;
 
     fn pc(&self) -> &Self::REG {
         let dm = &self.scheduler.instantiated.get(&self.id).unwrap().1.machine;

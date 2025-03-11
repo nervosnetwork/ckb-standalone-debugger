@@ -487,7 +487,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
                 .and_then(|inst| {
                     let regs = machine.registers().as_ptr();
+
+                    #[cfg(not(feature = "asm"))]
                     let memory = (&mut machine.memory_mut().inner_mut()).as_ptr();
+                    #[cfg(feature = "asm")]
+                    let memory = machine.memory().as_ref().memory.as_ptr();
+
                     let cycles = machine.cycles();
                     probe!(ckb_vm, execute_inst, pc, cycles, inst, regs, memory);
                     let r = execute(inst, &mut machine);

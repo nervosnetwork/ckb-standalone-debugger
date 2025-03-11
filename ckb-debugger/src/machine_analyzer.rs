@@ -5,7 +5,7 @@ use ckb_vm::decoder::{build_decoder, Decoder};
 use ckb_vm::instructions::instruction_length;
 use ckb_vm::machine::VERSION0;
 use ckb_vm::registers::{A0, SP};
-use ckb_vm::{Bytes, CoreMachine, Error, FlatMemory, Machine, Register, SupportMachine, WXorXMemory, ISA_MOP};
+use ckb_vm::{Bytes, CoreMachine, Error, Machine, Register, SupportMachine, ISA_MOP};
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -424,7 +424,7 @@ where
     DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
 {
     type REG = u64;
-    type MEM = WXorXMemory<FlatMemory<u64>>;
+    type MEM = <MachineAssign<DL> as CoreMachine>::MEM;
 
     fn pc(&self) -> &Self::REG {
         &self.machine.pc()
