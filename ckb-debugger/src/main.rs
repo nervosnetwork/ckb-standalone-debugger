@@ -31,7 +31,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    drop(env_logger::init());
+    env_logger::init();
 
     let default_gdb_listen = "127.0.0.1:9999";
     let default_max_cycles = format!("{}", 3_500_000_000u64);

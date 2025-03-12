@@ -9,3 +9,49 @@ members = [
     "ckb-vm-pprof-protos",
     "ckb-vm-signal-profiler",
 ]
+
+[workspace.package]
+version = "0.200.0"
+
+[workspace.dependencies]
+# CKB dependencies
+ckb-chain-spec = "=0.200.0"
+ckb-hash = "=0.200.0"
+ckb-jsonrpc-types = "=0.200.0"
+ckb-script = { version = "=0.200.0", default-features = false, features = ["flatmemory"] }
+ckb-traits = "=0.200.0"
+ckb-types = "=0.200.0"
+ckb-vm = { version = "=0.24.13", default-features = false, features = ["pprof"] }
+
+# Crates defined in current workspace
+ckb-debugger = { path = "ckb-debugger", version = "0.200.0" }
+ckb-mock-tx-types = { path = "ckb-mock-tx-types", version = "0.200.0" }
+ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "0.200.0" }
+ckb-vm-pprof = { path = "ckb-vm-pprof", version = "0.200.0" }
+ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "0.200.0" }
+ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "0.200.0" }
+ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "0.200.0" }
+
+# Other common crates
+addr2line = "0.17"
+byteorder = "1"
+bytes = "1.0.0"
+env_logger = "0.9.0"
+gdbstub = "0.7"
+gdbstub_arch = "0.3"
+goblin = "0.4"
+hex = "0.4"
+lazy_static = "1.4.0"
+libc = "0.2.132"
+log = "0.4.0"
+nix = "0.26.2"
+probe = "0.5"
+protoc-bin-vendored = "3.1"
+protobuf-codegen = "3.7"
+protobuf = { version = "3.7", features = ["with-bytes"] }
+rand = "0.8.5"
+regex = "1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_plain = "1.0"
+wasm-bindgen = "0.2.50"
