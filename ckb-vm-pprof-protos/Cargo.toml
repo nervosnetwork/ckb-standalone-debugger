@@ -1,6 +1,6 @@
 [package]
 name = "ckb-vm-pprof-protos"
-version = "0.200.0"
+version.workspace = true
 edition = "2021"
 description = "Crate for generating Rust definitions from pprof proto"
 license = "MIT"
@@ -9,10 +9,10 @@ authors = ["Nervos Core Dev <dev@nervos.org>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-protobuf-codegen = "3.7"
+protobuf-codegen.workspace = true
 
 [target.'cfg(target_os = "linux")'.build-dependencies]
-protoc-bin-vendored = "3.1"
+protoc-bin-vendored.workspace = true
 
 [dependencies]
-protobuf = { version = "3.7", features = ["with-bytes"] }
+protobuf.workspace = true

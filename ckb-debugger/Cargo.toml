@@ -1,7 +1,7 @@
 [package]
 name = "ckb-debugger"
 description = "Standalone debugger for Nervos CKB"
-version = "0.200.0"
+version.workspace = true
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2021"
@@ -11,29 +11,31 @@ default = []
 asm = ["ckb-script/asm"]
 
 [dependencies]
-addr2line = "0.17"
-byteorder = "1"
 clap = "2.33.0"
-ckb-chain-spec = "=0.200.0"
-ckb-hash = "=0.200.0"
-ckb-jsonrpc-types = "=0.200.0"
-ckb-mock-tx-types = { path = "../ckb-mock-tx-types", version = "0.200.0" }
-ckb-script = { version = "=0.200.0", default-features = false, features = ["flatmemory"] }
-ckb-traits = "=0.200.0"
-ckb-types = "=0.200.0"
-ckb-vm = { version = "=0.24.13", default-features = false, features = ["pprof"] }
-env_logger = "0.4.3"
-gdbstub = "0.7"
-gdbstub_arch = "0.3"
-goblin = "0.4"
-hex = "0.4"
-libc = "0.2.132"
-log = "0.4.0"
-nix = "0.26.2"
-probe = "0.5"
-rand = "0.8.5"
-regex = "1"
-serde = "1.0"
-serde_json = "1.0"
-serde_plain = "1.0"
-wasm-bindgen = "0.2.50"
+
+ckb-chain-spec.workspace = true
+ckb-hash.workspace = true
+ckb-jsonrpc-types.workspace = true
+ckb-mock-tx-types.workspace = true
+ckb-script.workspace = true
+ckb-traits.workspace = true
+ckb-types.workspace = true
+ckb-vm.workspace = true
+
+addr2line.workspace = true
+byteorder.workspace = true
+env_logger.workspace = true
+gdbstub.workspace = true
+gdbstub_arch.workspace = true
+goblin.workspace = true
+hex.workspace = true
+libc.workspace = true
+log.workspace = true
+nix.workspace = true
+probe.workspace = true
+rand.workspace = true
+regex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_plain.workspace = true
+wasm-bindgen.workspace = true
