@@ -132,14 +132,20 @@ where
         let dm = &mut self.scheduler.instantiated.get_mut(&self.id).unwrap().1.machine;
         let result = dm.ecall();
         let cycles = dm.cycles();
+        let sid = dm.registers()[A7];
         if result == Err(Error::Yield) {
             dm.set_cycles(0);
             self.scheduler.iterate_process_results(self.id, Err(Error::Yield))?;
             self.consume_cycles(cycles)?;
             self.wait()?;
+            if sid == 2043 {
+                // Special handling for ExecV2.
+                let dm = &mut self.scheduler.instantiated.get_mut(&self.id).unwrap().1.machine;
+                dm.set_running(true)
+            }
             return Ok(());
         }
-        if dm.registers()[A7] == 93 {
+        if sid == 93 {
             dm.set_cycles(0);
             self.consume_cycles(cycles)?;
             return Ok(());
