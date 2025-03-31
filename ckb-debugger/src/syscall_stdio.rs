@@ -1,11 +1,11 @@
 use ckb_vm::{
-    registers::{A0, A1, A2, A7},
     Error, Memory, Register, SupportMachine, Syscalls,
+    registers::{A0, A1, A2, A7},
 };
 use libc::{SEEK_CUR, SEEK_END, SEEK_SET};
 use nix::{
     sys::stat::fstat,
-    unistd::{close, lseek, read, write, Whence},
+    unistd::{Whence, close, lseek, read, write},
 };
 use std::mem::size_of;
 use std::slice::from_raw_parts;

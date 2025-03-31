@@ -5,15 +5,15 @@
 use ckb_jsonrpc_types as json_types;
 use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_types::{
+    H256,
     bytes::Bytes,
     core::{
+        DepType, EpochNumberWithFraction, HeaderView, TransactionInfo, TransactionView,
         cell::{CellMeta, CellMetaBuilder, CellProvider, CellStatus, HeaderChecker},
         error::OutPointError,
-        DepType, EpochNumberWithFraction, HeaderView, TransactionInfo, TransactionView,
     },
     packed::{self, Byte32, CellDep, CellInput, CellOutput, OutPoint, OutPointVec, Transaction},
     prelude::*,
-    H256,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

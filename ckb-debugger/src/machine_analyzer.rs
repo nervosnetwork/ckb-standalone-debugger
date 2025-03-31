@@ -1,11 +1,11 @@
 use crate::machine_assign::MachineAssign;
 use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_vm::cost_model::estimate_cycles;
-use ckb_vm::decoder::{build_decoder, Decoder};
+use ckb_vm::decoder::{Decoder, build_decoder};
 use ckb_vm::instructions::instruction_length;
 use ckb_vm::machine::VERSION0;
 use ckb_vm::registers::{A0, SP};
-use ckb_vm::{Bytes, CoreMachine, Error, Machine, Register, SupportMachine, ISA_MOP};
+use ckb_vm::{Bytes, CoreMachine, Error, ISA_MOP, Machine, Register, SupportMachine};
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -84,11 +84,7 @@ impl Tags {
     }
 
     pub fn func(&self) -> String {
-        if self.func != "??" {
-            self.func.clone()
-        } else {
-            format!("func_0x{:x}", self.addr)
-        }
+        if self.func != "??" { self.func.clone() } else { format!("func_0x{:x}", self.addr) }
     }
 
     pub fn simple(&self) -> String {

@@ -1,4 +1,4 @@
-use ckb_script::{CoreMachine as CkbScriptCoreMachineType, DataLocation, RunMode, Scheduler, VmArgs, ROOT_VM_ID};
+use ckb_script::{CoreMachine as CkbScriptCoreMachineType, DataLocation, ROOT_VM_ID, RunMode, Scheduler, VmArgs};
 use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::Decoder;

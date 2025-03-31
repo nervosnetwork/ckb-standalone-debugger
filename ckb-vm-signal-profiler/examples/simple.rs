@@ -1,12 +1,12 @@
 // A simple ckb-vm profiler with debugger syscall implemented.
 
 use ckb_vm::{
+    Bytes, Error as VMError, ISA_A, ISA_B, ISA_IMC, ISA_MOP, Memory, Register, SupportMachine, Syscalls,
     machine::{
-        asm::{AsmCoreMachine, AsmMachine},
         DefaultMachineBuilder, VERSION2,
+        asm::{AsmCoreMachine, AsmMachine},
     },
     registers::{A0, A7},
-    Bytes, Error as VMError, Memory, Register, SupportMachine, Syscalls, ISA_A, ISA_B, ISA_IMC, ISA_MOP,
 };
 use std::env;
 use std::process::exit;

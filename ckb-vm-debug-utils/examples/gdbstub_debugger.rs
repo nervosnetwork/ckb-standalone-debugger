@@ -3,7 +3,7 @@ extern crate log;
 
 use bytes::Bytes;
 use ckb_vm::{
-    DefaultCoreMachine, DefaultMachineBuilder, SparseMemory, SupportMachine, WXorXMemory, ISA_B, ISA_IMC, ISA_MOP,
+    DefaultCoreMachine, DefaultMachineBuilder, ISA_B, ISA_IMC, ISA_MOP, SparseMemory, SupportMachine, WXorXMemory,
 };
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;

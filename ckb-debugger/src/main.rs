@@ -2,14 +2,14 @@ use ckb_chain_spec::consensus::{ConsensusBuilder, TYPE_ID_CODE_HASH};
 #[cfg(target_family = "unix")]
 use ckb_debugger::Stdio;
 use ckb_debugger::{
-    analyze, get_script_hash_by_index, ElfDumper, FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer,
-    MachineAssign, MachineOverlap, MachineProfile, MachineStepLog, Random, TimeNow,
+    ElfDumper, FileOperation, FileStream, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap,
+    MachineProfile, MachineStepLog, Random, TimeNow, analyze, get_script_hash_by_index,
 };
 use ckb_debugger::{Embed, GdbStubHandler, GdbStubHandlerEventLoop};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
-use ckb_script::{ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv, ROOT_VM_ID};
-use ckb_types::core::cell::{resolve_transaction, CellMeta};
-use ckb_types::core::{hardfork, Capacity, DepType, HeaderView, ScriptHashType, TransactionBuilder};
+use ckb_script::{ROOT_VM_ID, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
+use ckb_types::core::cell::{CellMeta, resolve_transaction};
+use ckb_types::core::{Capacity, DepType, HeaderView, ScriptHashType, TransactionBuilder, hardfork};
 use ckb_types::packed::{Byte32, CellDep, CellInput, CellOutput, OutPoint, Script, ScriptOpt};
 use ckb_types::prelude::{Builder, Entity, Pack};
 use ckb_vm::cost_model::estimate_cycles;
@@ -18,7 +18,7 @@ use ckb_vm::error::Error;
 use ckb_vm::instructions::execute;
 use ckb_vm::machine::VERSION2;
 use ckb_vm::{Bytes, CoreMachine, Register, SupportMachine};
-use clap::{crate_version, App, Arg};
+use clap::{App, Arg, crate_version};
 use gdbstub::{
     conn::ConnectionExt,
     stub::{DisconnectReason, GdbStub},

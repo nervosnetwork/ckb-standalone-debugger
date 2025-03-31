@@ -2,41 +2,41 @@ use crate::machine_assign::MachineAssign;
 use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::{
+    Error, Memory, Register,
     bytes::Bytes,
-    decoder::{build_decoder, Decoder},
+    decoder::{Decoder, build_decoder},
     instructions::{execute, extract_opcode, insts},
     machine::{CoreMachine, Machine, SupportMachine},
     registers::A7,
-    Error, Memory, Register,
 };
 use gdbstub::{
     arch::Arch,
     common::Signal,
     conn::{Connection, ConnectionExt},
     stub::{
-        run_blocking::{BlockingEventLoop, Event, WaitForStopReasonError},
         SingleThreadStopReason,
+        run_blocking::{BlockingEventLoop, Event, WaitForStopReasonError},
     },
     target::{
+        Target, TargetError, TargetResult,
         ext::{
             base::{
+                BaseOps,
                 single_register_access::{SingleRegisterAccess, SingleRegisterAccessOps},
                 singlethread::{
                     SingleThreadBase, SingleThreadRangeStepping, SingleThreadRangeSteppingOps, SingleThreadResume,
                     SingleThreadResumeOps, SingleThreadSingleStep, SingleThreadSingleStepOps,
                 },
-                BaseOps,
             },
             breakpoints::{
                 Breakpoints, BreakpointsOps, HwWatchpoint, HwWatchpointOps, SwBreakpoint, SwBreakpointOps, WatchKind,
             },
             catch_syscalls::{CatchSyscallPosition, CatchSyscalls, CatchSyscallsOps, SyscallNumbers},
         },
-        Target, TargetError, TargetResult,
     },
 };
-use gdbstub_arch::riscv::reg::id::RiscvRegId;
 use gdbstub_arch::riscv::Riscv64;
+use gdbstub_arch::riscv::reg::id::RiscvRegId;
 use std::collections::HashSet;
 use std::fmt::Debug;
 use std::marker::PhantomData;

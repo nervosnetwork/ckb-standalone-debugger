@@ -3,14 +3,14 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use ckb_vm::decoder::{build_decoder, Decoder};
+use ckb_vm::decoder::{Decoder, build_decoder};
 use ckb_vm::instructions::instruction_length;
 use ckb_vm::machine::{DefaultMachine, DefaultMachineBuilder, VERSION0};
 use ckb_vm::memory::Memory;
 use ckb_vm::registers::{A0, SP};
 use ckb_vm::{
-    cost_model, Bytes, CoreMachine, DefaultCoreMachine, Error, Machine, Register, SparseMemory, SupportMachine,
-    Syscalls, WXorXMemory, ISA_MOP,
+    Bytes, CoreMachine, DefaultCoreMachine, Error, ISA_MOP, Machine, Register, SparseMemory, SupportMachine, Syscalls,
+    WXorXMemory, cost_model,
 };
 pub use cost_model::estimate_cycles;
 
@@ -87,11 +87,7 @@ impl Tags {
     }
 
     pub fn func(&self) -> String {
-        if self.func != "??" {
-            self.func.clone()
-        } else {
-            format!("func_0x{:x}", self.addr)
-        }
+        if self.func != "??" { self.func.clone() } else { format!("func_0x{:x}", self.addr) }
     }
 
     pub fn simple(&self) -> String {
