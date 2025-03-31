@@ -5,8 +5,8 @@ use bytes::Bytes;
 use ckb_gdb_remote_protocol::process_packets_from;
 use ckb_vm::machine::VERSION2;
 use ckb_vm::{
-    DefaultCoreMachine, DefaultMachineBuilder, SparseMemory, SupportMachine, WXorXMemory, ISA_A, ISA_B, ISA_IMC,
-    ISA_MOP,
+    DefaultCoreMachine, DefaultMachineBuilder, ISA_A, ISA_B, ISA_IMC, ISA_MOP, SparseMemory, SupportMachine,
+    WXorXMemory,
 };
 use ckb_vm_debug_utils::GdbHandler;
 #[cfg(feature = "stdio")]

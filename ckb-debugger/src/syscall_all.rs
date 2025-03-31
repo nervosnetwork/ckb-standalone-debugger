@@ -1,10 +1,10 @@
 use ckb_vm::{
-    registers::{A0, A1, A2, A3, A7},
     Error, Memory, Register, SupportMachine, Syscalls,
+    registers::{A0, A1, A2, A3, A7},
 };
 use libc::{
-    c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell, fwrite, size_t,
-    FILE,
+    FILE, c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell, fwrite,
+    size_t,
 };
 use rand::prelude::*;
 use std::ffi::CString;

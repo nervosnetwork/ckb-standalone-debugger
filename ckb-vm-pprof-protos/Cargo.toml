@@ -1,7 +1,7 @@
 [package]
 name = "ckb-vm-pprof-protos"
 version.workspace = true
-edition = "2021"
+edition = "2024"
 description = "Crate for generating Rust definitions from pprof proto"
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]

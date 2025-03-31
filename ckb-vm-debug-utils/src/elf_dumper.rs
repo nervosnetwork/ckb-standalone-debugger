@@ -1,9 +1,9 @@
 use byteorder::{ByteOrder, LittleEndian};
 use bytes::{BufMut, Bytes, BytesMut};
 use ckb_vm::{
+    Error, Memory, RISCV_PAGES, RISCV_PAGESIZE, Register, SupportMachine, Syscalls,
     memory::{FLAG_EXECUTABLE, FLAG_WXORX_BIT},
     registers::A7,
-    Error, Memory, Register, SupportMachine, Syscalls, RISCV_PAGES, RISCV_PAGESIZE,
 };
 use std::fs::File;
 use std::io::Write;

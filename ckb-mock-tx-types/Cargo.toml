@@ -3,7 +3,7 @@ name = "ckb-mock-tx-types"
 description = "CKB mock transaction types"
 version.workspace = true
 license = "MIT"
-edition = "2021"
+edition = "2024"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

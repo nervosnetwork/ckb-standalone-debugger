@@ -3,7 +3,7 @@ use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ScriptGroupType, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::{
     core::cell::resolve_transaction,
-    core::hardfork::{HardForks, CKB2021, CKB2023},
+    core::hardfork::{CKB2021, CKB2023, HardForks},
     core::{Cycle, EpochNumberWithFraction, HeaderView},
     packed::Byte32,
     prelude::*,

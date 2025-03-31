@@ -1,37 +1,37 @@
 use ckb_vm::{
-    decoder::{build_decoder, Decoder},
+    Bytes, Error, Memory, Register,
+    decoder::{Decoder, build_decoder},
     instructions::{execute, extract_opcode, insts},
     machine::{CoreMachine, DefaultMachine, Machine, SupportMachine},
     registers::A7,
-    Bytes, Error, Memory, Register,
 };
 use gdbstub::{
     arch::Arch,
     common::Signal,
     conn::{Connection, ConnectionExt},
     stub::{
-        run_blocking::{BlockingEventLoop, Event, WaitForStopReasonError},
         SingleThreadStopReason,
+        run_blocking::{BlockingEventLoop, Event, WaitForStopReasonError},
     },
     target::{
+        Target, TargetError, TargetResult,
         ext::{
             base::{
+                BaseOps,
                 single_register_access::{SingleRegisterAccess, SingleRegisterAccessOps},
                 singlethread::{
                     SingleThreadBase, SingleThreadRangeStepping, SingleThreadRangeSteppingOps, SingleThreadResume,
                     SingleThreadResumeOps, SingleThreadSingleStep, SingleThreadSingleStepOps,
                 },
-                BaseOps,
             },
             breakpoints::{
                 Breakpoints, BreakpointsOps, HwWatchpoint, HwWatchpointOps, SwBreakpoint, SwBreakpointOps, WatchKind,
             },
             catch_syscalls::{CatchSyscallPosition, CatchSyscalls, CatchSyscallsOps, SyscallNumbers},
         },
-        Target, TargetError, TargetResult,
     },
 };
-use gdbstub_arch::riscv::reg::{id::RiscvRegId, RiscvCoreRegs};
+use gdbstub_arch::riscv::reg::{RiscvCoreRegs, id::RiscvRegId};
 use std::collections::HashSet;
 use std::fmt::Debug;
 use std::hash::Hash as StdHash;
@@ -221,10 +221,10 @@ impl<R: Register + Debug + Eq + StdHash, M: SupportMachine + CoreMachine<REG = R
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > Target for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> Target for GdbStubHandler<M, A>
 {
     type Arch = A;
     type Error = Error;
@@ -243,10 +243,10 @@ impl<
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > SingleThreadBase for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> SingleThreadBase for GdbStubHandler<M, A>
 {
     fn read_registers(&mut self, regs: &mut <Self::Arch as Arch>::Registers) -> TargetResult<(), Self> {
         for (i, val) in self.machine.registers().iter().enumerate() {
@@ -291,10 +291,10 @@ impl<
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > SingleRegisterAccess<()> for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> SingleRegisterAccess<()> for GdbStubHandler<M, A>
 {
     fn read_register(
         &mut self,
@@ -333,10 +333,10 @@ impl<
 // This is only for setting execution modes, the actual execution shall live within
 // BlockingEventLoop trait impl.
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > SingleThreadResume for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> SingleThreadResume for GdbStubHandler<M, A>
 {
     fn resume(&mut self, signal: Option<Signal>) -> Result<(), Self::Error> {
         if signal.is_some() {
@@ -356,10 +356,10 @@ impl<
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > SingleThreadRangeStepping for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> SingleThreadRangeStepping for GdbStubHandler<M, A>
 {
     fn resume_range_step(
         &mut self,
@@ -372,10 +372,10 @@ impl<
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > SingleThreadSingleStep for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> SingleThreadSingleStep for GdbStubHandler<M, A>
 {
     fn step(&mut self, signal: Option<Signal>) -> Result<(), Self::Error> {
         if signal.is_some() {
@@ -387,10 +387,10 @@ impl<
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > Breakpoints for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> Breakpoints for GdbStubHandler<M, A>
 {
     fn support_sw_breakpoint(&mut self) -> Option<SwBreakpointOps<'_, Self>> {
         Some(self)
@@ -402,10 +402,10 @@ impl<
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > SwBreakpoint for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> SwBreakpoint for GdbStubHandler<M, A>
 {
     fn add_sw_breakpoint(
         &mut self,
@@ -431,10 +431,10 @@ impl<
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > HwWatchpoint for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> HwWatchpoint for GdbStubHandler<M, A>
 {
     fn add_hw_watchpoint(
         &mut self,
@@ -462,10 +462,10 @@ impl<
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > CatchSyscalls for GdbStubHandler<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> CatchSyscalls for GdbStubHandler<M, A>
 {
     fn enable_catch_syscalls(
         &mut self,
@@ -491,10 +491,10 @@ pub struct GdbStubHandlerEventLoop<M, A> {
 }
 
 impl<
-        R: Register + Debug + Eq + StdHash,
-        M: SupportMachine + CoreMachine<REG = R>,
-        A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
-    > BlockingEventLoop for GdbStubHandlerEventLoop<M, A>
+    R: Register + Debug + Eq + StdHash,
+    M: SupportMachine + CoreMachine<REG = R>,
+    A: Arch<Usize = R, Registers = RiscvCoreRegs<R>, RegId = RiscvRegId<R>>,
+> BlockingEventLoop for GdbStubHandlerEventLoop<M, A>
 {
     type Target = GdbStubHandler<M, A>;
     type Connection = Box<dyn ConnectionExt<Error = std::io::Error>>;

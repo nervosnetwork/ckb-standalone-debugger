@@ -9,7 +9,7 @@ use crate::{
     timer::Timer,
 };
 use addr2line::gimli::{self, Error as GimliError, RegisterRule, RiscV, UnwindSection};
-use ckb_vm::{machine::asm::AsmMachine, Bytes, CoreMachine, Memory};
+use ckb_vm::{Bytes, CoreMachine, Memory, machine::asm::AsmMachine};
 use log::trace;
 use nix::sys::signal;
 use protobuf::Message;

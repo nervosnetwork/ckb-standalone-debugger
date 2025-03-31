@@ -1,7 +1,7 @@
 [package]
 name = "ckb-vm-signal-profiler"
 version.workspace = true
-edition = "2021"
+edition = "2024"
 description = "Linux signal based profiler for ckb-vm, note this is profiling ckb-vm itself, not the programs running in ckb-vm"
 license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]

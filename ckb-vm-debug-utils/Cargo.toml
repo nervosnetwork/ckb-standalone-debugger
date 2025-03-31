@@ -2,7 +2,7 @@
 name = "ckb-vm-debug-utils"
 version.workspace = true
 authors = ["Xuejie Xiao <xxuejie@gmail.com>"]
-edition = "2021"
+edition = "2024"
 description = "Utils for ckb-debugger"
 license = "MIT"
 
