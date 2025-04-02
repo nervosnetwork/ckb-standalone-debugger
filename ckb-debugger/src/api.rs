@@ -36,7 +36,7 @@ pub fn run(
     verifier.set_debug_printer(Box::new(move |_hash: &Byte32, message: &str| {
         let message = message.trim_end_matches('\n');
         if message != "" {
-            crate::arch::debug_printer(message);
+            crate::arch::println(&format!("Script log: {}", message));
         }
     }));
     Ok(verifier.verify_single(*script_group_type, script_hash, max_cycle)?)

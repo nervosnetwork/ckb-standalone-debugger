@@ -1,3 +1,3 @@
-pub fn debug_printer(s: &str) {
-    println!("Script log: {}", s);
+pub fn println(s: &str) {
+    println!("{}", s);
 }

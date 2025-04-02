@@ -358,7 +358,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     verifier.set_debug_printer(Box::new(move |_hash: &Byte32, message: &str| {
         let message = message.trim_end_matches('\n');
         if message != "" {
-            ckb_debugger::arch::debug_printer(message);
+            ckb_debugger::arch::println(&format!("Script log: {}", message));
         }
     }));
     let verifier_script_group = verifier.find_script_group(verifier_script_group_type, &verifier_script_hash).unwrap();

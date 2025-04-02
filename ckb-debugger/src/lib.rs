@@ -2,8 +2,10 @@ mod analyzer;
 mod api;
 #[cfg(target_family = "unix")]
 pub mod arch_unix;
-#[cfg(target_family = "wasm")]
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
 pub mod arch_wasm;
+#[cfg(all(target_family = "wasm", target_os = "wasi"))]
+pub mod arch_wasm_wasi;
 #[cfg(target_family = "windows")]
 pub mod arch_windows;
 mod machine_analyzer;
@@ -20,8 +22,10 @@ pub use analyzer::analyze;
 pub use api::{run, run_json};
 #[cfg(target_family = "unix")]
 pub use arch_unix::{self as arch};
-#[cfg(target_family = "wasm")]
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
 pub use arch_wasm::{self as arch};
+#[cfg(all(target_family = "wasm", target_os = "wasi"))]
+pub use arch_wasm_wasi::{self as arch};
 #[cfg(target_family = "windows")]
 pub use arch_windows::{self as arch};
 pub use machine_analyzer::{MachineAnalyzer, MachineOverlap, MachineProfile, MachineStepLog};
