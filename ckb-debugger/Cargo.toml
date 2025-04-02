@@ -6,6 +6,9 @@ license = "MIT"
 authors = ["Nervos Core Dev <dev@nervos.org>"]
 edition = "2024"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [features]
 default = []
 asm = ["ckb-script/asm"]
@@ -39,3 +42,7 @@ serde.workspace = true
 serde_json.workspace = true
 serde_plain.workspace = true
 wasm-bindgen.workspace = true
+web-sys.workspace = true
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+getrandom = { version = "0.2", features = ["js"] }

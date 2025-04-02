@@ -33,11 +33,10 @@ pub fn run(
         consensus.clone(),
         tx_env.clone(),
     );
-    #[cfg(any(target_family = "unix", target_family = "windows"))]
     verifier.set_debug_printer(Box::new(move |_hash: &Byte32, message: &str| {
-        print!("Script log: {}", message);
-        if !message.ends_with('\n') {
-            println!("");
+        let message = message.trim_end_matches('\n');
+        if message != "" {
+            crate::arch::debug_printer(message);
         }
     }));
     Ok(verifier.verify_single(*script_group_type, script_hash, max_cycle)?)
