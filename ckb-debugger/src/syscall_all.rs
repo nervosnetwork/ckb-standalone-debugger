@@ -6,13 +6,11 @@ use libc::{
     FILE, c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell, fwrite,
     size_t,
 };
-use rand::prelude::*;
 use std::ffi::CString;
 use std::io::Read;
 use std::{cmp::min, fs, io};
 
 pub const SYSCALL_NUMBER_READ: u64 = 9000;
-pub const SYSCALL_NUMBER_RANDOM: u64 = 9002;
 pub const SYSCALL_NUMBER_FOPEN: u64 = 9003;
 pub const SYSCALL_NUMBER_FREOPEN: u64 = 9004;
 pub const SYSCALL_NUMBER_FREAD: u64 = 9005;
@@ -202,30 +200,6 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileStream {
         } else {
             machine.set_register(A0, Mac::REG::from_i64(-1));
         }
-        return Ok(true);
-    }
-}
-
-pub struct Random {}
-
-impl Random {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl<Mac: SupportMachine> Syscalls<Mac> for Random {
-    fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
-        Ok(())
-    }
-
-    fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
-        let id = machine.registers()[A7].to_u64();
-        if id != SYSCALL_NUMBER_RANDOM {
-            return Ok(false);
-        }
-        let r: u64 = random();
-        machine.set_register(A0, Mac::REG::from_u64(r));
         return Ok(true);
     }
 }
