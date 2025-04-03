@@ -1,3 +1,8 @@
+pub fn file_read(name: &str) -> std::io::Result<Vec<u8>> {
+    let s = web_sys::window().unwrap().local_storage().unwrap().unwrap().get(name).unwrap().unwrap();
+    Ok(hex::decode(&s).unwrap())
+}
+
 pub fn file_write(name: &str, data: &[u8]) -> std::io::Result<()> {
     web_sys::window().unwrap().local_storage().unwrap().unwrap().set(name, &hex::encode(data)).unwrap();
     Ok(())

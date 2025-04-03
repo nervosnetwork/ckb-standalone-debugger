@@ -15,6 +15,7 @@ mod misc;
 #[cfg(any(target_family = "unix", target_family = "windows"))]
 mod syscall_all;
 mod syscall_elf_dumper;
+mod syscall_file_stream;
 mod syscall_random;
 #[cfg(target_family = "unix")]
 mod syscall_stdio;
@@ -35,8 +36,9 @@ pub use machine_assign::MachineAssign;
 pub use machine_gdb::{GdbStubHandler, GdbStubHandlerEventLoop};
 pub use misc::{DummyResourceLoader, Embed, HumanReadableCycles, get_script_hash_by_index};
 #[cfg(any(target_family = "unix", target_family = "windows"))]
-pub use syscall_all::{FileOperation, FileStream};
+pub use syscall_all::FileOperation;
 pub use syscall_elf_dumper::ElfDumper;
+pub use syscall_file_stream::FileStream;
 pub use syscall_random::Random;
 #[cfg(target_family = "unix")]
 pub use syscall_stdio::Stdio;

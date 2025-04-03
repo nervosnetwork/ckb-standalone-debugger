@@ -5,9 +5,9 @@ use ckb_debugger::{
     ElfDumper, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile, MachineStepLog,
     analyze, get_script_hash_by_index,
 };
-use ckb_debugger::{Embed, GdbStubHandler, GdbStubHandlerEventLoop, Timestamp};
+use ckb_debugger::{Embed, FileStream, GdbStubHandler, GdbStubHandlerEventLoop, Timestamp};
 #[cfg(any(target_family = "unix", target_family = "windows"))]
-use ckb_debugger::{FileOperation, FileStream, Random};
+use ckb_debugger::{FileOperation, Random};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ROOT_VM_ID, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::core::cell::{CellMeta, resolve_transaction};
@@ -373,7 +373,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         #[cfg(any(target_family = "unix", target_family = "windows"))]
         machine_assign.expand_syscalls.push(Box::new(FileOperation::new()));
-        #[cfg(any(target_family = "unix", target_family = "windows"))]
         if let Some(name) = matches_read_file_name {
             machine_assign.expand_syscalls.push(Box::new(FileStream::new(name)));
         }

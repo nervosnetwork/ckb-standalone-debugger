@@ -1,4 +1,15 @@
-use std::io::Write;
+use std::io::{Read, Write};
+
+pub fn file_read(name: &str) -> std::io::Result<Vec<u8>> {
+    if name == "-" {
+        let mut v = Vec::<u8>::new();
+        let mut stdin = std::io::stdin();
+        stdin.read_to_end(&mut v)?;
+        Ok(v)
+    } else {
+        std::fs::read(name)
+    }
+}
 
 pub fn file_write(name: &str, data: &[u8]) -> std::io::Result<()> {
     let mut file = std::fs::File::create(name)?;
