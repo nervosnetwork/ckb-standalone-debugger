@@ -9,11 +9,9 @@ use libc::{
 use rand::prelude::*;
 use std::ffi::CString;
 use std::io::Read;
-use std::time::SystemTime;
 use std::{cmp::min, fs, io};
 
 pub const SYSCALL_NUMBER_READ: u64 = 9000;
-pub const SYSCALL_NUMBER_NOW: u64 = 9001;
 pub const SYSCALL_NUMBER_RANDOM: u64 = 9002;
 pub const SYSCALL_NUMBER_FOPEN: u64 = 9003;
 pub const SYSCALL_NUMBER_FREOPEN: u64 = 9004;
@@ -228,31 +226,6 @@ impl<Mac: SupportMachine> Syscalls<Mac> for Random {
         }
         let r: u64 = random();
         machine.set_register(A0, Mac::REG::from_u64(r));
-        return Ok(true);
-    }
-}
-
-pub struct TimeNow {}
-
-impl TimeNow {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl<Mac: SupportMachine> Syscalls<Mac> for TimeNow {
-    fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
-        Ok(())
-    }
-
-    fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
-        let id = machine.registers()[A7].to_u64();
-        if id != SYSCALL_NUMBER_NOW {
-            return Ok(false);
-        }
-        let duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
-        let now = duration.as_nanos();
-        machine.set_register(A0, Mac::REG::from_u64(now as u64));
         return Ok(true);
     }
 }

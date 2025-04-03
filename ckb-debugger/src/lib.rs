@@ -17,6 +17,7 @@ mod syscall_all;
 mod syscall_elf_dumper;
 #[cfg(target_family = "unix")]
 mod syscall_stdio;
+mod syscall_timestamp;
 
 pub use analyzer::analyze;
 pub use api::{run, run_json};
@@ -33,7 +34,8 @@ pub use machine_assign::MachineAssign;
 pub use machine_gdb::{GdbStubHandler, GdbStubHandlerEventLoop};
 pub use misc::{DummyResourceLoader, Embed, HumanReadableCycles, get_script_hash_by_index};
 #[cfg(any(target_family = "unix", target_family = "windows"))]
-pub use syscall_all::{FileOperation, FileStream, Random, TimeNow};
+pub use syscall_all::{FileOperation, FileStream, Random};
 pub use syscall_elf_dumper::ElfDumper;
 #[cfg(target_family = "unix")]
 pub use syscall_stdio::Stdio;
+pub use syscall_timestamp::Timestamp;

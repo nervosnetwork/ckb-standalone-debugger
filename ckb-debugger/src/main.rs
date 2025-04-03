@@ -5,9 +5,9 @@ use ckb_debugger::{
     ElfDumper, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile, MachineStepLog,
     analyze, get_script_hash_by_index,
 };
-use ckb_debugger::{Embed, GdbStubHandler, GdbStubHandlerEventLoop};
+use ckb_debugger::{Embed, GdbStubHandler, GdbStubHandlerEventLoop, Timestamp};
 #[cfg(any(target_family = "unix", target_family = "windows"))]
-use ckb_debugger::{FileOperation, FileStream, Random, TimeNow};
+use ckb_debugger::{FileOperation, FileStream, Random};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ROOT_VM_ID, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::core::cell::{CellMeta, resolve_transaction};
@@ -381,8 +381,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         machine_assign.expand_syscalls.push(Box::new(Random::new()));
         #[cfg(target_family = "unix")]
         machine_assign.expand_syscalls.push(Box::new(Stdio::new(false)));
-        #[cfg(any(target_family = "unix", target_family = "windows"))]
-        machine_assign.expand_syscalls.push(Box::new(TimeNow::new()));
+        machine_assign.expand_syscalls.push(Box::new(Timestamp::new()));
         machine_assign.wait()?;
         Ok(machine_assign)
     };
