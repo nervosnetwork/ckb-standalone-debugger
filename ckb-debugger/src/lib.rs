@@ -16,7 +16,6 @@ mod syscall_elf_dumper;
 mod syscall_file_operation;
 mod syscall_file_stream;
 mod syscall_random;
-#[cfg(target_family = "unix")]
 mod syscall_stdio;
 mod syscall_timestamp;
 
@@ -38,6 +37,5 @@ pub use syscall_elf_dumper::ElfDumper;
 pub use syscall_file_operation::FileOperation;
 pub use syscall_file_stream::FileStream;
 pub use syscall_random::Random;
-#[cfg(target_family = "unix")]
 pub use syscall_stdio::Stdio;
 pub use syscall_timestamp::Timestamp;

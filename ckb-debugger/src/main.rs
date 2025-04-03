@@ -1,11 +1,11 @@
 use ckb_chain_spec::consensus::{ConsensusBuilder, TYPE_ID_CODE_HASH};
-#[cfg(target_family = "unix")]
-use ckb_debugger::Stdio;
 use ckb_debugger::{
     ElfDumper, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile, MachineStepLog,
     analyze, get_script_hash_by_index,
 };
-use ckb_debugger::{Embed, FileOperation, FileStream, GdbStubHandler, GdbStubHandlerEventLoop, Random, Timestamp};
+use ckb_debugger::{
+    Embed, FileOperation, FileStream, GdbStubHandler, GdbStubHandlerEventLoop, Random, Stdio, Timestamp,
+};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ROOT_VM_ID, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::core::cell::{CellMeta, resolve_transaction};
@@ -374,7 +374,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             machine_assign.expand_syscalls.push(Box::new(FileStream::new(name)));
         }
         machine_assign.expand_syscalls.push(Box::new(Random::new()));
-        #[cfg(target_family = "unix")]
         machine_assign.expand_syscalls.push(Box::new(Stdio::new(false)));
         machine_assign.expand_syscalls.push(Box::new(Timestamp::new()));
         machine_assign.wait()?;
