@@ -1,4 +1,4 @@
-#[cfg(any(target_family = "unix", target_family = "windows"))]
+#[cfg(target_family = "unix")]
 mod arch {
     use ckb_vm::{
         Error, Memory, Register, SupportMachine, Syscalls,
@@ -189,7 +189,7 @@ mod arch {
     }
 }
 
-#[cfg(target_family = "wasm")]
+#[cfg(any(target_family = "wasm", target_family = "windows"))]
 mod arch {
     use ckb_vm::{Error, SupportMachine, Syscalls};
 
