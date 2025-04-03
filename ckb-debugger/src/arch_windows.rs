@@ -1,3 +1,11 @@
+use std::io::Write;
+
+pub fn file_write(name: &str, data: &[u8]) -> std::io::Result<()> {
+    let mut file = std::fs::File::create(name)?;
+    file.write_all(&data)?;
+    Ok(())
+}
+
 pub fn println(s: &str) {
     println!("{}", s);
 }

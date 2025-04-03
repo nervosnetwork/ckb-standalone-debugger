@@ -1,3 +1,8 @@
+pub fn file_write(name: &str, data: &[u8]) -> std::io::Result<()> {
+    web_sys::window().unwrap().local_storage().unwrap().unwrap().set(name, &hex::encode(data)).unwrap();
+    Ok(())
+}
+
 pub fn println(s: &str) {
     web_sys::console::log_1(&s.into());
 }

@@ -5,8 +5,6 @@ use ckb_vm::{
     memory::{FLAG_EXECUTABLE, FLAG_WXORX_BIT},
     registers::A7,
 };
-use std::fs::File;
-use std::io::Write;
 
 pub struct ElfDumper {
     dump_file_name: String,
@@ -321,10 +319,7 @@ impl<Mac: SupportMachine> Syscalls<Mac> for ElfDumper {
         for section_header in section_headers {
             elf.extend_from_slice(section_header.as_ref());
         }
-
-        let mut file = File::create(&self.dump_file_name)?;
-        file.write_all(&elf)?;
-
+        crate::arch::file_write(&self.dump_file_name, &elf)?;
         Ok(true)
     }
 }
