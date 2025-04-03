@@ -5,9 +5,7 @@ use ckb_debugger::{
     ElfDumper, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile, MachineStepLog,
     analyze, get_script_hash_by_index,
 };
-use ckb_debugger::{Embed, FileStream, GdbStubHandler, GdbStubHandlerEventLoop, Timestamp};
-#[cfg(any(target_family = "unix", target_family = "windows"))]
-use ckb_debugger::{FileOperation, Random};
+use ckb_debugger::{Embed, FileOperation, FileStream, GdbStubHandler, GdbStubHandlerEventLoop, Random, Timestamp};
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ROOT_VM_ID, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::core::cell::{CellMeta, resolve_transaction};
@@ -371,12 +369,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Some(data) = matches_dump_file {
             machine_assign.expand_syscalls.push(Box::new(ElfDumper::new(data.to_string(), 4097, 64)));
         }
-        #[cfg(any(target_family = "unix", target_family = "windows"))]
         machine_assign.expand_syscalls.push(Box::new(FileOperation::new()));
         if let Some(name) = matches_read_file_name {
             machine_assign.expand_syscalls.push(Box::new(FileStream::new(name)));
         }
-        #[cfg(any(target_family = "unix", target_family = "windows"))]
         machine_assign.expand_syscalls.push(Box::new(Random::new()));
         #[cfg(target_family = "unix")]
         machine_assign.expand_syscalls.push(Box::new(Stdio::new(false)));

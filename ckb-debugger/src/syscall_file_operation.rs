@@ -1,23 +1,4 @@
-use ckb_vm::{
-    Error, Memory, Register, SupportMachine, Syscalls,
-    registers::{A0, A1, A2, A3, A7},
-};
-use libc::{
-    FILE, c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell, fwrite,
-    size_t,
-};
-use std::ffi::CString;
-
-pub const SYSCALL_NUMBER_FOPEN: u64 = 9003;
-pub const SYSCALL_NUMBER_FREOPEN: u64 = 9004;
-pub const SYSCALL_NUMBER_FREAD: u64 = 9005;
-pub const SYSCALL_NUMBER_FEOF: u64 = 9006;
-pub const SYSCALL_NUMBER_FERROR: u64 = 9007;
-pub const SYSCALL_NUMBER_FGETC: u64 = 9008;
-pub const SYSCALL_NUMBER_FCLOSE: u64 = 9009;
-pub const SYSCALL_NUMBER_FTELL: u64 = 9010;
-pub const SYSCALL_NUMBER_FSEEK: u64 = 9011;
-pub const SYSCALL_NUMBER_FWRITE: u64 = 9012;
+use ckb_vm::{Error, SupportMachine, Syscalls};
 
 pub struct FileOperation {}
 
@@ -25,26 +6,40 @@ impl FileOperation {
     pub fn new() -> Self {
         Self {}
     }
-    fn fetch_string<Mac: SupportMachine>(machine: &mut Mac, addr: u64) -> Result<CString, Error> {
-        let mut buffer = Vec::new();
-        let mut addr = addr;
-        loop {
-            let byte = machine.memory_mut().load8(&Mac::REG::from_u64(addr))?;
-            if byte.to_u8() == 0 {
-                break;
-            }
-            buffer.push(byte.to_u8());
-            addr += 1;
-        }
-        Ok(CString::new(buffer).expect("Invalid C string"))
-    }
 }
 
 impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
     fn initialize(&mut self, _machine: &mut Mac) -> Result<(), Error> {
         Ok(())
     }
+
+    #[cfg(target_family = "wasm")]
+    fn ecall(&mut self, _machine: &mut Mac) -> Result<bool, Error> {
+        return Ok(false);
+    }
+
+    #[cfg(any(target_family = "unix", target_family = "windows"))]
     fn ecall(&mut self, machine: &mut Mac) -> Result<bool, Error> {
+        use ckb_vm::{
+            Memory, Register,
+            registers::{A0, A1, A2, A3, A7},
+        };
+        use libc::{
+            FILE, c_char, c_int, c_long, c_void, fclose, feof, ferror, fgetc, fopen, fread, freopen, fseek, ftell,
+            fwrite, size_t,
+        };
+        use std::ffi::CString;
+        const SYSCALL_NUMBER_FOPEN: u64 = 9003;
+        const SYSCALL_NUMBER_FREOPEN: u64 = 9004;
+        const SYSCALL_NUMBER_FREAD: u64 = 9005;
+        const SYSCALL_NUMBER_FEOF: u64 = 9006;
+        const SYSCALL_NUMBER_FERROR: u64 = 9007;
+        const SYSCALL_NUMBER_FGETC: u64 = 9008;
+        const SYSCALL_NUMBER_FCLOSE: u64 = 9009;
+        const SYSCALL_NUMBER_FTELL: u64 = 9010;
+        const SYSCALL_NUMBER_FSEEK: u64 = 9011;
+        const SYSCALL_NUMBER_FWRITE: u64 = 9012;
+
         let id = machine.registers()[A7].to_u64();
         let arg0 = machine.registers()[A0].to_u64();
         let arg1 = machine.registers()[A1].to_u64();
@@ -53,8 +48,16 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
 
         match id {
             SYSCALL_NUMBER_FOPEN => {
-                let path = Self::fetch_string(machine, arg0)?;
-                let mode = Self::fetch_string(machine, arg1)?;
+                let path = CString::new(ckb_vm::memory::load_c_string_byte_by_byte(
+                    machine.memory_mut(),
+                    &Mac::REG::from_u64(arg0),
+                )?)
+                .expect("Invalid C string");
+                let mode = CString::new(ckb_vm::memory::load_c_string_byte_by_byte(
+                    machine.memory_mut(),
+                    &Mac::REG::from_u64(arg1),
+                )?)
+                .expect("Invalid C string");
                 let handler = unsafe {
                     fopen(
                         path.as_bytes_with_nul().as_ptr() as *const c_char,
@@ -64,8 +67,16 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileOperation {
                 machine.set_register(A0, Mac::REG::from_u64(handler as u64));
             }
             SYSCALL_NUMBER_FREOPEN => {
-                let path = Self::fetch_string(machine, arg0)?;
-                let mode = Self::fetch_string(machine, arg1)?;
+                let path = CString::new(ckb_vm::memory::load_c_string_byte_by_byte(
+                    machine.memory_mut(),
+                    &Mac::REG::from_u64(arg0),
+                )?)
+                .expect("Invalid C string");
+                let mode = CString::new(ckb_vm::memory::load_c_string_byte_by_byte(
+                    machine.memory_mut(),
+                    &Mac::REG::from_u64(arg1),
+                )?)
+                .expect("Invalid C string");
                 let stream = arg2;
                 let handler = unsafe {
                     freopen(
