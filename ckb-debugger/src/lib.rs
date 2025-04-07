@@ -15,6 +15,7 @@ mod misc;
 mod syscall_elf_dumper;
 mod syscall_file_operation;
 mod syscall_file_stream;
+mod syscall_file_write;
 mod syscall_random;
 mod syscall_stdio;
 mod syscall_timestamp;
@@ -36,6 +37,7 @@ pub use misc::{DummyResourceLoader, Embed, HumanReadableCycles, get_script_hash_
 pub use syscall_elf_dumper::ElfDumper;
 pub use syscall_file_operation::FileOperation;
 pub use syscall_file_stream::FileStream;
+pub use syscall_file_write::FileWriter;
 pub use syscall_random::Random;
 pub use syscall_stdio::Stdio;
 pub use syscall_timestamp::Timestamp;

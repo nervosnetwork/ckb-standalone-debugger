@@ -4,7 +4,7 @@ use ckb_debugger::{
     analyze, get_script_hash_by_index,
 };
 use ckb_debugger::{
-    Embed, FileOperation, FileStream, GdbStubHandler, GdbStubHandlerEventLoop, Random, Stdio, Timestamp,
+    Embed, FileOperation, FileStream, FileWriter, GdbStubHandler, GdbStubHandlerEventLoop, Random, Stdio, Timestamp,
 };
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ROOT_VM_ID, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
@@ -373,6 +373,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Some(name) = matches_read_file_name {
             machine_assign.expand_syscalls.push(Box::new(FileStream::new(name)));
         }
+        machine_assign.expand_syscalls.push(Box::new(FileWriter::new()));
         machine_assign.expand_syscalls.push(Box::new(Random::new()));
         machine_assign.expand_syscalls.push(Box::new(Stdio::new(false)));
         machine_assign.expand_syscalls.push(Box::new(Timestamp::new()));
