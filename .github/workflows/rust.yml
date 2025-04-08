@@ -32,8 +32,8 @@ jobs:
      - uses: actions/checkout@v4
      - name: Build
        run: |
-        cd ckb-debugger && cargo build --target wasm32-unknown-unknown
-        cd ckb-debugger && cargo build --target wasm32-wasip1
+        cd ckb-debugger && rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown
+        cd ckb-debugger && rustup target add wasm32-wasip1 && cargo build --target wasm32-wasip1
         cd ckb-debugger && cargo install wasm-pack && wasm-pack build --target nodejs
 
 
