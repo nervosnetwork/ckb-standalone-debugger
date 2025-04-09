@@ -35,7 +35,6 @@ const wasihost = new wasi.WASI({
   args: ['ckb-debugger', '--bin', '/path/to/binary'],
   preopens: {
     '/path/to/binary': '/path/to/binary',
-    '/path/to/ckb-debugger.wasm': '/path/to/ckb-debugger.wasm',
   },
 });
 
