@@ -104,6 +104,34 @@ jobs:
           dist/${{ env.PACKAGE }}.tar.gz
           dist/${{ env.PACKAGE }}-sha256.txt
 
+  publish-wasm-wasi:
+    name: Publish binary on Wasm wasi
+    runs-on: ubuntu-latest
+    env:
+      PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_wasm32-wasip1
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: |
+        cd ckb-debugger
+        sudo apt install gcc-multilib
+        rustup target add wasm32-wasip1
+        cargo build --release --target wasm32-wasip1
+    - name: Archive files
+      run: |
+        mkdir dist
+        cp target/wasm32-wasip1/release/ckb-debugger.wasm dist
+        cp LICENSE dist
+        cd dist && tar -cvzf ${{ env.PACKAGE }}.tar.gz ckb-debugger.wasm LICENSE
+    - name: Generate checksum
+      run: cd dist && sha256sum ${{ env.PACKAGE }}.tar.gz > ${{ env.PACKAGE }}-sha256.txt
+    - name: Upload
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dist/${{ env.PACKAGE }}.tar.gz
+          dist/${{ env.PACKAGE }}-sha256.txt
+
   publish-windows-x64:
     name: Publish binary on Windows x64
     runs-on: windows-latest
