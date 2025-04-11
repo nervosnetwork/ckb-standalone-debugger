@@ -11,6 +11,14 @@ $ cargo install wasm-pack
 $ wasm-pack build --target nodejs
 ```
 
+wasm-pack will generate a directory for its build output called pkg. You can create a new nodejs project and then install the pkg with the following command:
+
+```sh
+$ npm install path/to/pkg
+```
+
+You can provide a `tx.json` file data and the script hash to execute a script group.
+
 ```js
 import * as wasm from 'ckb-debugger';
 
@@ -22,9 +30,12 @@ console.log(result)
 ## Build wasm32-wasip1
 
 ```sh
-$ cargo install wasm-pack
-$ wasm-pack build --target nodejs
+$ rustup target add wasm32-wasip1
+$ sudo apt install gcc-multilib
+$ cargo build --target wasm32-wasip1
 ```
+
+The above command will compile a ckb-debugger wasm release with WASI. You can configure wasi according to your needs, the relevant documentation explains <https://nodejs.org/api/wasi.html>. For the following examples, we assume that ckb-debugger will read and execute the program /path/to/binary, so we need to give the real local path of this path in preopens.
 
 ```js
 import * as fs from 'node:fs'

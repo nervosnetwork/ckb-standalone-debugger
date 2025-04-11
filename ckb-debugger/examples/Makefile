@@ -6,6 +6,7 @@ all: ckb-c-stdlib \
 	 exec_caller \
 	 fib \
 	 file_operations \
+	 file_write \
 	 out_of_memory \
 	 print_log \
 	 read_file \
@@ -21,9 +22,7 @@ always_failure:
 
 ckb-c-stdlib:
 	git clone https://github.com/nervosnetwork/ckb-c-stdlib
-	cd ckb-c-stdlib
-	git checkout d7dc1e3
-	cd ..
+	cd ckb-c-stdlib && git checkout 7245b62
 
 exec_callee:
 	$(CC) -o $@ $@.c
@@ -32,6 +31,9 @@ exec_caller:
 	$(CC) -o $@ $@.c
 
 fib:
+	$(CC) -o $@ $@.c
+
+file_write:
 	$(CC) -o $@ $@.c
 
 file_operations:
