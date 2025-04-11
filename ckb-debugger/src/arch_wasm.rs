@@ -17,5 +17,5 @@ pub fn random() -> u64 {
 }
 
 pub fn timestamp() -> u64 {
-    web_sys::js_sys::Date::new_0().get_utc_seconds() as u64
+    web_sys::js_sys::Date::new_0().get_utc_milliseconds() as u64 * 1000000
 }
