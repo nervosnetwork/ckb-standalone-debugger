@@ -2,7 +2,6 @@ use ckb_vm::{
     Error, Register, SupportMachine, Syscalls,
     registers::{A0, A7},
 };
-use std::time::SystemTime;
 
 pub struct Timestamp {}
 
@@ -22,9 +21,8 @@ impl<Mac: SupportMachine> Syscalls<Mac> for Timestamp {
         if id != 9001 {
             return Ok(false);
         }
-        let duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
-        let now = duration.as_nanos();
-        machine.set_register(A0, Mac::REG::from_u64(now as u64));
+        let timestamp = crate::arch::timestamp();
+        machine.set_register(A0, Mac::REG::from_u64(timestamp));
         return Ok(true);
     }
 }
