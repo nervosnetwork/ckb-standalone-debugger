@@ -27,7 +27,11 @@ impl<Mac: SupportMachine> Syscalls<Mac> for FileWriter {
         let addr = machine.registers()[A1].to_u64();
         let size = machine.registers()[A2].to_u64();
         let data = machine.memory_mut().load_bytes(addr, size)?;
-        crate::arch::file_write(&String::from_utf8_lossy(&path), &data)?;
+        if let Ok(_) = crate::arch::file_write(&String::from_utf8_lossy(&path), &data) {
+            machine.set_register(A0, Mac::REG::from_u64(0));
+        } else {
+            machine.set_register(A0, Mac::REG::from_i64(-1));
+        }
         return Ok(true);
     }
 }
