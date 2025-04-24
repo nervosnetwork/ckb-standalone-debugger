@@ -11,7 +11,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.200.0"
+version = "0.200.1"
 
 [workspace.dependencies]
 # CKB dependencies
@@ -24,13 +24,13 @@ ckb-types = "=0.200.0"
 ckb-vm = { version = "=0.24.13", default-features = false, features = ["pprof"] }
 
 # Crates defined in current workspace
-ckb-debugger = { path = "ckb-debugger", version = "0.200.0" }
-ckb-mock-tx-types = { path = "ckb-mock-tx-types", version = "0.200.0" }
-ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "0.200.0" }
-ckb-vm-pprof = { path = "ckb-vm-pprof", version = "0.200.0" }
-ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "0.200.0" }
-ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "0.200.0" }
-ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "0.200.0" }
+ckb-debugger = { path = "ckb-debugger", version = "0.200.1" }
+ckb-mock-tx-types = { path = "ckb-mock-tx-types", version = "0.200.1" }
+ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "0.200.1" }
+ckb-vm-pprof = { path = "ckb-vm-pprof", version = "0.200.1" }
+ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "0.200.1" }
+ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "0.200.1" }
+ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "0.200.1" }
 
 # Other common crates
 addr2line = "0.17"
