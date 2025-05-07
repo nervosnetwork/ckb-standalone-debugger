@@ -1,0 +1,16 @@
+[package]
+name = "ckb-vm-bench"
+edition = "2024"
+version.workspace = true
+
+[features]
+default = ["ckb-vm/asm"]
+
+[dependencies]
+ckb-vm.workspace = true
+criterion.workspace = true
+
+[[bench]]
+name = "algorithm"
+path = "benches/algorithm.rs"
+harness = false

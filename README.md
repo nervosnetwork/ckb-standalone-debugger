@@ -4,6 +4,7 @@ CKB standalone debugger is a collection of debugging tools.
 
 - [ckb-debugger](./ckb-debugger)
 - [ckb-mock-tx-types](./ckb-mock-tx-types)
+- [ckb-vm-bench](./ckb-vm-bench)
 - [ckb-vm-debug-utils](./ckb-vm-debug-utils)
 - [ckb-vm-pprof](./ckb-vm-pprof)
 - [ckb-vm-pprof-converter](./ckb-vm-pprof-converter)
