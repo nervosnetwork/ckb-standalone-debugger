@@ -134,20 +134,28 @@ where
         let cycles = dm.cycles();
         let sid = dm.registers()[A7];
         if result == Err(Error::Yield) {
+            let dm = &mut self.scheduler.instantiated.get_mut(&self.id).unwrap().1.machine;
             dm.set_cycles(0);
+            self.scheduler.iteration_cycles =
+                self.scheduler.iteration_cycles.checked_add(cycles).ok_or(Error::CyclesExceeded)?;
             self.scheduler.iterate_process_results(self.id, Err(Error::Yield))?;
-            self.consume_cycles(cycles)?;
+            self.consume_cycles(self.scheduler.iteration_cycles)?;
+
+            let dm = &mut self.scheduler.instantiated.get_mut(&self.id).unwrap().1.machine;
+            let next_pc = dm.inner_mut().pc() + 4;
+
             self.wait()?;
-            if sid == 2043 {
-                // Special handling for ExecV2.
-                let dm = &mut self.scheduler.instantiated.get_mut(&self.id).unwrap().1.machine;
-                dm.set_running(true)
-            }
+
+            let dm = &mut self.scheduler.instantiated.get_mut(&self.id).unwrap().1.machine;
+            dm.inner_mut().update_pc(next_pc);
             return Ok(());
         }
         if sid == 93 {
+            let dm = &mut self.scheduler.instantiated.get_mut(&self.id).unwrap().1.machine;
             dm.set_cycles(0);
-            self.consume_cycles(cycles)?;
+            self.scheduler.iteration_cycles =
+                self.scheduler.iteration_cycles.checked_add(cycles).ok_or(Error::CyclesExceeded)?;
+            self.consume_cycles(self.scheduler.iteration_cycles)?;
             return Ok(());
         }
         result
@@ -188,6 +196,7 @@ where
 
     pub fn consume_cycles(&mut self, cycles: u64) -> Result<(), Error> {
         self.scheduler.consume_cycles(cycles)?;
+        self.scheduler.iteration_cycles = 0;
         self.expand_cycles = self.expand_cycles.checked_sub(cycles).ok_or(Error::CyclesExceeded)?;
         Ok(())
     }
@@ -213,14 +222,18 @@ where
             let im = self.scheduler.iterate_prepare_machine()?;
             let id = im.0;
             let vm = im.1;
+            vm.set_max_cycles(self.expand_cycles);
             if self.id == id {
+                vm.machine.set_running(true);
                 break;
             }
             let result = vm.run();
             let cycles = vm.machine.cycles();
             vm.machine.set_cycles(0);
+            self.scheduler.iteration_cycles =
+                self.scheduler.iteration_cycles.checked_add(cycles).ok_or(Error::CyclesExceeded)?;
             self.scheduler.iterate_process_results(id, result)?;
-            self.consume_cycles(cycles)?;
+            self.consume_cycles(self.scheduler.iteration_cycles)?;
         }
         Ok(())
     }
