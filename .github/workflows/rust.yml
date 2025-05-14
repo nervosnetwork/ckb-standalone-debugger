@@ -80,3 +80,4 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Build
       run: cd ckb-debugger && cargo build
+
