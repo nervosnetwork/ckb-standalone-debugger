@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
     "ckb-debugger",
-    "ckb-mock-tx-types",
     "ckb-vm-debug-utils",
     "ckb-vm-pprof",
     "ckb-vm-pprof-converter",
@@ -25,7 +24,7 @@ ckb-vm = { version = "=0.24.13", default-features = false, features = ["pprof"] 
 
 # Crates defined in current workspace
 ckb-debugger = { path = "ckb-debugger", version = "0.200.1" }
-ckb-mock-tx-types = { path = "ckb-mock-tx-types", version = "0.200.1" }
+ckb-mock-tx-types = { version = "0.200.1" }
 ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "0.200.1" }
 ckb-vm-pprof = { path = "ckb-vm-pprof", version = "0.200.1" }
 ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "0.200.1" }
