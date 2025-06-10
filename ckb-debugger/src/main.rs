@@ -1,7 +1,7 @@
 use ckb_chain_spec::consensus::{ConsensusBuilder, TYPE_ID_CODE_HASH};
 use ckb_debugger::{
-    ElfDumper, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineOverlap, MachineProfile, MachineStepLog,
-    analyze, get_script_hash_by_index,
+    ElfDumper, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineCoverage, MachineOverlap, MachineProfile,
+    MachineStepLog, analyze, get_script_hash_by_index,
 };
 use ckb_debugger::{
     Embed, FileOperation, FileStream, FileWriter, GdbStubHandler, GdbStubHandlerEventLoop, Random, Stdio, Timestamp,
@@ -57,7 +57,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Type of cell to run")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("coverage-output")
+                .long("coverage-output")
+                .help("Save coverage info in lcov format to file")
+                .takes_value(true),
+        )
         .arg(Arg::with_name("dump-file").long("dump-file").help("Dump file name").takes_value(true))
+        .arg(
+            Arg::with_name("enable-coverage")
+                .long("enable-coverage")
+                .required(false)
+                .takes_value(false)
+                .help("Set to true to enable coverage info"),
+        )
         .arg(
             Arg::with_name("enable-overlapping-detection")
                 .long("enable-overlapping-detection")
@@ -149,7 +162,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_bin = matches.value_of("bin");
     let matches_cell_index = matches.value_of("cell-index");
     let matches_cell_type = matches.value_of("cell-type");
+    let matches_coverage_output = matches.value_of("coverage-output");
     let matches_dump_file = matches.value_of("dump-file");
+    let matches_enable_coverage = matches.is_present("enable-coverage");
     let matches_enable_overlapping_detection = matches.is_present("enable-overlapping-detection");
     let matches_enable_steplog = matches.is_present("enable-steplog");
     let matches_gdb_listen = matches.value_of("gdb-listen").unwrap();
@@ -392,12 +407,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let machine_profile = MachineProfile::new(&machine_assign.code().clone())?;
         let machine_overlap = MachineOverlap::new(&machine_assign.code().clone())?;
         let machine_steplog = MachineStepLog::new();
-        let mut machine = MachineAnalyzer::new(machine_assign, machine_profile, machine_overlap, machine_steplog);
+        let machine_coverage = MachineCoverage::new(&machine_assign.code().clone())?;
+        let mut machine =
+            MachineAnalyzer::new(machine_assign, machine_profile, machine_overlap, machine_steplog, machine_coverage);
         if matches_enable_overlapping_detection {
             machine.enable_overlap = 1;
         }
         if matches_enable_steplog {
             machine.enable_steplog = 1;
+        }
+        if matches_enable_coverage {
+            machine.enable_coverage = 1;
         }
         let result = machine.run();
         if matches_pid != ROOT_VM_ID {
@@ -411,6 +431,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if let Some(fp) = matches_pprof {
                     let mut output = std::fs::File::create(&fp)?;
                     machine.profile.display_flamegraph(&mut output);
+                }
+                if let Some(fp) = matches_coverage_output {
+                    let mut output = std::fs::File::create(&fp)?;
+                    machine.coverage.display_lcov(&mut output)?;
                 }
                 if data != 0 {
                     std::process::exit(254);
