@@ -4,6 +4,7 @@ mod arch {
         Error, Memory, Register, SupportMachine, Syscalls,
         registers::{A0, A1, A2, A7},
     };
+    use std::os::fd::BorrowedFd;
 
     #[derive(Clone, Debug, Default)]
     #[repr(C)]
@@ -135,7 +136,7 @@ mod arch {
             for i in 0..size {
                 buf[i] = machine.memory_mut().load8(&Mac::REG::from_u64(addr + i as u64))?.to_u8();
             }
-            let ret = nix::unistd::write(fd, &buf).unwrap_or_else(|e| {
+            let ret = nix::unistd::write(unsafe { BorrowedFd::borrow_raw(fd) }, &buf).unwrap_or_else(|e| {
                 println!("Error: {:?}", e);
                 (-1isize) as usize
             });
@@ -155,7 +156,7 @@ mod arch {
 
                 let buf = machine.memory_mut().load_bytes(base, len)?;
 
-                written += match nix::unistd::write(fd, &buf) {
+                written += match nix::unistd::write(unsafe { BorrowedFd::borrow_raw(fd) }, &buf) {
                     Ok(w) => w as u64,
                     Err(e) => {
                         println!("Error: {:?}", e);
