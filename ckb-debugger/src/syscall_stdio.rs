@@ -4,6 +4,7 @@ mod arch {
         Error, Memory, Register, SupportMachine, Syscalls,
         registers::{A0, A1, A2, A7},
     };
+    use std::os::fd::BorrowedFd;
 
     #[derive(Clone, Debug, Default)]
     #[repr(C)]
@@ -58,7 +59,8 @@ mod arch {
         }
 
         fn fstat<Mac: SupportMachine>(&mut self, machine: &mut Mac) -> Result<(), Error> {
-            let stat = match nix::sys::stat::fstat(machine.registers()[A0].to_i32()) {
+            let stat = match nix::sys::stat::fstat(unsafe { BorrowedFd::borrow_raw(machine.registers()[A0].to_i32()) })
+            {
                 Ok(stat) => stat,
                 Err(e) => {
                     println!("Error: {:?}", e);
@@ -100,7 +102,7 @@ mod arch {
                 libc::SEEK_END => nix::unistd::Whence::SeekEnd,
                 _ => return Err(Error::Unexpected("Unexpected whence".into())),
             };
-            let ret = nix::unistd::lseek(fd, offset, whence).unwrap_or_else(|e| {
+            let ret = nix::unistd::lseek(unsafe { BorrowedFd::borrow_raw(fd) }, offset, whence).unwrap_or_else(|e| {
                 println!("Error: {:?}", e);
                 -1
             });
@@ -114,7 +116,7 @@ mod arch {
             let size = machine.registers()[A2].to_u64() as usize;
             let mut buf = vec![0u8; size];
 
-            match nix::unistd::read(fd, &mut buf) {
+            match nix::unistd::read(unsafe { BorrowedFd::borrow_raw(fd) }, &mut buf) {
                 Ok(read_size) => {
                     machine.memory_mut().store_bytes(addr, &buf[0..read_size])?;
                     machine.set_register(A0, Mac::REG::from_u64(read_size as u64));
@@ -135,7 +137,7 @@ mod arch {
             for i in 0..size {
                 buf[i] = machine.memory_mut().load8(&Mac::REG::from_u64(addr + i as u64))?.to_u8();
             }
-            let ret = nix::unistd::write(fd, &buf).unwrap_or_else(|e| {
+            let ret = nix::unistd::write(unsafe { BorrowedFd::borrow_raw(fd) }, &buf).unwrap_or_else(|e| {
                 println!("Error: {:?}", e);
                 (-1isize) as usize
             });
@@ -155,7 +157,7 @@ mod arch {
 
                 let buf = machine.memory_mut().load_bytes(base, len)?;
 
-                written += match nix::unistd::write(fd, &buf) {
+                written += match nix::unistd::write(unsafe { BorrowedFd::borrow_raw(fd) }, &buf) {
                     Ok(w) => w as u64,
                     Err(e) => {
                         println!("Error: {:?}", e);

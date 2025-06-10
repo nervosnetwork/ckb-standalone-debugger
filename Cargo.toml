@@ -42,7 +42,7 @@ goblin = "0.4"
 hex = "0.4"
 libc = "0.2"
 log = "0.4.0"
-nix = "0.26.2"
+nix = { version = "0.30", features = ["fs", "signal"] }
 probe = "0.5"
 protoc-bin-vendored = "3.1"
 protobuf-codegen = "3.7"
