@@ -206,6 +206,8 @@ impl<'a> Iterator for StackUnwinder<'a> {
                     RegisterRule::Expression(_) => unimplemented!(),
                     RegisterRule::ValExpression(_) => unimplemented!(),
                     RegisterRule::Architectural => unreachable!(),
+                    RegisterRule::Constant(x) => Some(x),
+                    _ => unimplemented!(),
                 };
             }
             newregs[RiscV::SP.0 as usize] = Some(cfa);
