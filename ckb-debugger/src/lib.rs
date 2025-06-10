@@ -30,7 +30,7 @@ pub use arch_wasm::{self as arch};
 pub use arch_wasm_wasi::{self as arch};
 #[cfg(target_family = "windows")]
 pub use arch_windows::{self as arch};
-pub use machine_analyzer::{MachineAnalyzer, MachineOverlap, MachineProfile, MachineStepLog, MachineCoverage};
+pub use machine_analyzer::{MachineAnalyzer, MachineCoverage, MachineOverlap, MachineProfile, MachineStepLog};
 pub use machine_assign::MachineAssign;
 pub use machine_gdb::{GdbStubHandler, GdbStubHandlerEventLoop};
 pub use misc::{DummyResourceLoader, Embed, HumanReadableCycles, get_script_hash_by_index};

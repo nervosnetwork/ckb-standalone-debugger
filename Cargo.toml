@@ -32,7 +32,7 @@ ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "0.200.1" }
 ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "0.200.1" }
 
 # Other common crates
-addr2line = "0.19"
+addr2line = "0.20"
 byteorder = "1"
 bytes = "1.0.0"
 env_logger = "0.9.0"
