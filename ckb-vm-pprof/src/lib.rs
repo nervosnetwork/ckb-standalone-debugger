@@ -150,7 +150,7 @@ impl Profile {
                 tag.line = line;
             }
         }
-        let mut frame_iter = self.addrctx.find_frames(addr).unwrap();
+        let mut frame_iter = self.addrctx.find_frames(addr).skip_all_loads().unwrap();
         tag.func = sprint_fun(&mut frame_iter);
         self.cache_tag.insert(addr, tag.clone());
         tag

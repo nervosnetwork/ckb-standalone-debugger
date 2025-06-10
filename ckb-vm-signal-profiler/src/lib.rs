@@ -206,6 +206,8 @@ impl<'a> Iterator for StackUnwinder<'a> {
                     RegisterRule::Expression(_) => unimplemented!(),
                     RegisterRule::ValExpression(_) => unimplemented!(),
                     RegisterRule::Architectural => unreachable!(),
+                    RegisterRule::Constant(x) => Some(x),
+                    _ => unimplemented!(),
                 };
             }
             newregs[RiscV::SP.0 as usize] = Some(cfa);
@@ -239,7 +241,7 @@ fn extract_symbol(pc: u64, context: &DebugContext) -> Symbol {
             line = Some(loc_line);
         }
     }
-    let mut frame_iter = addr_context.find_frames(pc).unwrap();
+    let mut frame_iter = addr_context.find_frames(pc).skip_all_loads().unwrap();
     let sprint_fun = |frame_iter: &mut Addr2LineFrameIter| {
         let mut s = String::from("<Unknown>");
         loop {
