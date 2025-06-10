@@ -1,9 +1,6 @@
 mod frames;
 mod timer;
 
-#[macro_use]
-extern crate lazy_static;
-
 use crate::{
     frames::{Frame, Report, Symbol},
     timer::Timer,
@@ -18,10 +15,18 @@ use std::fs;
 use std::ops::{Deref, DerefMut};
 use std::os::raw::c_int;
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
+
+// Static PROFILER using OnceLock
+static PROFILER: OnceLock<Mutex<Option<Profiler>>> = OnceLock::new();
+
+// Helper function to get or initialize PROFILER
+fn get_profiler() -> &'static Mutex<Option<Profiler>> {
+    PROFILER.get_or_init(|| Mutex::new(None))
+}
 
 pub fn is_profiler_started() -> bool {
-    PROFILER.lock().expect("Mutex lock failure").is_some()
+    get_profiler().lock().expect("Mutex lock failure").is_some()
 }
 
 pub fn start_profiler(
@@ -49,13 +54,13 @@ pub fn start_profiler(
         report: Report::default(),
     };
 
-    *(PROFILER.lock().expect("Mutex lock failure")) = Some(profiler);
+    *(get_profiler().lock().expect("Mutex lock failure")) = Some(profiler);
 
     Ok(())
 }
 
 pub fn stop_profiler() -> Result<(), String> {
-    let mut profiler = PROFILER.lock().expect("Mutex lock failure");
+    let mut profiler = get_profiler().lock().expect("Mutex lock failure");
     if profiler.is_none() {
         return Err("Profiler not started!".to_string());
     }
@@ -74,10 +79,6 @@ pub fn stop_profiler() -> Result<(), String> {
     *profiler = None;
 
     Ok(())
-}
-
-lazy_static! {
-    static ref PROFILER: Mutex<Option<Profiler>> = Mutex::new(None);
 }
 
 type Addr2LineEndianReader = gimli::EndianReader<gimli::RunTimeEndian, Arc<[u8]>>;
@@ -264,7 +265,7 @@ fn extract_symbol(pc: u64, context: &DebugContext) -> Symbol {
 }
 
 extern "C" fn perf_signal_handler(_signal: c_int) {
-    let mut profiler = PROFILER.lock().expect("Mutex lock failure");
+    let mut profiler = get_profiler().lock().expect("Mutex lock failure");
     if let Some(profiler) = profiler.deref_mut() {
         let machine = unsafe { &mut *(profiler.machine as *mut AsmMachine) as &mut AsmMachine };
 

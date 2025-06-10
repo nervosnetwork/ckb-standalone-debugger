@@ -16,6 +16,5 @@ addr2line.workspace = true
 ckb-vm = { workspace = true, features = ["asm"] }
 log.workspace = true
 nix.workspace = true
-lazy_static.workspace = true
 protobuf.workspace = true
 ckb-vm-pprof-protos.workspace = true
