@@ -15,7 +15,7 @@ asm = ["ckb-script/asm"]
 
 [dependencies]
 clap = "2.33.0"
-ckb-mock-tx-types = "0.200.1"
+ckb-mock-tx-types = "0.202.0"
 
 ckb-chain-spec.workspace = true
 ckb-hash.workspace = true
