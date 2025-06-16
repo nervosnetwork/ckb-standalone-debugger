@@ -472,6 +472,9 @@ impl MachineCoverage {
         // BRH: Branch Hit. The total number of branches executed.
         // end_of_record: Marks the end of a file section.
         for (name, list) in &self.results {
+            if !std::fs::exists(name).unwrap() {
+                continue;
+            }
             writeln!(writer, "SF:{}", name)?;
             for (i, hit) in list.iter().enumerate() {
                 writeln!(writer, "DA:{},{}", i + 1, *hit)?;
