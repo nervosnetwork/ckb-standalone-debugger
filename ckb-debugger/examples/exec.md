@@ -3,13 +3,13 @@
 Execution of Exec scripts is no different from normal scripts:
 
 ```sh
-$ ckb-debugger --tx-file exec.json --cell-index 0 --cell-type input --script-group-type lock
+$ ckb-debugger --tx-file exec.json --script input.0.lock
 ```
 
 If you want to use gdb to debug it, the way will be slightly more complicated:
 
 ```sh
-$ ckb-debugger --tx-file exec.json --cell-index 0 --cell-type input --script-group-type lock --mode gdb --gdb-listen 127.0.0.1:9999
+$ ckb-debugger --tx-file exec.json --script input.0.lock --mode gdb --gdb-listen 127.0.0.1:9999
 $ riscv64-unknown-elf-gdb --command=exec_gdb_cmd.txt
 ```
 

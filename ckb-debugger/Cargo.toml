@@ -46,3 +46,6 @@ web-sys.workspace = true
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
+
+[dev-dependencies]
+tempfile = "3.20"
