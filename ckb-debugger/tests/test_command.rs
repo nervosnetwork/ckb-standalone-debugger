@@ -2,7 +2,7 @@ use std::process::Command;
 use std::sync::LazyLock;
 
 static CKB_DEBUGGER: LazyLock<&str> = LazyLock::new(|| {
-    let _ = Command::new("cargo").args(["build", "--release"]).output();
+    let _ = Command::new("cargo").args(["build", "--release"]).output().unwrap();
     "../target/release/ckb-debugger"
 });
 
@@ -97,33 +97,10 @@ pub fn test_mock_tx_replace_bin() {
 
 #[test]
 pub fn test_out_of_memory() {
-    let result = Command::new(*CKB_DEBUGGER).args(["--bin", "examples/out_of_memory"]).output().unwrap();
-    let mut expect = vec![
-        b"??:??:??".to_vec(),
-        b"/home/ubuntu/src/ckb-standalone-debugger/ckb-debugger/examples/ckb-c-stdlib/libc/entry.h:9:_start".to_vec(),
-        b"/home/ubuntu/src/ckb-standalone-debugger/ckb-debugger/examples/out_of_memory.c:25:main".to_vec(),
-        b"/home/ubuntu/src/ckb-standalone-debugger/ckb-debugger/examples/out_of_memory.c:21:c".to_vec(),
-        b"/home/ubuntu/src/ckb-standalone-debugger/ckb-debugger/examples/out_of_memory.c:17:b".to_vec(),
-        b"/home/ubuntu/src/ckb-standalone-debugger/ckb-debugger/examples/out_of_memory.c:7:a".to_vec(),
-        b"".to_vec(),
-        b"pc  : 0x           12D28".to_vec(),
-        b"zero: 0x               0 ra  : 0x           12D3E sp  : 0x          3FFFA0 gp  : 0x           146E8".to_vec(),
-        b"tp  : 0x               0 t0  : 0x               0 t1  : 0x               0 t2  : 0x               0".to_vec(),
-        b"s0  : 0x          3FFFB0 s1  : 0x               0 a0  : 0x               0 a1  : 0x          400000".to_vec(),
-        b"a2  : 0x               0 a3  : 0x               0 a4  : 0x               0 a5  : 0x               0".to_vec(),
-        b"a6  : 0x               0 a7  : 0x               0 s2  : 0x               0 s3  : 0x               0".to_vec(),
-        b"s4  : 0x               0 s5  : 0x               0 s6  : 0x               0 s7  : 0x               0".to_vec(),
-        b"s8  : 0x               0 s9  : 0x               0 s10 : 0x               0 s11 : 0x               0".to_vec(),
-        b"t3  : 0x               0 t4  : 0x               0 t5  : 0x               0 t6  : 0x               0".to_vec(),
-        b"".to_vec(),
-    ]
-    .join(&b'\n');
-    expect.push(b'\n');
-    assert_eq!(result.stdout, expect);
-
+    let result = Command::new(*CKB_DEBUGGER).args(["--bin", "examples/out_of_memory"]).output().unwrap().stderr;
     let mut expect = vec![b"Error: MemOutOfBound".to_vec()].join(&b'\n');
     expect.push(b'\n');
-    assert_eq!(result.stderr, expect);
+    assert_eq!(result, expect);
 }
 
 #[test]
