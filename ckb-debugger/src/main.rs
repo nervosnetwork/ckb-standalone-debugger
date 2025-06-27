@@ -1,13 +1,11 @@
 use ckb_chain_spec::consensus::{ConsensusBuilder, TYPE_ID_CODE_HASH};
 use ckb_debugger::{
-    ElfDumper, HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineCoverage, MachineOverlap, MachineProfile,
-    MachineStepLog, analyze, get_script_hash_by_index,
-};
-use ckb_debugger::{
-    Embed, FileOperation, FileStream, FileWriter, GdbStubHandler, GdbStubHandlerEventLoop, Random, Stdio, Timestamp,
+    ElfDumper, Embed, FileOperation, FileStream, FileWriter, GdbStubHandler, GdbStubHandlerEventLoop,
+    HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineCoverage, MachineOverlap, MachineProfile,
+    MachineStepLog, Random, Stdio, Timestamp, analyze, get_script_hash_by_index,
 };
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
-use ckb_script::{ROOT_VM_ID, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
+use ckb_script::{ROOT_VM_ID, ScriptError, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
 use ckb_types::core::cell::{CellMeta, resolve_transaction};
 use ckb_types::core::{Capacity, DepType, HeaderView, ScriptHashType, TransactionBuilder, hardfork};
 use ckb_types::packed::{Byte32, CellDep, CellInput, CellOutput, OutPoint, Script, ScriptOpt};
@@ -341,13 +339,65 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "2" => ScriptVersion::V2,
         _ => panic!("Wrong script version"),
     };
+    let verifier_script = || -> Result<Script, ScriptError> {
+        let verifier_script_hash = verifier_script_hash.clone();
+        for e in &verifier_mock_tx.mock_info.inputs {
+            if e.output.calc_lock_hash().as_slice() == verifier_script_hash.as_slice() {
+                return Ok(e.output.lock());
+            }
+            if let Some(kype) = e.output.type_().to_opt() {
+                if kype.calc_script_hash().as_slice() == verifier_script_hash.as_slice() {
+                    return Ok(kype);
+                }
+            }
+        }
+        for e in verifier_mock_tx.core_transaction().outputs().into_iter() {
+            if let Some(kype) = e.type_().to_opt() {
+                if kype.calc_script_hash().as_slice() == verifier_script_hash.as_slice() {
+                    return Ok(kype);
+                }
+            }
+        }
+        Err(ScriptError::ScriptNotFound(verifier_script_hash))
+    }()?;
+    assert_eq!(verifier_script.calc_script_hash(), verifier_script_hash);
+    let verifier_script_out_point = || -> Result<OutPoint, ScriptError> {
+        match ScriptHashType::try_from(verifier_script.hash_type()).unwrap() {
+            ScriptHashType::Data | ScriptHashType::Data1 | ScriptHashType::Data2 => {
+                for e in &verifier_mock_tx.mock_info.cell_deps {
+                    if ckb_hash::blake2b_256(&e.data) == verifier_script.code_hash().as_slice() {
+                        return Ok(e.cell_dep.out_point());
+                    }
+                }
+                unreachable!()
+            }
+            ScriptHashType::Type => {
+                for e in &verifier_mock_tx.mock_info.cell_deps {
+                    if let Some(kype) = e.output.type_().to_opt() {
+                        if kype.calc_script_hash() == verifier_script.code_hash() {
+                            return Ok(e.cell_dep.out_point());
+                        }
+                    }
+                }
+                unreachable!()
+            }
+        }
+    }()?;
     let verifier_resource = Resource::from_mock_tx(&verifier_mock_tx)?;
-    let verifier_resolve_transaction = resolve_transaction(
+    let mut verifier_resolve_transaction = resolve_transaction(
         verifier_mock_tx.core_transaction(),
         &mut HashSet::new(),
         &verifier_resource,
         &verifier_resource,
     )?;
+    if matches_tx_file.is_some() && matches_bin.is_some() {
+        for e in &mut verifier_resolve_transaction.resolved_cell_deps {
+            if e.out_point == verifier_script_out_point {
+                let data = Bytes::copy_from_slice(&std::fs::read(matches_bin.unwrap())?);
+                e.mem_cell_data = Some(data);
+            }
+        }
+    }
     let mut verifier = {
         let hardforks = hardfork::HardForks {
             ckb2021: hardfork::CKB2021::new_mirana().as_builder().rfc_0032(20).build().unwrap(),
@@ -363,7 +413,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let tx_env = Arc::new(TxVerifyEnv::new_commit(&header_view));
         TransactionScriptsVerifier::new(
             Arc::new(verifier_resolve_transaction.clone()),
-            verifier_resource.clone(),
+            verifier_resource,
             consensus.clone(),
             tx_env.clone(),
         )

@@ -9,7 +9,7 @@ $ ckb-cli --url https://mainnet.ckbapp.dev/rpc mock-tx dump --tx-hash 0x5f0a4162
 You can execute the lock script or type script in the transaction:
 
 ```sh
-$ ckb-debugger --tx-file mock_tx.json --cell-index 0 --cell-type input --script-group-type lock
+$ ckb-debugger --tx-file mock_tx.json --script input.0.lock
 
 Run result: 0
 Total cycles consumed: 1697297(1.6M)
@@ -26,7 +26,7 @@ int main() {
 ```
 
 ```sh
-$ ckb-debugger --tx-file mock_tx.json --cell-index 0 --cell-type input --script-group-type lock --bin always_failure
+$ ckb-debugger --tx-file mock_tx.json --script input.0.lock --bin always_failure
 
 Run result: 1
 Total cycles consumed: 1706(1.7K)

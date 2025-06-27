@@ -27,6 +27,8 @@ jobs:
       run: cargo build
     - name: Build ckb-vm-signal-profiler example
       run: cargo build --examples --package ckb-vm-signal-profiler
+    - name: Test
+      run: cargo test --package ckb-debugger
 
   build-linux-asm:
     runs-on: ubuntu-latest
@@ -80,4 +82,3 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Build
       run: cd ckb-debugger && cargo build
-
