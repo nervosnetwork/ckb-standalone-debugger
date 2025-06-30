@@ -1,8 +1,8 @@
 use ckb_chain_spec::consensus::{ConsensusBuilder, TYPE_ID_CODE_HASH};
 use ckb_debugger::{
-    ElfDumper, Embed, FileOperation, FileStream, FileWriter, GdbStubHandler, GdbStubHandlerEventLoop,
-    HumanReadableCycles, MachineAnalyzer, MachineAssign, MachineCoverage, MachineOverlap, MachineProfile,
-    MachineStepLog, Random, Stdio, Timestamp, get_script_hash_by_index, mock_tx_analyze,
+    ElfDumper, FileOperation, FileStream, FileWriter, GdbStubHandler, GdbStubHandlerEventLoop, HumanReadableCycles,
+    MachineAnalyzer, MachineAssign, MachineCoverage, MachineOverlap, MachineProfile, MachineStepLog, Random, Stdio,
+    Timestamp, get_script_hash_by_index, mock_tx_analyze, mock_tx_embed,
 };
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ROOT_VM_ID, ScriptError, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
@@ -241,8 +241,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some(doc) => {
             let buf = std::fs::read_to_string(doc)?;
-            let mut mock_tx_embed = Embed::new(PathBuf::from(doc.to_string()), buf.clone());
-            let buf = mock_tx_embed.replace_all();
+            let buf = mock_tx_embed(PathBuf::from(doc.to_string()), &buf);
             mock_tx_analyze(&buf)?;
             let repr_mock_tx: ReprMockTransaction = serde_json::from_str(&buf)?;
             repr_mock_tx.into()
