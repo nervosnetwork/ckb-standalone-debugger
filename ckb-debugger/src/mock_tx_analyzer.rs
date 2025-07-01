@@ -2,8 +2,7 @@ use std::fmt::Debug;
 
 use ckb_types::prelude::Entity;
 
-pub fn analyze(data: &str) -> Result<(), CheckError> {
-    prelude(data)?;
+fn analyze(data: &str) -> Result<(), CheckError> {
     let mock: ckb_mock_tx_types::ReprMockTransaction = serde_json::from_str(&data).unwrap();
     analyze_cell_dep(&mock)?;
     analyze_header_dep(&mock)?;
@@ -12,7 +11,7 @@ pub fn analyze(data: &str) -> Result<(), CheckError> {
     Ok(())
 }
 
-pub fn analyze_cell_dep(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
+fn analyze_cell_dep(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
     let cset: Vec<ckb_jsonrpc_types::CellDep> = data.mock_info.cell_deps.iter().map(|e| e.cell_dep.clone()).collect();
     for (i, e) in data.tx.cell_deps.iter().enumerate() {
         if !cset.contains(&e) {
@@ -57,7 +56,7 @@ pub fn analyze_cell_dep(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result
     Ok(())
 }
 
-pub fn analyze_header_dep(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
+fn analyze_header_dep(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
     let hset: Vec<ckb_types::H256> = data.mock_info.header_deps.iter().map(|e| e.hash.clone()).collect();
     for (i, e) in data.tx.header_deps.iter().enumerate() {
         if !hset.contains(&e) {
@@ -75,7 +74,7 @@ pub fn analyze_header_dep(data: &ckb_mock_tx_types::ReprMockTransaction) -> Resu
     Ok(())
 }
 
-pub fn analyze_input(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
+fn analyze_input(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
     let iset: Vec<ckb_jsonrpc_types::CellInput> = data.mock_info.inputs.iter().map(|e| e.input.clone()).collect();
     for (i, e) in data.tx.inputs.iter().enumerate() {
         if !iset.contains(&e) {
@@ -92,7 +91,7 @@ pub fn analyze_input(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<()
     Ok(())
 }
 
-pub fn analyze_output(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
+fn analyze_output(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(), CheckError> {
     if data.tx.outputs.len() != data.tx.outputs_data.len() {
         let path = vec![Key::Table(String::from("tx")), Key::Table(String::from("outputs"))];
         return Err(CheckError(format!(
@@ -103,7 +102,14 @@ pub fn analyze_output(data: &ckb_mock_tx_types::ReprMockTransaction) -> Result<(
     Ok(())
 }
 
-pub fn prelude(data: &str) -> Result<(), CheckError> {
+/// Analyzes a JSON string representing a mock transaction, validating its structure and dependencies. Returns Ok(())
+/// if valid, or a CheckError if validation fails.
+pub fn mock_tx_analyze(data: &str) -> Result<(), CheckError> {
+    prelude(data)?;
+    analyze(data)
+}
+
+fn prelude(data: &str) -> Result<(), CheckError> {
     let j: serde_json::Value = serde_json::from_str(data).map_err(|e| CheckError(e.to_string()))?;
     prelude_contains_key(vec![], &j, "mock_info")?;
     prelude_contains_key(vec![], &j, "tx")?;
@@ -112,7 +118,7 @@ pub fn prelude(data: &str) -> Result<(), CheckError> {
     Ok(())
 }
 
-pub fn prelude_cell_dep(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_cell_dep(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_contains_key(path.clone(), &data, "out_point")?;
     prelude_contains_key(path.clone(), &data, "dep_type")?;
     prelude_out_point(keyadd_table(path.clone(), "out_point"), data.as_object().unwrap().get("out_point").unwrap())?;
@@ -120,7 +126,7 @@ pub fn prelude_cell_dep(path: Vec<Key>, data: &serde_json::Value) -> Result<(), 
     Ok(())
 }
 
-pub fn prelude_contains_key(path: Vec<Key>, data: &serde_json::Value, key: &str) -> Result<(), CheckError> {
+fn prelude_contains_key(path: Vec<Key>, data: &serde_json::Value, key: &str) -> Result<(), CheckError> {
     if !data.is_object() {
         return Err(CheckError(format!("Check Fail: {} is not an object", keyfmt(&path))));
     }
@@ -130,7 +136,7 @@ pub fn prelude_contains_key(path: Vec<Key>, data: &serde_json::Value, key: &str)
     Ok(())
 }
 
-pub fn prelude_dep_type(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_dep_type(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     if !data.is_string() {
         return Err(CheckError(format!("Check Fail: {} {}", keyfmt(&path), "is not a legal dep type")));
     }
@@ -140,7 +146,7 @@ pub fn prelude_dep_type(path: Vec<Key>, data: &serde_json::Value) -> Result<(), 
     Ok(())
 }
 
-pub fn prelude_hash(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_hash(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_hex(path.clone(), data)?;
     if data.as_str().unwrap().len() != 66 {
         return Err(CheckError(format!("Check Fail: {} {}", keyfmt(&path), "is not a legal hash")));
@@ -148,7 +154,7 @@ pub fn prelude_hash(path: Vec<Key>, data: &serde_json::Value) -> Result<(), Chec
     Ok(())
 }
 
-pub fn prelude_hash_type(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_hash_type(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     if !data.is_string() {
         return Err(CheckError(format!("Check Fail: {} {}", keyfmt(&path), "is not a legal hash type")));
     }
@@ -158,7 +164,7 @@ pub fn prelude_hash_type(path: Vec<Key>, data: &serde_json::Value) -> Result<(),
     Ok(())
 }
 
-pub fn prelude_hex(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_hex(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     if !data.is_string() {
         return Err(CheckError(format!("Check Fail: {} {}", keyfmt(&path), "is not a legal hex string")));
     }
@@ -171,7 +177,7 @@ pub fn prelude_hex(path: Vec<Key>, data: &serde_json::Value) -> Result<(), Check
     Ok(())
 }
 
-pub fn prelude_input(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_input(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_contains_key(path.clone(), &data, "since")?;
     prelude_contains_key(path.clone(), &data, "previous_output")?;
     prelude_u64(keyadd_table(path.clone(), "since"), data.as_object().unwrap().get("since").unwrap())?;
@@ -182,7 +188,7 @@ pub fn prelude_input(path: Vec<Key>, data: &serde_json::Value) -> Result<(), Che
     Ok(())
 }
 
-pub fn prelude_mock_info(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_mock_info(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_contains_key(path.clone(), &data, "inputs")?;
     prelude_contains_key(path.clone(), &data, "cell_deps")?;
     prelude_contains_key(path.clone(), &data, "header_deps")?;
@@ -249,7 +255,7 @@ pub fn prelude_mock_info(path: Vec<Key>, data: &serde_json::Value) -> Result<(),
     Ok(())
 }
 
-pub fn prelude_out_point(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_out_point(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_contains_key(path.clone(), data, "tx_hash")?;
     prelude_contains_key(path.clone(), data, "index")?;
     prelude_hash(keyadd_table(path.clone(), "tx_hash"), data.as_object().unwrap().get("tx_hash").unwrap())?;
@@ -257,7 +263,7 @@ pub fn prelude_out_point(path: Vec<Key>, data: &serde_json::Value) -> Result<(),
     Ok(())
 }
 
-pub fn prelude_output(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_output(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_contains_key(path.clone(), data, "capacity")?;
     prelude_contains_key(path.clone(), data, "lock")?;
     prelude_u64(keyadd_table(path.clone(), "capacity"), data.as_object().unwrap().get("capacity").unwrap())?;
@@ -268,7 +274,7 @@ pub fn prelude_output(path: Vec<Key>, data: &serde_json::Value) -> Result<(), Ch
     Ok(())
 }
 
-pub fn prelude_script(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_script(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_contains_key(path.clone(), data, "code_hash")?;
     prelude_contains_key(path.clone(), data, "hash_type")?;
     prelude_contains_key(path.clone(), data, "args")?;
@@ -278,7 +284,7 @@ pub fn prelude_script(path: Vec<Key>, data: &serde_json::Value) -> Result<(), Ch
     Ok(())
 }
 
-pub fn prelude_tx(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_tx(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     prelude_contains_key(path.clone(), &data, "version")?;
     prelude_contains_key(path.clone(), &data, "cell_deps")?;
     prelude_contains_key(path.clone(), &data, "header_deps")?;
@@ -314,7 +320,7 @@ pub fn prelude_tx(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckE
     Ok(())
 }
 
-pub fn prelude_u128(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_u128(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     if !data.is_string() || !data.as_str().unwrap().starts_with("0x") {
         return Err(CheckError(format!("Check Fail: {} {}", keyfmt(&path), "is not a legal u128")));
     }
@@ -324,7 +330,7 @@ pub fn prelude_u128(path: Vec<Key>, data: &serde_json::Value) -> Result<(), Chec
     Ok(())
 }
 
-pub fn prelude_u32(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_u32(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     if !data.is_string() || !data.as_str().unwrap().starts_with("0x") {
         return Err(CheckError(format!("Check Fail: {} {}", keyfmt(&path), "is not a legal u32")));
     }
@@ -334,7 +340,7 @@ pub fn prelude_u32(path: Vec<Key>, data: &serde_json::Value) -> Result<(), Check
     Ok(())
 }
 
-pub fn prelude_u64(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
+fn prelude_u64(path: Vec<Key>, data: &serde_json::Value) -> Result<(), CheckError> {
     if !data.is_string() || !data.as_str().unwrap().starts_with("0x") {
         return Err(CheckError(format!("Check Fail: {} {}", keyfmt(&path), "is not a legal u64")));
     }
@@ -361,12 +367,12 @@ impl std::fmt::Display for CheckError {
 impl std::error::Error for CheckError {}
 
 #[derive(Clone, Debug)]
-pub enum Key {
+enum Key {
     Table(String),
     Index(usize),
 }
 
-pub fn keyfmt(key: &[Key]) -> String {
+fn keyfmt(key: &[Key]) -> String {
     let mut s = String::from("json");
     for e in key {
         match e {
@@ -381,12 +387,12 @@ pub fn keyfmt(key: &[Key]) -> String {
     s
 }
 
-pub fn keyadd_index(mut key: Vec<Key>, add: usize) -> Vec<Key> {
+fn keyadd_index(mut key: Vec<Key>, add: usize) -> Vec<Key> {
     key.push(Key::Index(add));
     key
 }
 
-pub fn keyadd_table(mut key: Vec<Key>, add: &str) -> Vec<Key> {
+fn keyadd_table(mut key: Vec<Key>, add: &str) -> Vec<Key> {
     key.push(Key::Table(String::from(add)));
     key
 }

@@ -1,4 +1,3 @@
-mod analyzer;
 mod api;
 #[cfg(target_family = "unix")]
 pub mod arch_unix;
@@ -12,6 +11,8 @@ mod machine_analyzer;
 mod machine_assign;
 mod machine_gdb;
 mod misc;
+mod mock_tx_analyzer;
+mod mock_tx_embed;
 mod syscall_elf_dumper;
 mod syscall_file_operation;
 mod syscall_file_stream;
@@ -20,7 +21,6 @@ mod syscall_random;
 mod syscall_stdio;
 mod syscall_timestamp;
 
-pub use analyzer::analyze;
 pub use api::{run, run_json};
 #[cfg(target_family = "unix")]
 pub use arch_unix::{self as arch};
@@ -33,7 +33,9 @@ pub use arch_windows::{self as arch};
 pub use machine_analyzer::{MachineAnalyzer, MachineCoverage, MachineOverlap, MachineProfile, MachineStepLog};
 pub use machine_assign::MachineAssign;
 pub use machine_gdb::{GdbStubHandler, GdbStubHandlerEventLoop};
-pub use misc::{DummyResourceLoader, Embed, HumanReadableCycles, get_script_hash_by_index};
+pub use misc::{DummyResourceLoader, HumanReadableCycles, get_script_hash_by_index};
+pub use mock_tx_analyzer::{CheckError, mock_tx_analyze};
+pub use mock_tx_embed::{MockTxEmbed, mock_tx_embed};
 pub use syscall_elf_dumper::ElfDumper;
 pub use syscall_file_operation::FileOperation;
 pub use syscall_file_stream::FileStream;
