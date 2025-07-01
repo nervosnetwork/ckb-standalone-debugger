@@ -96,6 +96,21 @@ pub fn test_mock_tx_replace_bin() {
 }
 
 #[test]
+pub fn test_instruction_decode() {
+    let result =
+        Command::new(*CKB_DEBUGGER).args(["--mode", "instruction-decode", "0x00054363"]).output().unwrap().stdout;
+    let mut expect = vec![
+        b"       Assembly = blt a0,zero,6".to_vec(),
+        b"         Binary = 00000000000001010100001101100011".to_vec(),
+        b"    Hexadecimal = 00054363".to_vec(),
+        b"Instruction set = I".to_vec(),
+    ]
+    .join(&b'\n');
+    expect.push(b'\n');
+    assert_eq!(result, expect);
+}
+
+#[test]
 pub fn test_out_of_memory() {
     let result = Command::new(*CKB_DEBUGGER).args(["--bin", "examples/out_of_memory"]).output().unwrap().stderr;
     let mut expect = vec![b"Error: MemOutOfBound".to_vec()].join(&b'\n');
