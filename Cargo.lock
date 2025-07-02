@@ -342,7 +342,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-debugger"
-version = "0.200.1"
+version = "0.200.2"
 dependencies = [
  "addr2line 0.21.0",
  "byteorder",
@@ -643,7 +643,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-debug-utils"
-version = "0.200.1"
+version = "0.200.2"
 dependencies = [
  "byteorder",
  "bytes",
@@ -667,7 +667,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof"
-version = "0.200.1"
+version = "0.200.2"
 dependencies = [
  "addr2line 0.21.0",
  "ckb-vm",
@@ -677,7 +677,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof-converter"
-version = "0.200.1"
+version = "0.200.2"
 dependencies = [
  "ckb-vm-pprof-protos",
  "clap 4.5.38",
@@ -686,7 +686,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-pprof-protos"
-version = "0.200.1"
+version = "0.200.2"
 dependencies = [
  "protobuf",
  "protobuf-codegen",
@@ -695,7 +695,7 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-signal-profiler"
-version = "0.200.1"
+version = "0.200.2"
 dependencies = [
  "addr2line 0.21.0",
  "ckb-vm",
