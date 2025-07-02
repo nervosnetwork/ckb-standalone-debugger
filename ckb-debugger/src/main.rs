@@ -2,7 +2,7 @@ use ckb_chain_spec::consensus::{ConsensusBuilder, TYPE_ID_CODE_HASH};
 use ckb_debugger::{
     ElfDumper, FileOperation, FileStream, FileWriter, GdbStubHandler, GdbStubHandlerEventLoop, HumanReadableCycles,
     MachineAnalyzer, MachineAssign, MachineCoverage, MachineOverlap, MachineProfile, MachineStepLog, Random, Stdio,
-    Timestamp, get_script_hash_by_index, mock_tx_analyze, mock_tx_embed,
+    Timestamp, get_script_hash_by_index, instruction_decode, mock_tx_analyze, mock_tx_embed,
 };
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::{ROOT_VM_ID, ScriptError, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv};
@@ -14,7 +14,6 @@ use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::build_decoder;
 use ckb_vm::error::Error;
 use ckb_vm::instructions::execute;
-use ckb_vm::machine::VERSION2;
 use ckb_vm::{Bytes, CoreMachine, Register, SupportMachine};
 use clap::{App, Arg, crate_version};
 use gdbstub::{
@@ -99,7 +98,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Arg::with_name("mode")
                 .long("mode")
                 .help("Execution mode of debugger")
-                .possible_values(&["decode-instruction", "fast", "full", "gdb", "probe"])
+                .possible_values(&["decode-instruction", "fast", "full", "gdb", "instruction-decode", "probe"])
                 .default_value(&default_mode)
                 .required(true)
                 .takes_value(true),
@@ -178,7 +177,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_script_version = matches.value_of("script-version").unwrap();
     let matches_tx_file = matches.value_of("tx-file");
 
-    if matches_mode == "decode-instruction" {
+    if matches!(matches_mode, "decode-instruction" | "instruction-decode") {
         let args: Vec<String> = matches_args.clone().into_iter().map(|s| s.into()).collect();
         let inst_str = &args[0];
         let inst_bin = if inst_str.starts_with("0x") {
@@ -186,47 +185,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             u32::from_str_radix(&inst_str, 10)?
         };
-        let mut inst_tag = String::from("?");
-        let mut inst_isa = String::from("?");
-        if let Some(i) = ckb_vm::instructions::i::factory::<u64>(inst_bin, VERSION2) {
-            assert_eq!(inst_tag.as_str(), "?");
-            let tagged_instruction = ckb_vm::instructions::tagged::TaggedInstruction::try_from(i).unwrap();
-            inst_tag = tagged_instruction.to_string();
-            inst_isa = "I".to_string();
-        }
-        if let Some(i) = ckb_vm::instructions::m::factory::<u64>(inst_bin, VERSION2) {
-            assert_eq!(inst_tag.as_str(), "?");
-            let tagged_instruction = ckb_vm::instructions::tagged::TaggedInstruction::try_from(i).unwrap();
-            inst_tag = tagged_instruction.to_string();
-            inst_isa = "M".to_string();
-        }
-        if let Some(i) = ckb_vm::instructions::a::factory::<u64>(inst_bin, VERSION2) {
-            assert_eq!(inst_tag.as_str(), "?");
-            let tagged_instruction = ckb_vm::instructions::tagged::TaggedInstruction::try_from(i).unwrap();
-            inst_tag = tagged_instruction.to_string();
-            inst_isa = "A".to_string();
-        }
-        if let Some(i) = ckb_vm::instructions::rvc::factory::<u64>(inst_bin, VERSION2) {
-            assert_eq!(inst_tag.as_str(), "?");
-            let tagged_instruction = ckb_vm::instructions::tagged::TaggedInstruction::try_from(i).unwrap();
-            inst_tag = tagged_instruction.to_string();
-            inst_isa = "C".to_string();
-        }
-        if let Some(i) = ckb_vm::instructions::b::factory::<u64>(inst_bin, VERSION2) {
-            assert_eq!(inst_tag.as_str(), "?");
-            let tagged_instruction = ckb_vm::instructions::tagged::TaggedInstruction::try_from(i).unwrap();
-            inst_tag = tagged_instruction.to_string();
-            inst_isa = "B".to_string();
-        }
-        println!("       Assembly = {}", inst_tag);
-        if inst_isa == "C" {
-            println!("         Binary = {:016b}", inst_bin);
-            println!("    Hexadecimal = {:04x}", inst_bin);
-        } else {
-            println!("         Binary = {:032b}", inst_bin);
-            println!("    Hexadecimal = {:08x}", inst_bin);
-        }
-        println!("Instruction set = {}", inst_isa);
+        instruction_decode(inst_bin);
         return Ok(());
     }
 

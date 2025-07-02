@@ -7,6 +7,7 @@ pub mod arch_wasm;
 pub mod arch_wasm_wasi;
 #[cfg(target_family = "windows")]
 pub mod arch_windows;
+mod instruction_decode;
 mod machine_analyzer;
 mod machine_assign;
 mod machine_gdb;
@@ -30,6 +31,7 @@ pub use arch_wasm::{self as arch};
 pub use arch_wasm_wasi::{self as arch};
 #[cfg(target_family = "windows")]
 pub use arch_windows::{self as arch};
+pub use instruction_decode::instruction_decode;
 pub use machine_analyzer::{MachineAnalyzer, MachineCoverage, MachineOverlap, MachineProfile, MachineStepLog};
 pub use machine_assign::MachineAssign;
 pub use machine_gdb::{GdbStubHandler, GdbStubHandlerEventLoop};
