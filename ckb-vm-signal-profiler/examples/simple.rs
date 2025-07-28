@@ -1,7 +1,8 @@
 // A simple ckb-vm profiler with debugger syscall implemented.
 
 use ckb_vm::{
-    Bytes, Error as VMError, ISA_A, ISA_B, ISA_IMC, ISA_MOP, Memory, Register, SupportMachine, Syscalls,
+    Bytes, DefaultMachineRunner, Error as VMError, ISA_A, ISA_B, ISA_IMC, ISA_MOP, Memory, Register, SupportMachine,
+    Syscalls,
     machine::{
         DefaultMachineBuilder, VERSION2,
         asm::{AsmCoreMachine, AsmMachine},
@@ -56,7 +57,8 @@ fn main() {
     let code = std::fs::read(args[0].clone()).unwrap().into();
     let args: Vec<Bytes> = args.into_iter().map(|a| a.into()).collect();
 
-    let asm_core = AsmCoreMachine::new(ISA_IMC | ISA_A | ISA_B | ISA_MOP, VERSION2, u64::max_value());
+    let asm_core =
+        <Box<AsmCoreMachine> as SupportMachine>::new(ISA_IMC | ISA_A | ISA_B | ISA_MOP, VERSION2, u64::max_value());
     let core = DefaultMachineBuilder::new(asm_core).syscall(Box::new(Debugger::new())).build();
     let mut machine = Box::pin(AsmMachine::new(core));
 

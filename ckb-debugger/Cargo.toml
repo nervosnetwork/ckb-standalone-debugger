@@ -25,6 +25,11 @@ ckb-traits.workspace = true
 ckb-types.workspace = true
 ckb-vm.workspace = true
 
+ckb-vm-syscall-tracer.workspace = true
+ckb-vm-debug-utils.workspace = true
+ckb-vm-fuzzing-utils.workspace = true
+protobuf-ckb-syscalls.workspace = true
+
 addr2line.workspace = true
 byteorder.workspace = true
 env_logger.workspace = true
@@ -36,6 +41,7 @@ libc.workspace = true
 log.workspace = true
 nix.workspace = true
 probe.workspace = true
+prost-reflect.workspace = true
 rand.workspace = true
 regex.workspace = true
 serde.workspace = true

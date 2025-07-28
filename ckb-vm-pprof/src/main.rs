@@ -1,3 +1,4 @@
+use ckb_vm::SupportMachine;
 use std::io::Write;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -1,0 +1,17 @@
+/code/ckb-c-stdlib/libc/entry.h:_start 510
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main 42
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib 65
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib 65
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 65
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 65
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 48
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 38
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 48
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 65
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 48
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 38
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib 65
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 65
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 48
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 38
+/code/ckb-c-stdlib/libc/entry.h:_start; /code/fib.c:main; /code/fib.c:fib; /code/fib.c:fib; /code/fib.c:fib 48

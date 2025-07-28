@@ -10,26 +10,42 @@ members = [
 ]
 
 [workspace.package]
-version = "0.200.2"
+version = "0.202.0"
 
 [workspace.dependencies]
 # CKB dependencies
-ckb-chain-spec = "=0.200.0"
-ckb-hash = "=0.200.0"
-ckb-jsonrpc-types = "=0.200.0"
-ckb-script = { version = "=0.200.0", default-features = false, features = ["flatmemory"] }
-ckb-traits = "=0.200.0"
-ckb-types = "=0.200.0"
-ckb-vm = { version = "=0.24.13", default-features = false, features = ["pprof"] }
+ckb-chain-spec = "=0.202.0"
+ckb-hash = "=0.202.0"
+ckb-jsonrpc-types = "=0.202.0"
+ckb-script = { version = "=0.202.0", default-features = false, features = ["flatmemory"] }
+ckb-traits = "=0.202.0"
+ckb-types = "=0.202.0"
+ckb-vm = { version = "=0.24.14", default-features = false, features = ["pprof"] }
+# ckb-chain-spec = { path = "/home/ubuntu/src/ckb/spec" }
+# ckb-hash = { path = "/home/ubuntu/src/ckb/util/hash" }
+# ckb-jsonrpc-types = { path = "/home/ubuntu/src/ckb/util/jsonrpc-types" }
+# ckb-script = { path = "/home/ubuntu/src/ckb/script", default-features = false, features = ["flatmemory"] }
+# ckb-traits = { path = "/home/ubuntu/src/ckb/traits" }
+# ckb-types = { path = "/home/ubuntu/src/ckb/util/types" }
+# ckb-vm = { version = "=0.24.14", default-features = false, features = ["pprof"] }
 
 # Crates defined in current workspace
-ckb-debugger = { path = "ckb-debugger", version = "0.200.2" }
-ckb-mock-tx-types = { version = "0.200.1" }
-ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "0.200.2" }
-ckb-vm-pprof = { path = "ckb-vm-pprof", version = "0.200.2" }
-ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "0.200.2" }
-ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "0.200.2" }
-ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "0.200.2" }
+ckb-debugger = { path = "ckb-debugger", version = "0.202.0" }
+ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "0.202.0" }
+ckb-vm-pprof = { path = "ckb-vm-pprof", version = "0.202.0" }
+ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "0.202.0" }
+ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "0.202.0" }
+ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "0.202.0" }
+
+# CKB VM contribs
+ckb-mock-tx-types = "0.202.1"
+ckb-vm-syscall-tracer = "0.202.1"
+ckb-vm-fuzzing-utils = "0.202.1"
+protobuf-ckb-syscalls = "0.202.1"
+# ckb-mock-tx-types = { path = "/home/ubuntu/src/ckb-vm-contrib/ckb-mock-tx-types" }
+# ckb-vm-syscall-tracer = { path = "/home/ubuntu/src/ckb-vm-contrib/ckb-vm-syscall-tracer" }
+# ckb-vm-fuzzing-utils = { path = "/home/ubuntu/src/ckb-vm-contrib/ckb-vm-fuzzing-utils" }
+# protobuf-ckb-syscalls = { path = "/home/ubuntu/src/ckb-vm-contrib/protobuf-ckb-syscalls" }
 
 # Other common crates
 addr2line = "0.21"
@@ -44,6 +60,7 @@ libc = "0.2"
 log = "0.4.0"
 nix = { version = "0.30", features = ["fs", "signal"] }
 probe = "0.5"
+prost-reflect = { version = "0.16.0", features = ["derive", "text-format"] }
 protoc-bin-vendored = "3.1"
 protobuf-codegen = "3.7"
 protobuf = { version = "3.7", features = ["with-bytes"] }
