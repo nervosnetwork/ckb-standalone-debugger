@@ -243,7 +243,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .set(Some(
                                 Script::new_builder()
                                     .code_hash(Byte32::from_slice(TYPE_ID_CODE_HASH.as_bytes())?)
-                                    .hash_type(ScriptHashType::Type.into())
+                                    .hash_type(ScriptHashType::Type)
                                     .args(Bytes::copy_from_slice(&vec![0u8; 32]).pack())
                                     .build(),
                             ))
@@ -261,7 +261,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .lock(
                         Script::new_builder()
                             .code_hash(cell_meta_lock.cell_output.type_().to_opt().unwrap().calc_script_hash())
-                            .hash_type(ScriptHashType::Type.into())
+                            .hash_type(ScriptHashType::Type)
                             .build(),
                     )
                     .build_exact_capacity(Capacity::zero())?,
@@ -271,10 +271,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let mut mock_info = MockInfo::default();
             mock_info.cell_deps.push(MockCellDep {
-                cell_dep: CellDep::new_builder()
-                    .out_point(cell_meta_lock.out_point)
-                    .dep_type(DepType::Code.into())
-                    .build(),
+                cell_dep: CellDep::new_builder().out_point(cell_meta_lock.out_point).dep_type(DepType::Code).build(),
                 output: cell_meta_lock.cell_output,
                 data: cell_meta_lock_data.clone(),
                 header: None,
@@ -368,6 +365,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 unreachable!()
             }
+            _ => unreachable!(),
         }
     }()?;
     let verifier_resource = Resource::from_mock_tx(&verifier_mock_tx)?;
@@ -451,10 +449,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 vec![matches_dump_file, matches_read_file_name],
             );
 
-        let result = verifier.detailed_run(verifier_script_group, verifier_max_cycles);
-        // let mut scheduler = verifier.create_scheduler(verifier_script_group)?;
-        // scheduler.set_root_vm_args(matches_args.map(|s| Bytes::copy_from_slice(s.as_bytes())).collect());
-        // let result = scheduler.run(ckb_script::RunMode::LimitCycles(verifier_max_cycles));
+        let mut scheduler = verifier.create_scheduler(verifier_script_group)?;
+        scheduler.set_root_vm_args(matches_args.map(|s| Bytes::copy_from_slice(s.as_bytes())).collect());
+        let result = scheduler.run(ckb_script::RunMode::LimitCycles(verifier_max_cycles));
 
         if result.is_err() {
             arch::println(&format!("Run result: {}", result.unwrap_err()));
@@ -515,8 +512,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 v.0.offset + v.0.length
             ),
         );
-        if !v.1.is_empty() {
-            tree.insert(k.clone(), v.1);
+        if !v.1.vm_creations.is_empty() {
+            tree.insert(k.clone(), v.1.vm_creations.clone());
         }
     }
     if !tree.is_empty() {

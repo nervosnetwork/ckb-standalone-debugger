@@ -10,16 +10,16 @@ members = [
 ]
 
 [workspace.package]
-version = "0.202.0"
+version = "0.203.0-rc3"
 
 [workspace.dependencies]
 # CKB dependencies
-ckb-chain-spec = "=0.202.0"
-ckb-hash = "=0.202.0"
-ckb-jsonrpc-types = "=0.202.0"
-ckb-script = { version = "=0.202.0", default-features = false, features = ["flatmemory"] }
-ckb-traits = "=0.202.0"
-ckb-types = "=0.202.0"
+ckb-chain-spec = "=0.203.0-rc3"
+ckb-hash = "=0.203.0-rc3"
+ckb-jsonrpc-types = "=0.203.0-rc3"
+ckb-script = { version = "=0.203.0-rc3", default-features = false, features = ["flatmemory"] }
+ckb-traits = "=0.203.0-rc3"
+ckb-types = "=0.203.0-rc3"
 ckb-vm = { version = "=0.24.14", default-features = false, features = ["pprof"] }
 # ckb-chain-spec = { path = "/home/ubuntu/src/ckb/spec" }
 # ckb-hash = { path = "/home/ubuntu/src/ckb/util/hash" }
@@ -30,18 +30,18 @@ ckb-vm = { version = "=0.24.14", default-features = false, features = ["pprof"] 
 # ckb-vm = { version = "=0.24.14", default-features = false, features = ["pprof"] }
 
 # Crates defined in current workspace
-ckb-debugger = { path = "ckb-debugger", version = "0.202.0" }
-ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "0.202.0" }
-ckb-vm-pprof = { path = "ckb-vm-pprof", version = "0.202.0" }
-ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "0.202.0" }
-ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "0.202.0" }
-ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "0.202.0" }
+ckb-debugger = { path = "ckb-debugger", version = "0.203.0-rc3" }
+ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "0.203.0-rc3" }
+ckb-vm-pprof = { path = "ckb-vm-pprof", version = "0.203.0-rc3" }
+ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "0.203.0-rc3" }
+ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "0.203.0-rc3" }
+ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "0.203.0-rc3" }
 
 # CKB VM contribs
-ckb-mock-tx-types = "0.202.1"
-ckb-vm-syscall-tracer = "0.202.1"
-ckb-vm-fuzzing-utils = "0.202.1"
-protobuf-ckb-syscalls = "0.202.1"
+ckb-mock-tx-types = "0.203.0-rc3"
+ckb-vm-syscall-tracer = "0.203.0-rc3"
+ckb-vm-fuzzing-utils = "0.203.0-rc3"
+protobuf-ckb-syscalls = "0.203.0-rc3"
 # ckb-mock-tx-types = { path = "/home/ubuntu/src/ckb-vm-contrib/ckb-mock-tx-types" }
 # ckb-vm-syscall-tracer = { path = "/home/ubuntu/src/ckb-vm-contrib/ckb-vm-syscall-tracer" }
 # ckb-vm-fuzzing-utils = { path = "/home/ubuntu/src/ckb-vm-contrib/ckb-vm-fuzzing-utils" }

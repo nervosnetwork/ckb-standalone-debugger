@@ -5,6 +5,7 @@ use ckb_types::core::HeaderView;
 use ckb_types::packed::{Byte32, CellOutput, OutPoint};
 use ckb_vm::Bytes;
 use ckb_vm_syscall_tracer::CollectorKey;
+use ckb_vm_syscall_tracer::generated::traces::VmCreation;
 use std::collections::HashMap;
 
 pub struct DummyResourceLoader {}
@@ -74,7 +75,7 @@ pub fn collector_key_str(collector_key: &CollectorKey) -> String {
 
 // Recursive helper function to print the tree.
 pub fn print_vm_tree_recursive(
-    tree: &HashMap<CollectorKey, Vec<CollectorKey>>,
+    tree: &HashMap<CollectorKey, Vec<VmCreation>>,
     hint: &HashMap<CollectorKey, String>,
     ckey: CollectorKey,
     prefix: &str,
@@ -103,7 +104,13 @@ pub fn print_vm_tree_recursive(
             let is_last_child = i == children.len() - 1;
             let child_prefix =
                 if is_last_child { format!("{}└── ", new_prefix) } else { format!("{}├── ", new_prefix) };
-            print_vm_tree_recursive(tree, hint, child.clone(), &child_prefix, is_last_child);
+            print_vm_tree_recursive(
+                tree,
+                hint,
+                CollectorKey { vm_id: child.vm_id, generation_id: child.generation_id },
+                &child_prefix,
+                is_last_child,
+            );
         }
     }
 }

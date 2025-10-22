@@ -13,7 +13,7 @@ pub fn test_always_failure_v0() {
         .output()
         .unwrap()
         .stdout;
-    assert!(String::from_utf8(result).unwrap().contains("VM Internal Error: MemWriteOnExecutablePage"));
+    assert!(String::from_utf8(result).unwrap().contains("write on executable page"));
 }
 
 #[test]
@@ -121,7 +121,7 @@ pub fn test_instruction_decode() {
 #[test]
 pub fn test_out_of_memory() {
     let result = Command::new(*CKB_DEBUGGER).args(["--bin", "examples/out_of_memory"]).output().unwrap().stdout;
-    assert!(String::from_utf8(result).unwrap().contains("VM Internal Error: MemOutOfBound"));
+    assert!(String::from_utf8(result).unwrap().contains("out of bound"));
 }
 
 #[test]

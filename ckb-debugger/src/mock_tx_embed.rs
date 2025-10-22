@@ -78,7 +78,7 @@ impl MockTxEmbed {
             let type_id_script = Script::new_builder()
                 .args(Bytes::from(type_id_name.to_string()).pack())
                 .code_hash(TYPE_ID_CODE_HASH.pack())
-                .hash_type(ScriptHashType::Type.into())
+                .hash_type(ScriptHashType::Type)
                 .build();
             let type_id_script_hash = type_id_script.calc_script_hash();
             let type_id_script_hash = format!("{:x}", type_id_script_hash);
