@@ -590,7 +590,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => Bytes::new(),
     };
     let machine_init = || {
-        let machine_trace_impls = ProtobufVmRunnerImpls::new_with_bytes(machine_trace_data.clone()).unwrap();
+        let mut machine_trace_impls = ProtobufVmRunnerImpls::new_with_bytes(machine_trace_data.clone()).unwrap();
+        machine_trace_impls.set_debug_printer(Box::new(|message: &str| {
+            let message = message.trim_end_matches('\n');
+            if message != "" {
+                arch::println(&format!("{}", &format!("Script log: {}", message)));
+            }
+        }));
         let machine_args: Vec<Bytes> = machine_trace_impls.args().iter().map(|e| Bytes::copy_from_slice(e)).collect();
         let machine_syscall = SynchronousSyscalls::new(machine_trace_impls);
         let machine_core = ckb_vm::DefaultCoreMachine::<u64, ckb_vm::WXorXMemory<ckb_vm::FlatMemory<u64>>>::new(

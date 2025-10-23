@@ -32,7 +32,7 @@ $ riscv64-unknown-elf-gcc -g -o fib fib.c
 Save execution trace by:
 
 ```sh
-$ ckb-debugger --mode full --bin fib --flamegraph-output fib.flamegraph
+$ ckb-debugger --mode full --bin fib --enable-flamegraph --flamegraph-output fib.flamegraph
 ```
 
 To convert the textual representation of a flamegraph to a visual one, first install inferno:
