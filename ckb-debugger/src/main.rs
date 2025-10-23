@@ -599,18 +599,48 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }));
         let machine_args: Vec<Bytes> = machine_trace_impls.args().iter().map(|e| Bytes::copy_from_slice(e)).collect();
         let machine_syscall = SynchronousSyscalls::new(machine_trace_impls);
+        let machine_version = match verifier_script_version {
+            ScriptVersion::V0 => ckb_vm::machine::VERSION0,
+            ScriptVersion::V1 => ckb_vm::machine::VERSION1,
+            ScriptVersion::V2 => ckb_vm::machine::VERSION2,
+        };
         let machine_core = ckb_vm::DefaultCoreMachine::<u64, ckb_vm::WXorXMemory<ckb_vm::FlatMemory<u64>>>::new(
             ckb_vm::ISA_IMC | ckb_vm::ISA_B | ckb_vm::ISA_MOP,
-            match verifier_script_version {
-                ScriptVersion::V0 => ckb_vm::machine::VERSION0,
-                ScriptVersion::V1 => ckb_vm::machine::VERSION1,
-                ScriptVersion::V2 => ckb_vm::machine::VERSION2,
-            },
+            machine_version,
             verifier_max_cycles,
         );
         let machine_builder =
             ckb_vm::DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(estimate_cycles));
         let mut machine = machine_builder.syscall(Box::new(machine_syscall)).build();
+
+        machine.load_program(&machine_program_elf, machine_args.into_iter().map(Ok)).unwrap();
+        machine
+    };
+    #[cfg(feature = "asm")]
+    let machine_init_asm = || {
+        let mut machine_trace_impls = ProtobufVmRunnerImpls::new_with_bytes(machine_trace_data.clone()).unwrap();
+        machine_trace_impls.set_debug_printer(Box::new(|message: &str| {
+            let message = message.trim_end_matches('\n');
+            if message != "" {
+                arch::println(&format!("{}", &format!("Script log: {}", message)));
+            }
+        }));
+        let machine_args: Vec<Bytes> = machine_trace_impls.args().iter().map(|e| Bytes::copy_from_slice(e)).collect();
+        let machine_syscall = SynchronousSyscalls::new(machine_trace_impls);
+        let machine_version = match verifier_script_version {
+            ScriptVersion::V0 => ckb_vm::machine::VERSION0,
+            ScriptVersion::V1 => ckb_vm::machine::VERSION1,
+            ScriptVersion::V2 => ckb_vm::machine::VERSION2,
+        };
+        let machine_core = <Box<ckb_vm::machine::asm::AsmCoreMachine> as SupportMachine>::new(
+            ckb_vm::ISA_IMC | ckb_vm::ISA_B | ckb_vm::ISA_MOP,
+            machine_version,
+            verifier_max_cycles,
+        );
+        let machine_builder =
+            ckb_vm::DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(estimate_cycles));
+        let machine = machine_builder.syscall(Box::new(machine_syscall)).build();
+        let mut machine = ckb_vm::machine::asm::AsmMachine::new(machine);
         machine.load_program(&machine_program_elf, machine_args.into_iter().map(Ok)).unwrap();
         machine
     };
@@ -709,7 +739,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut line = String::new();
             std::io::stdin().lock().read_line(&mut line).expect("read");
         }
+        #[cfg(not(feature = "asm"))]
         let mut machine = machine_init();
+        #[cfg(feature = "asm")]
+        let mut machine = machine_init_asm().machine;
         machine.set_running(true);
         let mut decoder = build_decoder::<u64>(verifier_script_version.vm_isa(), verifier_script_version.vm_version());
         let mut step_result = Ok(());
