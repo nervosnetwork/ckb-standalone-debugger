@@ -66,7 +66,7 @@ jobs:
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
       - name: Build wasm-pack
-        run: cd ckb-debugger && cargo install wasm-pack && wasm-pack build --target nodejs
+        run: cd ckb-debugger && cargo install wasm-pack --locked && wasm-pack build --target nodejs
       - name: Build wasm32-unknown-unknown
         run: cd ckb-debugger && rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown
       - name: Build wasm32-wasip1
