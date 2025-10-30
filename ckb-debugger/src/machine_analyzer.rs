@@ -1,15 +1,16 @@
-use crate::machine_assign::MachineAssign;
-use ckb_traits::{CellDataProvider, ExtensionProvider, HeaderProvider};
 use ckb_vm::cost_model::estimate_cycles;
 use ckb_vm::decoder::{Decoder, build_decoder};
 use ckb_vm::instructions::instruction_length;
 use ckb_vm::machine::VERSION0;
 use ckb_vm::registers::{A0, SP};
-use ckb_vm::{Bytes, CoreMachine, Error, ISA_MOP, Machine, Register, SupportMachine};
+use ckb_vm::{
+    Bytes, CoreMachine, DefaultCoreMachine, DefaultMachine, Error, FlatMemory, ISA_MOP, Machine, Register,
+    SupportMachine, WXorXMemory,
+};
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 use std::rc::Rc;
 
 type Addr2LineEndianReader = addr2line::gimli::EndianReader<addr2line::gimli::RunTimeEndian, Rc<[u8]>>;
@@ -101,7 +102,7 @@ impl Tags {
     }
 }
 
-pub struct MachineProfile {
+pub struct MachineFlamegraph {
     addrctx: Addr2LineContext,
     trie_root: Rc<RefCell<TrieNode>>,
     trie_node: Rc<RefCell<TrieNode>>,
@@ -109,7 +110,7 @@ pub struct MachineProfile {
     cache_fun: HashMap<u64, String>,
 }
 
-impl MachineProfile {
+impl MachineFlamegraph {
     pub fn new(program: &Bytes) -> Result<Self, Box<dyn std::error::Error>> {
         let object = addr2line::object::File::parse(program.as_ref())?;
         let ctx = addr2line::Context::new(&object)?;
@@ -189,10 +190,11 @@ impl MachineProfile {
         writer.flush().unwrap();
     }
 
-    pub fn step<DL>(&mut self, decoder: &mut Decoder, machine: &mut MachineAssign<DL>) -> Result<(), Error>
-    where
-        DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-    {
+    pub fn step(
+        &mut self,
+        decoder: &mut Decoder,
+        machine: &mut DefaultMachine<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>,
+    ) -> Result<(), Error> {
         let pc = machine.pc().to_u64();
         let inst = decoder.decode(machine.memory_mut(), pc)?;
         let opcode = ckb_vm::instructions::extract_opcode(inst);
@@ -318,15 +320,12 @@ impl MachineOverlap {
         Ok(Self { sbrk_addr: goblin_get_sym(&elf, "_sbrk"), sbrk_heap: goblin_get_sym(&elf, "_end") })
     }
 
-    pub fn step<DL>(
+    pub fn step(
         &mut self,
         decoder: &mut Decoder,
-        machine: &mut MachineAssign<DL>,
-        profile: &MachineProfile,
-    ) -> Result<(), Error>
-    where
-        DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-    {
+        machine: &mut DefaultMachine<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>,
+        flamegraph: &MachineFlamegraph,
+    ) -> Result<(), Error> {
         let pc = machine.pc().to_u64();
         let sp = machine.registers()[SP].to_u64();
         if sp < self.sbrk_heap {
@@ -365,13 +364,13 @@ impl MachineOverlap {
             _ => return Ok(()),
         };
 
-        let mut f = profile.trie_node.clone();
+        let mut f = flamegraph.trie_node.clone();
         loop {
             if f.borrow().link == addr {
-                if profile.trie_node.borrow().addr == self.sbrk_addr {
+                if flamegraph.trie_node.borrow().addr == self.sbrk_addr {
                     // https://github.com/nervosnetwork/riscv-newlib/blob/newlib-4.1.0-fork/libgloss/riscv/sys_sbrk.c#L49
                     // Note incr could be negative.
-                    self.sbrk_heap = profile.trie_node.borrow().regs[0][A0].wrapping_add(machine.registers()[A0]);
+                    self.sbrk_heap = flamegraph.trie_node.borrow().regs[0][A0].wrapping_add(machine.registers()[A0]);
                 }
                 break;
             }
@@ -387,18 +386,30 @@ impl MachineOverlap {
     }
 }
 
-pub struct MachineStepLog {}
+pub struct MachineStepLog {
+    file: Option<std::fs::File>,
+    name: String,
+}
 
 impl MachineStepLog {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(filename: &str) -> Self {
+        Self { file: None, name: filename.to_string() }
     }
 
-    pub fn step<DL>(&mut self, machine: &mut MachineAssign<DL>) -> Result<(), Error>
-    where
-        DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-    {
-        println!("{}", machine);
+    pub fn step(
+        &mut self,
+        machine: &mut DefaultMachine<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>,
+    ) -> Result<(), Error> {
+        match self.file {
+            Some(ref mut data) => {
+                data.write_all(format!("{}", machine).as_bytes())?;
+            }
+            None => {
+                let mut data = std::fs::File::create(&self.name).unwrap();
+                data.write_all(format!("{}", machine).as_bytes())?;
+                self.file = Some(data)
+            }
+        }
         Ok(())
     }
 }
@@ -416,10 +427,10 @@ impl MachineCoverage {
         Ok(Self { addrctx: ctx, pc_dict: HashMap::new(), results: HashMap::new() })
     }
 
-    pub fn step<DL>(&mut self, machine: &mut MachineAssign<DL>) -> Result<(), Error>
-    where
-        DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-    {
+    pub fn step(
+        &mut self,
+        machine: &mut DefaultMachine<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>,
+    ) -> Result<(), Error> {
         let pc = machine.pc().to_u64();
         if self.pc_dict.get(&pc).map_or(0, |v| *v) != 0 {
             return Ok(());
@@ -493,27 +504,21 @@ impl MachineCoverage {
     }
 }
 
-pub struct MachineAnalyzer<DL>
-where
-    DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-{
-    pub enable_overlap: u8,
-    pub enable_profile: u8,
-    pub enable_steplog: u8,
+pub struct MachineAnalyzer {
     pub enable_coverage: u8,
-    pub machine: MachineAssign<DL>,
-    pub profile: MachineProfile,
+    pub enable_flamegraph: u8,
+    pub enable_overlap: u8,
+    pub enable_steplog: u8,
+    pub machine: DefaultMachine<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>,
+    pub coverage: MachineCoverage,
+    pub flamegraph: MachineFlamegraph,
     pub overlap: MachineOverlap,
     pub steplog: MachineStepLog,
-    pub coverage: MachineCoverage,
 }
 
-impl<DL> CoreMachine for MachineAnalyzer<DL>
-where
-    DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-{
+impl CoreMachine for MachineAnalyzer {
     type REG = u64;
-    type MEM = <MachineAssign<DL> as CoreMachine>::MEM;
+    type MEM = WXorXMemory<FlatMemory<u64>>;
 
     fn pc(&self) -> &Self::REG {
         &self.machine.pc()
@@ -552,10 +557,7 @@ where
     }
 }
 
-impl<DL> Machine for MachineAnalyzer<DL>
-where
-    DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-{
+impl Machine for MachineAnalyzer {
     fn ecall(&mut self) -> Result<(), Error> {
         self.machine.ecall()
     }
@@ -565,36 +567,30 @@ where
     }
 }
 
-impl<DL> std::fmt::Display for MachineAnalyzer<DL>
-where
-    DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-{
+impl std::fmt::Display for MachineAnalyzer {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         self.machine.fmt(f)
     }
 }
 
-impl<DL> MachineAnalyzer<DL>
-where
-    DL: CellDataProvider + HeaderProvider + ExtensionProvider + Send + Sync + Clone + 'static,
-{
+impl MachineAnalyzer {
     pub fn new(
-        machine: MachineAssign<DL>,
-        profile: MachineProfile,
+        machine: DefaultMachine<DefaultCoreMachine<u64, WXorXMemory<FlatMemory<u64>>>>,
+        coverage: MachineCoverage,
+        flamegraph: MachineFlamegraph,
         overlap: MachineOverlap,
         steplog: MachineStepLog,
-        coverage: MachineCoverage,
     ) -> Self {
         Self {
-            enable_overlap: 0,
-            enable_profile: 1,
-            enable_steplog: 0,
             enable_coverage: 0,
+            enable_flamegraph: 0,
+            enable_overlap: 0,
+            enable_steplog: 0,
             machine,
-            profile,
+            coverage,
+            flamegraph,
             overlap,
             steplog,
-            coverage,
         }
     }
 
@@ -607,19 +603,19 @@ where
         while self.machine.running() {
             if self.machine.reset_signal() {
                 decoder.reset_instructions_cache();
-                self.profile = MachineProfile::new(&self.machine.code()).unwrap();
-            }
-            if self.enable_profile > 0 && self.enable_overlap > 0 {
-                self.overlap.step(&mut decoder, &mut self.machine, &self.profile)?;
-            }
-            if self.enable_profile > 0 {
-                self.profile.step(&mut decoder, &mut self.machine)?;
-            }
-            if self.enable_steplog > 0 {
-                self.steplog.step(&mut self.machine)?;
+                self.flamegraph = MachineFlamegraph::new(&self.machine.code()).unwrap();
             }
             if self.enable_coverage > 0 {
                 self.coverage.step(&mut self.machine)?;
+            }
+            if self.enable_flamegraph > 0 {
+                self.flamegraph.step(&mut decoder, &mut self.machine)?;
+            }
+            if self.enable_flamegraph > 0 && self.enable_overlap > 0 {
+                self.overlap.step(&mut decoder, &mut self.machine, &self.flamegraph)?;
+            }
+            if self.enable_steplog > 0 {
+                self.steplog.step(&mut self.machine)?;
             }
             self.machine.step(&mut decoder)?;
         }

@@ -27,18 +27,18 @@ pub fn run(
     let epoch = EpochNumberWithFraction::new(0, 0, 1);
     let header = HeaderView::new_advanced_builder().epoch(epoch.pack()).build();
     let tx_env = Arc::new(TxVerifyEnv::new_commit(&header));
-    let mut verifier = TransactionScriptsVerifier::new(
+    let verifier = TransactionScriptsVerifier::new_with_debug_printer(
         Arc::new(resolve_transaction),
         resource.clone(),
         consensus.clone(),
         tx_env.clone(),
+        Arc::new(Box::new(move |_hash: &Byte32, message: &str| {
+            let message = message.trim_end_matches('\n');
+            if message != "" {
+                crate::arch::println(&format!("Script log: {}", message));
+            }
+        })),
     );
-    verifier.set_debug_printer(Box::new(move |_hash: &Byte32, message: &str| {
-        let message = message.trim_end_matches('\n');
-        if message != "" {
-            crate::arch::println(&format!("Script log: {}", message));
-        }
-    }));
     Ok(verifier.verify_single(*script_group_type, script_hash, max_cycle)?)
 }
 

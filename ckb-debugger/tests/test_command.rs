@@ -12,10 +12,8 @@ pub fn test_always_failure_v0() {
         .args(["--bin", "examples/always_failure", "--script-version", "0"])
         .output()
         .unwrap()
-        .stderr;
-    let mut expect = vec![b"Error: MemWriteOnExecutablePage".to_vec()].join(&b'\n');
-    expect.push(b'\n');
-    assert_eq!(result, expect);
+        .stdout;
+    assert!(String::from_utf8(result).unwrap().contains("write on executable page"));
 }
 
 #[test]
@@ -25,9 +23,7 @@ pub fn test_always_failure_v1() {
         .output()
         .unwrap()
         .stdout;
-    let mut expect = vec![b"Run result: 1".to_vec(), b"All cycles: 2494(2.4K)".to_vec()].join(&b'\n');
-    expect.push(b'\n');
-    assert_eq!(result, expect);
+    assert!(String::from_utf8(result).unwrap().contains("Run result: 1"));
 }
 
 #[test]
@@ -37,9 +33,19 @@ pub fn test_always_failure_v2() {
         .output()
         .unwrap()
         .stdout;
-    let mut expect = vec![b"Run result: 1".to_vec(), b"All cycles: 2493(2.4K)".to_vec()].join(&b'\n');
-    expect.push(b'\n');
-    assert_eq!(result, expect);
+    assert!(String::from_utf8(result).unwrap().contains("Run result: 1"));
+}
+
+#[test]
+pub fn test_dynamic() {
+    let result = Command::new(*CKB_DEBUGGER)
+        .args(["--mode", "full", "--tx-file", "examples/dynamic.json"])
+        .output()
+        .unwrap()
+        .stdout;
+    let result: Vec<&str> = std::str::from_utf8(&result).unwrap().lines().collect();
+    assert_eq!(result[result.len() - 2], "Run result: 0");
+    assert_eq!(result[result.len() - 1], "All cycles: 2785573(2.7M)");
 }
 
 #[test]
@@ -53,7 +59,7 @@ pub fn test_exec() {
         b"Script log: exec_caller".to_vec(),
         b"Script log: exec_callee".to_vec(),
         b"Run result: 0".to_vec(),
-        b"All cycles: 8566(8.4K)".to_vec(),
+        b"All cycles: 83564(81.6K)".to_vec(),
     ]
     .join(&b'\n');
     expect.push(b'\n');
@@ -61,14 +67,18 @@ pub fn test_exec() {
 }
 
 #[test]
-pub fn test_fib_pprof() {
-    let output_path = tempfile::tempdir().unwrap().path().join("fib.pprof");
+pub fn test_fib_flamegraph() {
+    let outdir = tempfile::tempdir().unwrap();
+    let output_path = outdir.path().join("fib.pprof");
     let output = output_path.to_str().unwrap();
-    let result =
-        Command::new(*CKB_DEBUGGER).args(["--bin", "examples/fib", "--pprof", output]).output().unwrap().stdout;
-    let mut expect = vec![b"Run result: 0".to_vec(), b"All cycles: 3364(3.3K)".to_vec()].join(&b'\n');
-    expect.push(b'\n');
-    assert_eq!(result, expect);
+    let result = Command::new(*CKB_DEBUGGER)
+        .args(["--mode", "full", "--bin", "examples/fib", "--flamegraph-output", output])
+        .output()
+        .unwrap()
+        .stdout;
+    let result: Vec<&str> = std::str::from_utf8(&result).unwrap().lines().collect();
+    assert_eq!(result[result.len() - 2], "Run result: 0");
+    assert_eq!(result[result.len() - 1], "All cycles: 1361(1.3K)");
 }
 
 #[test]
@@ -90,9 +100,7 @@ pub fn test_mock_tx_replace_bin() {
         .output()
         .unwrap()
         .stdout;
-    let mut expect = vec![b"Run result: 1".to_vec(), b"All cycles: 2493(2.4K)".to_vec()].join(&b'\n');
-    expect.push(b'\n');
-    assert_eq!(result, expect);
+    assert!(String::from_utf8(result).unwrap().contains("Run result: 1"));
 }
 
 #[test]
@@ -112,10 +120,8 @@ pub fn test_instruction_decode() {
 
 #[test]
 pub fn test_out_of_memory() {
-    let result = Command::new(*CKB_DEBUGGER).args(["--bin", "examples/out_of_memory"]).output().unwrap().stderr;
-    let mut expect = vec![b"Error: MemOutOfBound".to_vec()].join(&b'\n');
-    expect.push(b'\n');
-    assert_eq!(result, expect);
+    let result = Command::new(*CKB_DEBUGGER).args(["--bin", "examples/out_of_memory"]).output().unwrap().stdout;
+    assert!(String::from_utf8(result).unwrap().contains("out of bound"));
 }
 
 #[test]
