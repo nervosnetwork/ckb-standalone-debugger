@@ -119,6 +119,8 @@ jobs:
       PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_wasm32-wasip1
     steps:
     - uses: actions/checkout@v4
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
     - name: Build
       run: |
         cd ckb-debugger
@@ -147,6 +149,8 @@ jobs:
       PACKAGE: ckb-debugger_${{ github.event.release.tag_name }}_x86_64-pc-windows-msvc
     steps:
     - uses: actions/checkout@v4
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -169,6 +173,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
     - name: Publish
       run: |
         cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
