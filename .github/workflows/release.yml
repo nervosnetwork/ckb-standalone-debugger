@@ -17,6 +17,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -43,6 +45,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -69,6 +73,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -95,6 +101,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -121,6 +129,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build
       run: |
         cd ckb-debugger
@@ -151,6 +161,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build
       run: cd ckb-debugger && cargo build --release
     - name: Archive files
@@ -175,6 +187,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Protoc
       uses: arduino/setup-protoc@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish
       run: |
         cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
