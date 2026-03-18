@@ -11,8 +11,11 @@ CKB standalone debugger is a collection of debugging tools.
 
 We provide a command line tool that allows you to develop CKB scripts offline. To install
 
+1. Download binarys from [Releases page](https://github.com/nervosnetwork/ckb-standalone-debugger/releases)
+2. Or install from source code using cargo:
+
 ```sh
-cargo install --git https://github.com/nervosnetwork/ckb-standalone-debugger ckb-debugger
+$ cargo install --locked --git https://github.com/nervosnetwork/ckb-standalone-debugger ckb-debugger
 ```
 
 And then refer to the sample programs we provided [examples](./ckb-debugger/examples/)

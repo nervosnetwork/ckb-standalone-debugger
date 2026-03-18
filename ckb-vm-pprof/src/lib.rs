@@ -395,7 +395,7 @@ impl<R: Register, M: Memory<REG = R>, Inner: SupportMachine<REG = R, MEM = M>> P
 }
 
 pub fn quick_start(
-    syscalls: Vec<Box<(dyn Syscalls<DefaultCoreMachine<u64, WXorXMemory<SparseMemory<u64>>>>)>>,
+    syscalls: Vec<Box<dyn Syscalls<DefaultCoreMachine<u64, WXorXMemory<SparseMemory<u64>>>>>>,
     fl_bin: &str,
     fl_arg: Vec<&str>,
     output_filename: &str,

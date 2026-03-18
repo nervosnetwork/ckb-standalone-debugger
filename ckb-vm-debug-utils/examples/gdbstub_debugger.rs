@@ -16,7 +16,7 @@ use std::io::Read;
 use std::net::TcpListener;
 
 fn main() {
-    drop(env_logger::init());
+    let _ = env_logger::init();
     let args: Vec<String> = env::args().skip(1).collect();
 
     let listener = TcpListener::bind(&args[0]).expect("listen");
@@ -42,7 +42,7 @@ fn main() {
             let mut machine = machine_builder.syscall(Box::new(Stdio::new(true))).build();
             #[cfg(not(feature = "stdio"))]
             let mut machine = machine_builder.build();
-            machine.load_program(&program, &program_args).expect("load program");
+            machine.load_program(&program, program_args.iter().cloned().map(Ok)).expect("load program");
             machine.set_running(true);
             let mut h: GdbStubHandler<_, Riscv64> = GdbStubHandler::new(machine);
             let connection: Box<(dyn ConnectionExt<Error = std::io::Error> + 'static)> = Box::new(stream);
