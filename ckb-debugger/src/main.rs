@@ -418,7 +418,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                  sg_data: &SgData<Resource>,
                                  vm_context: &VmContext<Resource>,
                                  vm_v: &Vec<Option<&str>>|
-         -> Vec<Box<(dyn Syscalls<<Machine as DefaultMachineRunner>::Inner>)>> {
+         -> Vec<Box<dyn Syscalls<<Machine as DefaultMachineRunner>::Inner>>> {
             let debug_printer: DebugPrinter = Arc::new(|_: &Byte32, message: &str| {
                 let message = message.trim_end_matches('\n');
                 if message != "" {
@@ -702,7 +702,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let mut machine = machine_init();
                 machine.set_running(true);
                 let mut h = GdbStubHandler::new(machine);
-                let connection: Box<(dyn ConnectionExt<Error = std::io::Error> + 'static)> = Box::new(stream);
+                let connection: Box<dyn ConnectionExt<Error = std::io::Error> + 'static> = Box::new(stream);
                 let gdb = GdbStub::new(connection);
 
                 let result = match gdb.run_blocking::<GdbStubHandlerEventLoop<_, Riscv64>>(&mut h) {

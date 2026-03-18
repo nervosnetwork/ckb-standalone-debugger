@@ -229,7 +229,7 @@ impl<
     type Arch = A;
     type Error = Error;
 
-    fn base_ops(&mut self) -> BaseOps<Self::Arch, Self::Error> {
+    fn base_ops(&mut self) -> BaseOps<'_, Self::Arch, Self::Error> {
         BaseOps::SingleThread(self)
     }
 
