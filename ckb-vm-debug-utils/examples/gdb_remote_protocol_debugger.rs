@@ -2,22 +2,24 @@
 extern crate log;
 
 use bytes::Bytes;
-use ckb_gdb_remote_protocol::process_packets_from;
 use ckb_vm::machine::VERSION2;
 use ckb_vm::{
     DefaultCoreMachine, DefaultMachineBuilder, ISA_A, ISA_B, ISA_IMC, ISA_MOP, SparseMemory, SupportMachine,
     WXorXMemory,
 };
-use ckb_vm_debug_utils::GdbHandler;
 #[cfg(feature = "stdio")]
 use ckb_vm_debug_utils::Stdio;
+use ckb_vm_debug_utils::{GdbStubHandler, GdbStubHandlerEventLoop};
+use gdbstub::conn::ConnectionExt;
+use gdbstub::stub::{DisconnectReason, GdbStub};
+use gdbstub_arch::riscv::Riscv64;
 use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::net::TcpListener;
 
 fn main() {
-    drop(env_logger::init());
+    let _ = env_logger::init();
     let args: Vec<String> = env::args().skip(1).collect();
 
     let listener = TcpListener::bind(&args[0]).expect("listen");
@@ -43,10 +45,26 @@ fn main() {
             let mut machine = machine_builder.syscall(Box::new(Stdio::new(true))).build();
             #[cfg(not(feature = "stdio"))]
             let mut machine = machine_builder.build();
-            machine.load_program(&program, &program_args).expect("load program");
+            machine.load_program(&program, program_args.iter().cloned().map(Ok)).expect("load program");
             machine.set_running(true);
-            let h = GdbHandler::new(machine);
-            process_packets_from(stream.try_clone().unwrap(), stream, h);
+            let mut h = GdbStubHandler::<_, Riscv64>::new(machine);
+            let connection: Box<dyn ConnectionExt<Error = std::io::Error>> = Box::new(stream);
+            let gdb = GdbStub::new(connection);
+            match gdb.run_blocking::<GdbStubHandlerEventLoop<_, Riscv64>>(&mut h) {
+                Ok(DisconnectReason::Disconnect) => {
+                    debug!("GDB client disconnected, running to completion");
+                    let _ = h.run_till_exited();
+                }
+                Ok(DisconnectReason::TargetExited(_)) => {
+                    let _ = h.run_till_exited();
+                }
+                Ok(reason) => {
+                    debug!("GDB session ended: {:?}", reason);
+                }
+                Err(e) => {
+                    debug!("GDB stub error: {}", e);
+                }
+            }
         }
         debug!("Connection closed");
     }
