@@ -10,31 +10,31 @@ members = [
 ]
 
 [workspace.package]
-version = "1.1.0"
+version = "1.1.1"
 
 [workspace.dependencies]
 # CKB dependencies
-ckb-chain-spec = "=1.1.0"
-ckb-hash = "=1.1.0"
-ckb-jsonrpc-types = "=1.1.0"
-ckb-script = { version = "=1.1.0", default-features = false, features = ["flatmemory"] }
-ckb-traits = "=1.1.0"
-ckb-types = "=1.1.0"
+ckb-chain-spec = "1.1.0"
+ckb-hash = "1.1.0"
+ckb-jsonrpc-types = "1.1.1"
+ckb-script = { version = "1.1.0", default-features = false, features = ["flatmemory"] }
+ckb-traits = "1.1.0"
+ckb-types = "1.1.0"
 ckb-vm = { version = "=0.24.14", default-features = false, features = ["pprof"] }
 
 # Crates defined in current workspace
-ckb-debugger = { path = "ckb-debugger", version = "1.1.0" }
-ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "1.1.0" }
-ckb-vm-pprof = { path = "ckb-vm-pprof", version = "1.1.0" }
-ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "1.1.0" }
-ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "1.1.0" }
-ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "1.1.0" }
+ckb-debugger = { path = "ckb-debugger", version = "1.1.1" }
+ckb-vm-debug-utils = { path = "ckb-vm-debug-utils", version = "1.1.1" }
+ckb-vm-pprof = { path = "ckb-vm-pprof", version = "1.1.1" }
+ckb-vm-pprof-converter = { path = "ckb-vm-pprof-converter", version = "1.1.1" }
+ckb-vm-pprof-protos = { path = "ckb-vm-pprof-protos", version = "1.1.1" }
+ckb-vm-signal-profiler = { path = "ckb-vm-signal-profiler", version = "1.1.1" }
 
 # CKB VM contribs
-ckb-mock-tx-types = "1.1.0"
-ckb-vm-syscall-tracer = { version = "1.1.0", default-features = false }
-ckb-vm-fuzzing-utils = "1.1.0"
-protobuf-ckb-syscalls = "1.1.0"
+ckb-mock-tx-types = "1.1.1"
+ckb-vm-syscall-tracer = { version = "1.1.1", default-features = false }
+ckb-vm-fuzzing-utils = "1.1.1"
+protobuf-ckb-syscalls = "1.1.1"
 
 # Other common crates
 addr2line = "0.21"
