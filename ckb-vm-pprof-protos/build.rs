@@ -1,6 +1,9 @@
 extern crate protobuf_codegen;
 
 fn main() {
+    if std::path::Path::new("src/profile.rs").exists() {
+        return;
+    }
     let mut codegen = protobuf_codegen::Codegen::new();
     #[cfg(target_os = "linux")]
     {
