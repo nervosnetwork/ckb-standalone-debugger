@@ -47,10 +47,10 @@ goblin = "0.4"
 hex = "0.4"
 libc = "0.2"
 log = "0.4.0"
-nix = { version = "0.30", features = ["fs", "signal"] }
+nix = { version = "0.31", features = ["fs", "signal"] }
 probe = "0.5"
 prost-reflect = { version = "0.16.0", features = ["derive", "text-format"] }
-protoc-bin-vendored = "3.1"
+protoc-bin-vendored = "3.2"
 protobuf-codegen = "3.7"
 protobuf = { version = "3.7", features = ["with-bytes"] }
 rand = "0.8.5"

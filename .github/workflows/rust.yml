@@ -76,7 +76,7 @@ jobs:
       - name: Build wasm32-unknown-unknown
         run: cd ckb-debugger && rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown
       - name: Build wasm32-wasip1
-        run: cd ckb-debugger && rustup target add wasm32-wasip1 && sudo apt install gcc-multilib && cargo build --target wasm32-wasip1
+        run: cd ckb-debugger && rustup target add wasm32-wasip1 && sudo apt update -y && sudo apt install gcc-multilib && cargo build --target wasm32-wasip1
 
 
   build-windows:
