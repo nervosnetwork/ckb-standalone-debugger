@@ -134,6 +134,7 @@ jobs:
     - name: Build
       run: |
         cd ckb-debugger
+        sudo apt update -y
         sudo apt install gcc-multilib
         rustup target add wasm32-wasip1
         cargo build --release --target wasm32-wasip1
