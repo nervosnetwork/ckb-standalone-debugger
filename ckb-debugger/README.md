@@ -48,7 +48,11 @@ ARGS:
     <args>...
 ```
 
-[ckb-cli](https://github.com/nervosnetwork/ckb-cli) can be used to dump the full mocked transaction used in the debugger from CKB. This [example](./examples/mock_tx.md) shows how to use it.
+See [guide.md](./guide.md) for a more detailed guide. If you use an AI agent, you can use the following prompt to get started:
+
+```txt
+Read README.md and try debugging this transaction: <https://explorer.nervos.org/transaction/0xb25bc2f60d8c7b969396bb28bb17d474b27c6495b6f12002333eed5cd5d26ea4>. Replace the lock script inside with always_failure.
+```
 
 # FAQ
 

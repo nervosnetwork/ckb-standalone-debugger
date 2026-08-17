@@ -1,4 +1,4 @@
-CC := clang-18 --target=riscv64 -march=rv64imac_zba_zbb_zbc_zbs -g -nostdinc -nostdlib -Ickb-c-stdlib -Ickb-c-stdlib/libc
+CC := clang-19 --target=riscv64 -march=rv64imac_zba_zbb_zbc_zbs -g -nostdinc -nostdlib -Ickb-c-stdlib -Ickb-c-stdlib/libc
 
 all: ckb-c-stdlib \
 	 always_failure \
@@ -15,14 +15,14 @@ all: ckb-c-stdlib \
 	 timenow
 
 all-via-docker:
-	docker run -e UID=`id -u` -e GID=`id -g` --rm -v `pwd`:/code cryptape/llvm-n-rust:20240630 bash -c "cd /code && make"
+	docker run -e UID=`id -u` -e GID=`id -g` --rm -v `pwd`:/code cryptape/llvm-n-rust:20260616 bash -c "cd /code && make"
 
 always_failure:
 	$(CC) -o $@ $@.c
 
 ckb-c-stdlib:
 	git clone https://github.com/nervosnetwork/ckb-c-stdlib
-	cd ckb-c-stdlib && git checkout 7245b62
+	cd ckb-c-stdlib && git checkout 6bf2bca
 
 exec_callee:
 	$(CC) -o $@ $@.c
@@ -53,9 +53,6 @@ spawn_callee_strcat:
 
 spawn_caller_strcat:
 	$(CC) -o $@ $@.c
-
-test:
-	bash MakefileTest.sh
 
 timenow:
 	$(CC) -o $@ $@.c
