@@ -7,7 +7,7 @@ use ckb_debugger::{
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
 use ckb_script::types::{DebugPrinter, Machine, SgData, VmContext, VmId};
 use ckb_script::{
-    ROOT_VM_ID, ScriptError, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv,
+    ROOT_VM_ID, ScriptError, ScriptGroup, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv,
     generate_ckb_syscalls,
 };
 use ckb_types::core::cell::{CellMeta, resolve_transaction};
@@ -23,7 +23,7 @@ use ckb_vm::{DefaultMachineRunner, Syscalls};
 use ckb_vm_debug_utils::{GdbStubHandler, GdbStubHandlerEventLoop};
 use ckb_vm_fuzzing_utils::SynchronousSyscalls;
 use ckb_vm_syscall_tracer::{
-    BinaryLocatorCollector, Collector, CollectorKey, SyscallBasedCollector, VmCreateCollector,
+    BinaryLocatorCollector, Collector, CollectorKey, CollectorResult, SyscallBasedCollector, VmCreateCollector,
 };
 use clap::{App, Arg, crate_version};
 use gdbstub::{
@@ -467,6 +467,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    let root_vm_args: Vec<Bytes> = matches_args.map(|s| Bytes::copy_from_slice(s.as_bytes())).collect();
+
     arch::println("Pre gather: collect vm creation");
     let collector: BinaryLocatorCollector<VmCreateCollector> = BinaryLocatorCollector::default();
     let collector_result = {
@@ -478,7 +480,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             BinaryLocatorCollector::<VmCreateCollector>::syscall_generator,
             collector.clone(),
         );
-        let collector_result = collector.collect(&verifier, verifier_script_group);
+        let collector_result = collect_with_args(collector, &verifier, verifier_script_group, &root_vm_args);
         match collector_result {
             Ok(data) => {
                 arch::println(&format!("Run result: {}", data.exit_code));
@@ -531,7 +533,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             BinaryLocatorCollector::<SyscallBasedCollector>::syscall_generator,
             collector.clone(),
         );
-        let collector_result = collector.collect(&verifier, verifier_script_group);
+        let collector_result = collect_with_args(collector, &verifier, verifier_script_group, &root_vm_args);
         match collector_result {
             Ok(data) => {
                 arch::println(&format!("Run result: {}", data.exit_code));
@@ -585,10 +587,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         None => verifier_program_elf.clone(),
     };
-    let machine_trace_data = match collector_result.traces.get(&machine_collector_key) {
-        Some(data) => Bytes::copy_from_slice(&Vec::<u8>::from(data.1.clone())),
-        None => Bytes::new(),
-    };
+    let mut machine_trace =
+        collector_result.traces.get(&machine_collector_key).map(|data| data.1.clone()).unwrap_or_default();
+    // The tracer records exec/spawn arguments, but not the initial root arguments.
+    // A root with no recorded syscalls still needs its arguments during replay.
+    if machine_collector_key.vm_id == ROOT_VM_ID {
+        machine_trace.args = root_vm_args.iter().map(|arg| arg.to_vec()).collect();
+    }
+    let machine_trace_data = Bytes::from(Vec::<u8>::from(machine_trace));
     let machine_init = || {
         let mut machine_trace_impls = ProtobufVmRunnerImpls::new_with_bytes(machine_trace_data.clone()).unwrap();
         machine_trace_impls.set_debug_printer(Box::new(|message: &str| {
@@ -776,4 +782,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+// Collector::collect creates its own scheduler without forwarding root arguments.
+// Keep its preprocessing and per-iteration hooks while supplying the CLI arguments.
+fn collect_with_args<C: Collector>(
+    collector: C,
+    verifier: &TransactionScriptsVerifier<Resource, C, Machine>,
+    script_group: &ScriptGroup,
+    args: &[Bytes],
+) -> Result<CollectorResult<C::Trace>, Error> {
+    let mut scheduler = verifier
+        .create_scheduler(script_group)
+        .map_err(|e| Error::External(format!("scheduler creation error: {}", e)))?;
+    scheduler.set_root_vm_args(args.to_vec());
+    collector.preprocess(verifier, script_group, &mut scheduler)?;
+
+    loop {
+        let iteration_result = scheduler.iterate()?;
+        if let Some(result) = iteration_result.terminated_status {
+            return Ok(CollectorResult {
+                exit_code: result.exit_code,
+                cycles: result.consumed_cycles,
+                traces: collector.seal(),
+            });
+        }
+        collector.postprocess(&mut scheduler)?;
+    }
 }
