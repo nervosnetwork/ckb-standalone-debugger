@@ -82,6 +82,61 @@ pub fn test_fib_flamegraph() {
 }
 
 #[test]
+pub fn test_full_mode_args() {
+    // exec_callee requires exactly three arguments beginning with a, b, c.
+    for (args, expected) in [
+        (vec!["a", "b", "c"], 0),
+        (vec!["a value", "b value", "c value"], 0),
+        (vec![], 1),
+        (vec!["a", "b"], 1),
+        (vec!["c", "b", "a"], 2),
+        (vec!["a", "c", "b"], 3),
+        (vec!["a", "b", "a"], 4),
+    ] {
+        let result = Command::new(env!("CARGO_BIN_EXE_ckb-debugger"))
+            .args(["--mode", "full", "--bin", "examples/exec_callee", "--"])
+            .args(&args)
+            .output()
+            .unwrap();
+        let stdout = String::from_utf8(result.stdout).unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.success(), expected == 0, "args: {args:?}\n{stdout}\n{stderr}");
+        // Both collection passes and the replay must see the same arguments.
+        assert_eq!(stdout.matches(&format!("Run result: {expected}\n")).count(), 3, "args: {args:?}\n{stdout}");
+    }
+}
+
+#[test]
+pub fn test_full_mode_spawn_args() {
+    let result = Command::new(env!("CARGO_BIN_EXE_ckb-debugger"))
+        .args(["--mode", "full", "--tx-file", "examples/spawn.json", "--vm-id", "1", "--", "root-only"])
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8(result.stdout).unwrap();
+    let stderr = String::from_utf8(result.stderr).unwrap();
+    // The child must retain the hello/world arguments from spawn, not root-only.
+    assert!(result.status.success(), "{stdout}\n{stderr}");
+    assert_eq!(stdout.matches("Run result: 0\n").count(), 3, "{stdout}");
+}
+
+#[test]
+pub fn test_flamegraph_args() {
+    let outdir = tempfile::tempdir().unwrap();
+    let output = outdir.path().join("args.flamegraph");
+    let result = Command::new(env!("CARGO_BIN_EXE_ckb-debugger"))
+        .args(["--bin", "examples/exec_callee", "--enable-flamegraph", "--flamegraph-output"])
+        .arg(&output)
+        .args(["--", "a", "b", "c"])
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8(result.stdout).unwrap();
+    let stderr = String::from_utf8(result.stderr).unwrap();
+    assert!(result.status.success(), "{stdout}\n{stderr}");
+    assert_eq!(stdout.matches("Run result: 0\n").count(), 3, "{stdout}");
+    assert!(!std::fs::read_to_string(output).unwrap().is_empty());
+}
+
+#[test]
 pub fn test_mock_tx() {
     let result = Command::new(*CKB_DEBUGGER)
         .args(["--tx-file", "examples/mock_tx.json", "--script", "input.0.lock"])
