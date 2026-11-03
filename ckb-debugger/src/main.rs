@@ -5,6 +5,7 @@ use ckb_debugger::{
     instruction_decode, mock_tx_analyze, mock_tx_embed, print_vm_tree_recursive,
 };
 use ckb_mock_tx_types::{MockCellDep, MockInfo, MockInput, MockTransaction, ReprMockTransaction, Resource};
+use ckb_script::cost_model::transferred_byte_cycles;
 use ckb_script::types::{DebugPrinter, Machine, SgData, VmContext, VmId};
 use ckb_script::{
     ROOT_VM_ID, ScriptError, ScriptGroup, ScriptGroupType, ScriptVersion, TransactionScriptsVerifier, TxVerifyEnv,
@@ -595,7 +596,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         machine_trace.args = root_vm_args.iter().map(|arg| arg.to_vec()).collect();
     }
     let machine_trace_data = Bytes::from(Vec::<u8>::from(machine_trace));
-    let machine_init = || {
+    let machine_init = || -> Result<_, Error> {
         let mut machine_trace_impls = ProtobufVmRunnerImpls::new_with_bytes(machine_trace_data.clone()).unwrap();
         machine_trace_impls.set_debug_printer(Box::new(|message: &str| {
             let message = message.trim_end_matches('\n');
@@ -619,11 +620,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ckb_vm::DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(estimate_cycles));
         let mut machine = machine_builder.syscall(Box::new(machine_syscall)).build();
 
-        machine.load_program(&machine_program_elf, machine_args.into_iter().map(Ok)).unwrap();
-        machine
+        let bytes = machine.load_program(&machine_program_elf, machine_args.into_iter().map(Ok))?;
+        machine.add_cycles_no_checking(transferred_byte_cycles(bytes))?;
+        Ok(machine)
     };
     #[cfg(feature = "asm")]
-    let machine_init_asm = || {
+    let machine_init_asm = || -> Result<_, Error> {
         let mut machine_trace_impls = ProtobufVmRunnerImpls::new_with_bytes(machine_trace_data.clone()).unwrap();
         machine_trace_impls.set_debug_printer(Box::new(|message: &str| {
             let message = message.trim_end_matches('\n');
@@ -647,12 +649,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ckb_vm::DefaultMachineBuilder::new(machine_core).instruction_cycle_func(Box::new(estimate_cycles));
         let machine = machine_builder.syscall(Box::new(machine_syscall)).build();
         let mut machine = ckb_vm::machine::asm::AsmMachine::new(machine);
-        machine.load_program(&machine_program_elf, machine_args.into_iter().map(Ok)).unwrap();
-        machine
+        let bytes = machine.load_program(&machine_program_elf, machine_args.into_iter().map(Ok))?;
+        machine.machine.add_cycles_no_checking(transferred_byte_cycles(bytes))?;
+        Ok(machine)
     };
 
     if matches_mode == "full" {
-        let machine = machine_init();
+        let machine = machine_init()?;
         let machine_coverage = MachineCoverage::new(&verifier_program_elf)?;
         let machine_flamegraph = MachineFlamegraph::new(&verifier_program_elf)?;
         let machine_overlap = MachineOverlap::new(&verifier_program_elf)?;
@@ -705,7 +708,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for res in listener.incoming() {
             if let Ok(stream) = res {
                 arch::println(&format!("Accepted connection from: {}, booting VM", stream.peer_addr()?));
-                let mut machine = machine_init();
+                let mut machine = machine_init()?;
                 machine.set_running(true);
                 let mut h = GdbStubHandler::new(machine);
                 let connection: Box<dyn ConnectionExt<Error = std::io::Error> + 'static> = Box::new(stream);
@@ -746,9 +749,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::io::stdin().lock().read_line(&mut line).expect("read");
         }
         #[cfg(not(feature = "asm"))]
-        let mut machine = machine_init();
+        let mut machine = machine_init()?;
         #[cfg(feature = "asm")]
-        let mut machine = machine_init_asm().machine;
+        let mut machine = machine_init_asm()?.machine;
         machine.set_running(true);
         let mut decoder = build_decoder::<u64>(verifier_script_version.vm_isa(), verifier_script_version.vm_version());
         let mut step_result = Ok(());
