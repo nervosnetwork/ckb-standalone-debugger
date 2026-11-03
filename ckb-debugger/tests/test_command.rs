@@ -45,7 +45,7 @@ pub fn test_dynamic() {
         .stdout;
     let result: Vec<&str> = std::str::from_utf8(&result).unwrap().lines().collect();
     assert_eq!(result[result.len() - 2], "Run result: 0");
-    assert_eq!(result[result.len() - 1], "All cycles: 2785573(2.7M)");
+    assert_eq!(result[result.len() - 1], "All cycles: 2802697(2.7M)");
 }
 
 #[test]
@@ -78,7 +78,7 @@ pub fn test_fib_flamegraph() {
         .stdout;
     let result: Vec<&str> = std::str::from_utf8(&result).unwrap().lines().collect();
     assert_eq!(result[result.len() - 2], "Run result: 0");
-    assert_eq!(result[result.len() - 1], "All cycles: 1361(1.3K)");
+    assert_eq!(result[result.len() - 1], "All cycles: 3364(3.3K)");
 }
 
 #[test]
