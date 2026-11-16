@@ -685,9 +685,9 @@ dependencies = [
 
 [[package]]
 name = "ckb-vm-fuzzing-utils"
-version = "1.1.1"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70222a752eb515f43b4328106da9f14d429dafe6cf6c902491a3cf70cb0ab4ef"
+checksum = "21e1805aebd3881da046bba8dd72c738aefb32d844299b5485e99efc69dd40ac"
 dependencies = [
  "ckb-std",
  "ckb-vm",

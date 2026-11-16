@@ -198,6 +198,12 @@ $ riscv64-unknown-elf-gdb --command=exec_gdb_cmd.txt
 
 Coverage, flamegraph, overlap detection, and step logs all require `full` mode. When these analysis switches are used, `ckb-debugger` automatically changes `--mode` to `full`. It is recommended that the ELF include DWARF debug information.
 
+`--vm-id` selects the VM to analyze. Full-mode analysis uses that VM's ELF; if the on-chain ELF is stripped, pass an ELF with matching load addresses and debug information using `--vm-symbols`:
+
+```sh
+$ ckb-debugger --mode full --tx-file spawn.json --vm-id 1 --vm-symbols child-with-debug.elf --enable-flamegraph --flamegraph-output child.flamegraph
+```
+
 Use flamegraph to analyze function calls and execution time:
 
 ```sh
