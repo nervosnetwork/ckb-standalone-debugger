@@ -120,6 +120,25 @@ pub fn test_full_mode_spawn_args() {
 }
 
 #[test]
+pub fn test_full_mode_spawn_flamegraph_uses_selected_vm_symbols() {
+    for symbols in [None, Some("examples/spawn_callee_strcat")] {
+        let outdir = tempfile::tempdir().unwrap();
+        let output = outdir.path().join("child.flamegraph");
+        let mut command = Command::new(env!("CARGO_BIN_EXE_ckb-debugger"));
+        command.args(["--mode", "full", "--tx-file", "examples/spawn.json", "--vm-id", "1"]);
+        if let Some(symbols) = symbols {
+            command.args(["--vm-symbols", symbols]);
+        }
+        let result = command.args(["--enable-flamegraph", "--flamegraph-output"]).arg(&output).output().unwrap();
+        let stdout = String::from_utf8(result.stdout).unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert!(result.status.success(), "{stdout}\n{stderr}");
+        let flamegraph = std::fs::read_to_string(output).unwrap();
+        assert!(flamegraph.contains("strcat"), "{flamegraph}");
+    }
+}
+
+#[test]
 pub fn test_flamegraph_args() {
     let outdir = tempfile::tempdir().unwrap();
     let output = outdir.path().join("args.flamegraph");

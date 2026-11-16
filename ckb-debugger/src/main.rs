@@ -172,6 +172,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("Filename containing JSON formatted transaction dump")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("vm-symbols")
+                .long("vm-symbols")
+                .help("ELF file to use for symbol and debug information for the selected VM")
+                .takes_value(true),
+        )
         .arg(Arg::with_name("vm-id").long("vm-id").default_value(&default_vm_id).help("VM ID").takes_value(true))
         .get_matches();
 
@@ -197,6 +203,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches_script_version = matches.value_of("script-version").unwrap();
     let matches_steplog_output = matches.value_of("steplog-output");
     let matches_tx_file = matches.value_of("tx-file");
+    let matches_vm_symbols = matches.value_of("vm-symbols");
     let matches_vm_id = u64::from_str_radix(matches.value_of("vm-id").unwrap(), 10).unwrap();
     let matches_mode = if matches_enable_coverage
         | matches_enable_flamegraph
@@ -656,9 +663,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if matches_mode == "full" {
         let machine = machine_init()?;
-        let machine_coverage = MachineCoverage::new(&verifier_program_elf)?;
-        let machine_flamegraph = MachineFlamegraph::new(&verifier_program_elf)?;
-        let machine_overlap = MachineOverlap::new(&verifier_program_elf)?;
+        let analysis_program_elf = match matches_vm_symbols {
+            Some(path) => Bytes::from(std::fs::read(path)?),
+            None => machine_program_elf.clone(),
+        };
+        let machine_coverage = MachineCoverage::new(&analysis_program_elf)?;
+        let machine_flamegraph = MachineFlamegraph::new(&analysis_program_elf)?;
+        let machine_overlap = MachineOverlap::new(&analysis_program_elf)?;
         let machine_steplog = MachineStepLog::new(matches_steplog_output.unwrap_or("ckb-debugger.steplog"));
         let mut machine =
             MachineAnalyzer::new(machine, machine_coverage, machine_flamegraph, machine_overlap, machine_steplog);
