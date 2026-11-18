@@ -57,6 +57,12 @@ fn goblin_get_sym(elf: &goblin::elf::Elf, sym: &str) -> u64 {
     return 0;
 }
 
+// Frames in the flamegraph output are separated by ';', so a ';' inside a frame name (for example in the Rust type
+// `[u8; 32]`) would split one frame into two. Replace it with U+037E GREEK QUESTION MARK, which looks the same.
+fn folded_frame_name(name: &str) -> String {
+    name.replace(';', "\u{037e}")
+}
+
 struct TrieNode {
     addr: u64,
     link: u64,
@@ -157,7 +163,7 @@ impl Profile {
     }
 
     fn display_flamegraph_rec(&mut self, prefix: &str, node: Rc<RefCell<TrieNode>>, writer: &mut impl std::io::Write) {
-        let prefix_name = format!("{}{}", prefix, self.get_tag(node.borrow().addr).simple());
+        let prefix_name = format!("{}{}", prefix, folded_frame_name(&self.get_tag(node.borrow().addr).simple()));
         writer.write_all(format!("{} {}\n", prefix_name, node.borrow().cycles).as_bytes()).unwrap();
         for e in &node.borrow().childs {
             self.display_flamegraph_rec(format!("{}; ", prefix_name).as_str(), e.clone(), writer);
@@ -432,4 +438,32 @@ pub fn quick_start(
     }
 
     Ok((0, machine.machine.cycles()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_folded_frame_name_replaces_semicolon() {
+        let name = "src/main.rs:generic_frames::sum::<[u8; 32]>";
+        let folded = folded_frame_name(name);
+        assert_eq!(folded, "src/main.rs:generic_frames::sum::<[u8\u{037e} 32]>");
+        assert!(!folded.contains(';'));
+    }
+
+    #[test]
+    fn test_folded_frame_name_keeps_names_without_semicolon() {
+        assert_eq!(folded_frame_name("/code/fib.c:fib"), "/code/fib.c:fib");
+    }
+
+    #[test]
+    fn test_folded_stack_splits_into_one_frame_per_name() {
+        let names = ["??:func_0x111b0", "entry.rs:__ckb_std_main", "main.rs:<T as Trait<[u8; 2]>>::call", "[u8; 32]"];
+        let stack = names.iter().map(|e| folded_frame_name(e)).collect::<Vec<_>>().join("; ");
+        let frames: Vec<&str> = stack.split(';').collect();
+        assert_eq!(frames.len(), names.len());
+        let frames: Vec<String> = stack.split("; ").map(|e| e.replace('\u{037e}', ";")).collect();
+        assert_eq!(frames, names);
+    }
 }
